@@ -1,0 +1,18 @@
+{
+  "fileContextMenu": [
+    {
+      "abilityName": "EntryAbility",
+      "menuItem": "$string:importAccount",
+      "menuHandler": "clickMenu",
+      "menuContext": [
+        {
+          "menuKind": 1,
+          "menuRule": "single",
+          "fileSupportType": [
+            ".txt"
+          ]
+        }
+      ]
+    }
+  ]
+}

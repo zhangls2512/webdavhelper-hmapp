@@ -1,0 +1,15 @@
+{
+  "app": {
+    "bundleName": "com.zhuzx.webdavhelper",
+    "icon": "$media:layered_image",
+    "label": "$string:app_name",
+    "versionCode": 1,
+    "versionName": "1.0.0.0",
+    "multiAppMode": {
+      "multiAppModeType": "appClone",
+      "maxCount": 5
+    },
+    "configuration": "$profile:configuration",
+    "appPreloadPhase": "abilityStageCreated"
+  }
+}

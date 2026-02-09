@@ -1,0 +1,77 @@
+{
+  "app": {
+    "signingConfigs": [
+      {
+        "name": "release",
+        "material": {
+          "storeFile": "D:/code/harmonyproject/内部文件/发布签名材料/keystore.p12",
+          "storePassword": "000000198F2CAFEEAD1917FB341AE6389331EDD982DD0CDD87E4A57D8E753E6830CC477A0B08CA8194",
+          "keyAlias": "release",
+          "keyPassword": "00000019A1864392D96E0D72F22AA682D532E4453C9458E3279E62ABAA82351ABB8C135EC534ACCC6A",
+          "certpath": "D:/code/harmonyproject/内部文件/发布签名材料/zhuzx.cer",
+          "profile": "D:/code/harmonyproject/内部文件/发布签名材料/webdavhelper.p7b",
+          "signAlg": "SHA256withECDSA"
+        }
+      },
+      {
+        "name": "debug",
+        "material": {
+          "storeFile": "D:/code/harmonyproject/内部文件/调试签名材料/keystore.p12",
+          "storePassword": "00000019EF50B7E31C44148373AD33BB98D41495C927B1E65507D1E33DF04F03FEA4B084D091EC585B",
+          "keyAlias": "debug",
+          "keyPassword": "000000192F2367007198D2347FCABC149C2846ACEA5B16D804501B7AF630CED89A8AB86801EE9EDF82",
+          "certpath": "D:/code/harmonyproject/内部文件/调试签名材料/zhuzx.cer",
+          "profile": "D:/code/harmonyproject/内部文件/调试签名材料/webdavhelper.p7b",
+          "signAlg": "SHA256withECDSA"
+        }
+      }
+    ],
+    "products": [
+      {
+        "name": "default",
+        "signingConfig": "debug",
+        "compatibleSdkVersion": "6.0.2(22)",
+        "buildOption": {
+          "packOptions": {
+            "fastBuildApp": true,
+            "appWithSignedPkg": true
+          },
+          "resOptions": {
+            "resCompileThreads": 32
+          },
+          "arkOptions": {
+            "autoLazyImport": true,
+            "reExportCheckMode": "strict",
+            "branchElimination": true,
+            "expandImportPath": {
+              "enable": true
+            }
+          },
+          "strictMode": {
+            "noExternalImportByPath": true,
+            "useNormalizedOHMUrl": true,
+            "caseSensitiveCheck": true,
+            "harLocalDependencyCheck": true,
+            "enableStrictCheckOHModule": true
+          },
+          "preloadSystemSo": true
+        },
+        "runtimeOS": "HarmonyOS"
+      }
+    ]
+  },
+  "modules": [
+    {
+      "name": "entry",
+      "srcPath": "./entry",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
+    }
+  ]
+}

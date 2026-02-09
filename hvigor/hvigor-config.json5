@@ -1,0 +1,20 @@
+{
+  "modelVersion": "6.0.2",
+  "dependencies": {},
+  "execution": {
+    "optimizationStrategy": "performance"
+  },
+  "properties": {
+    "hvigor.incremental.optimization": true,
+    "hvigor.task.schedule.optimization": true,
+    "ohos.arkCompile.noEmitJs": true,
+    "ohos.byteCodeHar.integratedOptimization": true,
+    "ohos.compile.lib.entryfile": true,
+    "ohos.defaults.autoLazyImport": true,
+    "ohos.dependencies.types.enable": true,
+    "ohos.obfuscationRules.optimization": true,
+    "ohos.processLib.optimization": true,
+    "ohos.rollupCache.useSourceHash": true,
+    "ohos.uiTransform.Optimization": true
+  }
+}

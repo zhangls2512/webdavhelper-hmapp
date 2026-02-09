@@ -1,0 +1,114 @@
+{
+  "routerMap": [
+    {
+      "name": "Addressgroup",
+      "pageSourceFile": "src/main/ets/pages/Addressgroup.ets",
+      "buildFunction": "AddressgroupBuilder"
+    },
+    {
+      "name": "About",
+      "pageSourceFile": "src/main/ets/pages/About.ets",
+      "buildFunction": "AboutBuilder"
+    },
+    {
+      "name": "Debugsetting",
+      "pageSourceFile": "src/main/ets/pages/Debugsetting.ets",
+      "buildFunction": "DebugsettingBuilder"
+    },
+    {
+      "name": "Sandboxfilelist",
+      "pageSourceFile": "src/main/ets/pages/Sandboxfilelist.ets",
+      "buildFunction": "SandboxfilelistBuilder"
+    },
+    {
+      "name": "Backupsetting",
+      "pageSourceFile": "src/main/ets/pages/Backupsetting.ets",
+      "buildFunction": "BackupsettingBuilder"
+    },
+    {
+      "name": "Backuptask",
+      "pageSourceFile": "src/main/ets/pages/Backuptask.ets",
+      "buildFunction": "BackuptaskBuilder"
+    },
+    {
+      "name": "Debuginfo",
+      "pageSourceFile": "src/main/ets/pages/Debuginfo.ets",
+      "buildFunction": "DebuginfoBuilder"
+    },
+    {
+      "name": "ReportQoe",
+      "pageSourceFile": "src/main/ets/pages/ReportQoe.ets",
+      "buildFunction": "ReportQoeBuilder"
+    },
+    {
+      "name": "Networktest",
+      "pageSourceFile": "src/main/ets/pages/Networktest.ets",
+      "buildFunction": "NetworktestBuilder"
+    },
+    {
+      "name": "Commonsetting",
+      "pageSourceFile": "src/main/ets/pages/Commonsetting.ets",
+      "buildFunction": "CommonsettingBuilder"
+    },
+    {
+      "name": "Permissionsetting",
+      "pageSourceFile": "src/main/ets/pages/Permissionsetting.ets",
+      "buildFunction": "PermissionsettingBuilder"
+    },
+    {
+      "name": "Servicemode",
+      "pageSourceFile": "src/main/ets/pages/Servicemode.ets",
+      "buildFunction": "ServicemodeBuilder"
+    },
+    {
+      "name": "Moresetting",
+      "pageSourceFile": "src/main/ets/pages/Moresetting.ets",
+      "buildFunction": "MoresettingBuilder"
+    },
+    {
+      "name": "Agreements",
+      "pageSourceFile": "src/main/ets/pages/Agreements.ets",
+      "buildFunction": "AgreementsBuilder"
+    },
+    {
+      "name": "Feedback",
+      "pageSourceFile": "src/main/ets/pages/Feedback.ets",
+      "buildFunction": "FeedbackBuilder"
+    },
+    {
+      "name": "Recoverysetting",
+      "pageSourceFile": "src/main/ets/pages/Recoverysetting.ets",
+      "buildFunction": "RecoverysettingBuilder"
+    },
+    {
+      "name": "Infolist",
+      "pageSourceFile": "src/main/ets/pages/Infolist.ets",
+      "buildFunction": "InfolistBuilder"
+    },
+    {
+      "name": "Webview",
+      "pageSourceFile": "src/main/ets/pages/Webview.ets",
+      "buildFunction": "WebviewBuilder"
+    },
+    {
+      "name": "Autouploaderrorlogtype",
+      "pageSourceFile": "src/main/ets/pages/Autouploaderrorlogtype.ets",
+      "buildFunction": "AutouploaderrorlogtypeBuilder"
+    },
+    {
+      "name": "Errorlog",
+      "pageSourceFile": "src/main/ets/pages/Errorlog.ets",
+      "buildFunction": "ErrorlogBuilder"
+    },
+    {
+      "name": "License",
+      "pageSourceFile": "src/main/ets/pages/License.ets",
+      "buildFunction": "LicenseBuilder"
+    },
+    {
+      "name": "Dnsserver",
+      "pageSourceFile": "src/main/ets/pages/Dnsserver.ets",
+      "buildFunction": "DnsserverBuilder"
+    }
+  ]
+}

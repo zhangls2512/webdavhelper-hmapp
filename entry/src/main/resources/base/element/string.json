@@ -1,0 +1,56 @@
+{
+  "string": [
+    {
+      "name": "EntryAbility_label",
+      "value": "WebDAV助手"
+    },
+    {
+      "name": "importAccount",
+      "value": "导入账号"
+    },
+    {
+      "name": "DISTRIBUTED_DATASYNC_reason",
+      "value": "用于设备间同步账号数据。"
+    },
+    {
+      "name": "MEDIA_LOCATION_reason",
+      "value": "用于上传、备份保留地理位置信息的图片、视频到用户WebDAV网盘。"
+    },
+    {
+      "name": "READ_IMAGEVIDEO_reason",
+      "value": "用于备份图片、视频到用户WebDAV网盘。"
+    },
+    {
+      "name": "READ_WRITE_DESKTOP_DIRECTORY_reason",
+      "value": "用于备份桌面文件到用户WebDAV网盘。"
+    },
+    {
+      "name": "READ_WRITE_DOCUMENTS_DIRECTORY_reason",
+      "value": "用于备份文档到用户WebDAV网盘。"
+    },
+    {
+      "name": "READ_WRITE_DOWNLOAD_DIRECTORY_reason",
+      "value": "用于批量下载文件到公共下载目录。"
+    },
+    {
+      "name": "WRITE_PASTEBOARD_reason",
+      "value": "用于写入数据到剪贴板，便于在外部环境使用。"
+    },
+    {
+      "name": "file",
+      "value": "文件"
+    },
+    {
+      "name": "transfer",
+      "value": "传输"
+    },
+    {
+      "name": "entrancecard_displayname",
+      "value": "文件、传输"
+    },
+    {
+      "name": "entrancecard_description",
+      "value": "文件、传输快捷入口"
+    }
+  ]
+}

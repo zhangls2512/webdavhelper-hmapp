@@ -1,0 +1,32 @@
+{
+  "shortcuts": [
+    {
+      "shortcutId": "file",
+      "label": "$string:file",
+      "icon": "$media:file_shortcut",
+      "wants": [
+        {
+          "bundleName": "com.zhuzx.webdavhelper",
+          "abilityName": "EntryAbility",
+          "parameters": {
+            "shortcutId": "file"
+          }
+        }
+      ]
+    },
+    {
+      "shortcutId": "transfer",
+      "label": "$string:transfer",
+      "icon": "$media:transfer_shortcut",
+      "wants": [
+        {
+          "bundleName": "com.zhuzx.webdavhelper",
+          "abilityName": "EntryAbility",
+          "parameters": {
+            "shortcutId": "transfer"
+          }
+        }
+      ]
+    }
+  ]
+}

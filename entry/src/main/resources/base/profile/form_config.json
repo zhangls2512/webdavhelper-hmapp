@@ -1,0 +1,18 @@
+{
+  "forms": [
+    {
+      "name": "entrance",
+      "displayName": "$string:entrancecard_displayname",
+      "description": "$string:entrancecard_description",
+      "src": "./ets/form/pages/EntranceCard.ets",
+      "uiSyntax": "arkts",
+      "isDefault": true,
+      "supportDimensions": [
+        "1*2"
+      ],
+      "defaultDimension": "1*2",
+      "updateEnabled": false,
+      "renderingMode": "autoColor"
+    }
+  ]
+}
