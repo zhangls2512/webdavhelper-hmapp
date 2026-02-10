@@ -42,8 +42,7 @@ export async function readUri(uri: string) {
 
 export async function write(path: string, content: string) {
   try {
-    const lastSlashIndex = path.lastIndexOf('/')
-    const dir = path.substring(0, lastSlashIndex)
+    const dir = path.substring(0, path.lastIndexOf('/'))
     if (!fileIo.accessSync(dir)) {
       await fileIo.mkdir(dir, true)
     }

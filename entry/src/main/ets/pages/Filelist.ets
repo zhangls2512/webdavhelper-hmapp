@@ -37,6 +37,10 @@ export default struct Filelist {
   @Local fileArray: FileItem[] = []
   @Local dirnames: string[] = []
   @Local isLogin: boolean = false
+  @Local sortByIndex: number = 2
+  @Local sortByValue: string = '类型'
+  @Local sortDirectionIndex: number = 0
+  @Local sortDirectionValue: string = '升序'
   @Local multipleSelect: boolean = false
   @Local multipleSelectArray: FileItem[] = []
   @Local src: string = ''
@@ -80,8 +84,38 @@ export default struct Filelist {
         this.dirnames = []
       }
       this.account = account
-      this.fileArray = await ls(this.context, this.getPath())
+      const fileArray = await ls(this.context, this.getPath())
+      this.fileArray = this.sortFileArray(fileArray)
     }
+  }
+
+  sortFileArray(fileArray: FileItem[]) {
+    let array: FileItem[] = []
+    if (this.sortByValue === '名称' && this.sortDirectionValue === '升序') {
+      array = fileArray.sort((a, b) => a.name.localeCompare(b.name))
+    }
+    if (this.sortByValue === '名称' && this.sortDirectionValue === '降序') {
+      array = fileArray.sort((a, b) => b.name.localeCompare(a.name))
+    }
+    if (this.sortByValue === '大小' && this.sortDirectionValue === '升序') {
+      array = fileArray.sort((a, b) => a.size - b.size)
+    }
+    if (this.sortByValue === '大小' && this.sortDirectionValue === '降序') {
+      array = fileArray.sort((a, b) => b.size - a.size)
+    }
+    if (this.sortByValue === '类型' && this.sortDirectionValue === '升序') {
+      array = fileArray.sort((a, b) => a.type.localeCompare(b.type))
+    }
+    if (this.sortByValue === '类型' && this.sortDirectionValue === '降序') {
+      array = fileArray.sort((a, b) => b.type.localeCompare(a.type))
+    }
+    if (this.sortByValue === '修改时间' && this.sortDirectionValue === '升序') {
+      array = fileArray.sort((a, b) => a.modifyTime - b.modifyTime)
+    }
+    if (this.sortByValue === '修改时间' && this.sortDirectionValue === '降序') {
+      array = fileArray.sort((a, b) => b.modifyTime - a.modifyTime)
+    }
+    return array.filter(item => item.isdir).concat(array.filter(item => !item.isdir))
   }
 
   @Builder
@@ -298,27 +332,19 @@ export default struct Filelist {
                       message: '下载失败'
                     })
                   })
+                  this.totalSize = item.size
                   this.context.eventHub.on('cancelDownload', () => {
                     session.cancel()
                   })
-                  this.totalSize = item.size
                   this.isShowProgressSheet = true
                   try {
                     const response = await session.get(accountInfo.path + '/' + item.path)
                     if (response.statusCode !== 200) {
-                      this.isShowProgressSheet = false
-                      this.transferredSize = 0
-                      this.totalSize = 0
-                      this.context.eventHub.off('cancelDownload')
                       await promptAction.openToast({
                         message: 'HTTP 请求失败，状态码：' + response.statusCode
                       })
                     }
                   } catch (err) {
-                    this.isShowProgressSheet = false
-                    this.transferredSize = 0
-                    this.totalSize = 0
-                    this.context.eventHub.off('cancelDownload')
                     if (err.code !== 1007900992) {
                       await promptAction.openToast({
                         message: '下载失败，错误码：' + err.code
@@ -668,45 +694,77 @@ export default struct Filelist {
             })
             .width('100%')
           }
-          if (this.dirnames.length > 0) {
-            Column() {
-              Image($r('app.media.back'))
-            }
-            .borderRadius(20)
-            .height(40)
-            .padding(11)
-            .stateStyles({
-              normal: {
-                .backgroundColor($r('sys.color.interactive_hover'))
-              },
-              pressed: {
-                .backgroundColor($r('sys.color.interactive_pressed'))
+          Row() {
+            if (this.dirnames.length > 0) {
+              Column() {
+                Image($r('app.media.back'))
               }
-            })
-            .visualEffect(new hdsEffect.HdsEffectBuilder()
-              .pointLight({
-                sourceType: hdsEffect.PointLightSourceType.SOFT,
-                illuminatedType: hdsEffect.PointLightIlluminatedType.BORDER_CONTENT
+              .borderRadius(20)
+              .height(40)
+              .margin({
+                right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
               })
-              .buildEffect())
-            .width(40)
-            .onClick(() => {
-              this.dirnames.pop()
-              this.backDataPreferences.putSync('filelist', this.dirnames.length === 0 ? false : true)
-              this.loading = true
-            })
+              .padding(11)
+              .stateStyles({
+                normal: {
+                  .backgroundColor($r('sys.color.interactive_hover'))
+                },
+                pressed: {
+                  .backgroundColor($r('sys.color.interactive_pressed'))
+                }
+              })
+              .visualEffect(new hdsEffect.HdsEffectBuilder()
+                .pointLight({
+                  sourceType: hdsEffect.PointLightSourceType.SOFT,
+                  illuminatedType: hdsEffect.PointLightIlluminatedType.BORDER_CONTENT
+                })
+                .buildEffect())
+              .width(40)
+              .onClick(() => {
+                this.dirnames.pop()
+                this.backDataPreferences.putSync('filelist', this.dirnames.length === 0 ? false : true)
+                this.loading = true
+              })
+            }
+            Row() {
+              Select([
+                { value: '名称' },
+                { value: '大小' },
+                { value: '类型' },
+                { value: '修改时间' }
+              ])
+                .margin({
+                  right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
+                })
+                .selected(this.sortByIndex!!)
+                .value(this.sortByValue!!)
+                .onSelect(() => {
+                  this.fileArray = this.sortFileArray(this.fileArray)
+                })
+              Select([
+                { value: '升序' },
+                { value: '降序' }
+              ])
+                .selected(this.sortDirectionIndex!!)
+                .value(this.sortDirectionValue!!)
+                .onSelect(() => {
+                  this.fileArray = this.sortFileArray(this.fileArray)
+                })
+            }
           }
-          Column()
-            .bindSheet(this.isShowReaderSheet!!, this.ReaderSheetBuilder(), {
-              preferType: this.preferType,
-              title: {
-                title: this.srcName
-              },
-              onDisappear: () => {
-                this.src = ''
-                this.srcName = ''
-              }
-            })
+          .justifyContent(FlexAlign.SpaceBetween)
+          .width('100%')
+          .bindSheet(this.isShowReaderSheet!!, this.ReaderSheetBuilder(), {
+            preferType: this.preferType,
+            title: {
+              title: this.srcName
+            },
+            onDisappear: () => {
+              this.src = ''
+              this.srcName = ''
+            }
+          })
+
           Text() {
             ForEach(this.dirnames, (item: string, index) => {
               if (index !== 0) {
@@ -733,7 +791,7 @@ export default struct Filelist {
           }
           .enableAutoSpacing(true)
           .margin({
-            top: this.dirnames.length > 0 ? $r('sys.float.ohos_id_elements_margin_vertical_m') : 0
+            top: $r('sys.float.ohos_id_elements_margin_vertical_m')
           })
           .bindSheet(this.isShowPlayerSheet!!, this.PlayerSheetBuilder(), {
             preferType: this.preferType,
@@ -1305,29 +1363,21 @@ export default struct Filelist {
                               message: '下载失败'
                             })
                           })
+                          this.totalSize = item.size
                           this.context.eventHub.on('cancelDownload', () => {
                             session.cancel()
                           })
-                          this.totalSize = item.size
                           this.isShowProgressSheet = true
                           try {
                             const response = await session.get(accountInfo.path + '/' + item.path)
                             if (response.statusCode !== 200) {
                               await fileIo.unlink(filePath)
-                              this.isShowProgressSheet = false
-                              this.transferredSize = 0
-                              this.totalSize = 0
-                              this.context.eventHub.off('cancelDownload')
                               await promptAction.openToast({
                                 message: 'HTTP 请求失败，状态码：' + response.statusCode
                               })
                             }
                           } catch (err) {
                             await fileIo.unlink(filePath)
-                            this.isShowProgressSheet = false
-                            this.transferredSize = 0
-                            this.totalSize = 0
-                            this.context.eventHub.off('cancelDownload')
                             if (err.code !== 1007900992) {
                               await promptAction.openToast({
                                 message: '下载失败，错误码：' + err.code

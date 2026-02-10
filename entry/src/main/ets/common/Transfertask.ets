@@ -112,7 +112,6 @@ export async function download(context: Context, id: string) {
               await backgroundTaskManager.stopBackgroundRunning(context,
                 continuousTaskNotificationInfo.continuousTaskId)
               transferTask.status = 'success'
-              transferTaskDataPreferences.putSync(id, JSON.stringify(transferTask))
             }
           }
         },
@@ -139,24 +138,24 @@ export async function download(context: Context, id: string) {
       if (response.statusCode !== 200) {
         transferTask.status = 'fail'
         transferTask.errCode = response.statusCode
-        transferTaskDataPreferences.putSync(id, JSON.stringify(transferTask))
+      }
+      if (response.statusCode === 200) {
+        transferTask.status = 'success'
       }
     } catch (err) {
       if (err.code !== 1007900992) {
         transferTask.status = 'fail'
         transferTask.errCode = err.code
-        transferTaskDataPreferences.putSync(id, JSON.stringify(transferTask))
       }
       if (err.code === 1007900992) {
         transferTask.status = 'cancel'
-        transferTaskDataPreferences.putSync(id, JSON.stringify(transferTask))
       }
     }
   } catch (err) {
     transferTask.status = 'fail'
     transferTask.errCode = err.code
-    transferTaskDataPreferences.putSync(id, JSON.stringify(transferTask))
   }
+  transferTaskDataPreferences.putSync(id, JSON.stringify(transferTask))
 }
 
 @Concurrent
@@ -234,6 +233,9 @@ export async function upload(context: Context, id: string) {
               })
               await backgroundTaskManager.stopBackgroundRunning(context,
                 continuousTaskNotificationInfo.continuousTaskId)
+              if (transferTask.srcFileUri.endsWith('.mv.png')) {
+                await fileIo.unlink(new fileUri.FileUri(transferTask.srcFileUri).path)
+              }
             }
           }
         },
@@ -259,13 +261,9 @@ export async function upload(context: Context, id: string) {
       const response =
         await session.put(transferTask.accountInfo.path + '/' + encodePath(transferTask.path + '/' + transferTask.name),
           new rcp.UploadFromFile(fileUri.getUriFromPath(transferTask.srcFileUri)))
-      if (transferTask.srcFileUri.endsWith('.mv.png')) {
-        await fileIo.unlink(new fileUri.FileUri(transferTask.srcFileUri).path)
-      }
       if (response.statusCode !== 200) {
         transferTask.status = 'fail'
         transferTask.errCode = response.statusCode
-        transferTaskDataPreferences.putSync(id, JSON.stringify(transferTask))
         if (transferTask.backupTaskId) {
           await updateBackupTaskStatus(context, transferTask.accountInfo, transferTask.backupTaskId, false)
         }
@@ -289,27 +287,16 @@ export async function upload(context: Context, id: string) {
           await updateBackupTaskStatus(context, transferTask.accountInfo, transferTask.backupTaskId, false)
         }
       }
-      transferTaskDataPreferences.putSync(id, JSON.stringify(transferTask))
     } catch (err) {
-      if (transferTask.srcFileUri.endsWith('.mv.png')) {
-        await fileIo.unlink(new fileUri.FileUri(transferTask.srcFileUri).path)
-      }
-      session.close()
-      netBoost.setSceneDesc({
-        scene: 'upload',
-        sceneEvent: netBoost.SceneEvent.SCENE_EVENT_LEAVE
-      })
       if (err.code !== 1007900992) {
         transferTask.status = 'fail'
         transferTask.errCode = err.code
-        transferTaskDataPreferences.putSync(id, JSON.stringify(transferTask))
         if (transferTask.backupTaskId) {
           await updateBackupTaskStatus(context, transferTask.accountInfo, transferTask.backupTaskId, false)
         }
       }
       if (err.code === 1007900992) {
         transferTask.status = 'cancel'
-        transferTaskDataPreferences.putSync(id, JSON.stringify(transferTask))
         if (transferTask.backupTaskId) {
           await updateBackupTaskStatus(context, transferTask.accountInfo, transferTask.backupTaskId, false)
         }
@@ -318,9 +305,9 @@ export async function upload(context: Context, id: string) {
   } catch (err) {
     transferTask.status = 'fail'
     transferTask.errCode = err.code
-    transferTaskDataPreferences.putSync(id, JSON.stringify(transferTask))
     if (transferTask.backupTaskId) {
       await updateBackupTaskStatus(context, transferTask.accountInfo, transferTask.backupTaskId, false)
     }
   }
+  transferTaskDataPreferences.putSync(id, JSON.stringify(transferTask))
 }
