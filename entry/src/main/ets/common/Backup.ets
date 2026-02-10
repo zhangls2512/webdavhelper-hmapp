@@ -1,11 +1,13 @@
 import { dataSharePredicates, preferences } from '@kit.ArkData'
-import { util } from '@kit.ArkTS'
+import { taskpool, util } from '@kit.ArkTS'
 import { deviceInfo, zlib } from '@kit.BasicServicesKit'
 import { Environment, fileIo, fileUri } from '@kit.CoreFileKit'
 import { photoAccessHelper } from '@kit.MediaLibraryKit'
 import { AccountInfo, getAccountHash, getAccountInfo } from './Account'
 import { read, write } from './File'
 import { getPermission } from './Permission'
+import { sha256hash } from './Hash'
+import { JsErrorObject } from '../entryability/EntryAbility'
 import { BackupSetting } from '../pages/Backupsetting'
 
 export interface BackupTask {
@@ -22,6 +24,7 @@ interface AlbumItem {
   name: string
 }
 
+@Concurrent
 export async function startBackupTask(context: Context, id: string) {
   const accountInfo = await getAccountInfo()
   if (accountInfo.id) {
@@ -97,7 +100,20 @@ export async function generateBackupTaskList(context: Context, type: string) {
       const fileNames = await fileIo.listFile(dirPath)
       const promises = fileNames.map(async (item) => {
         const filestring = await read(dirPath + item)
-        backupTaskArray.push(JSON.parse(filestring))
+        try {
+          backupTaskArray.push(JSON.parse(filestring))
+        } catch (err) {
+          const object: JsErrorObject = {
+            name: 'JS_ERROR',
+            info: {
+              name: err.name,
+              message: err.message,
+              stack: err.stack
+            }
+          }
+          await write(context.filesDir + '/log/error/' + Date.now() + '.txt', JSON.stringify(object))
+          await write(context.filesDir + '/log/damagejson/' + sha256hash(filestring) + '.txt', filestring)
+        }
       })
       await Promise.all(promises)
     }
@@ -150,7 +166,7 @@ export async function generateBackupTaskList(context: Context, type: string) {
                 type: type,
                 srcFileUri: item.uri,
                 modifyTime: item.get('date_modified') as number,
-                path: '/home/Photos/backup/' + deviceInfo.marketName + albumName,
+                path: '/相册备份/' + deviceInfo.marketName + albumName,
                 status: 'pending'
               })
               await write(dirPath + id + '.txt', JSON.stringify({
@@ -158,7 +174,7 @@ export async function generateBackupTaskList(context: Context, type: string) {
                 type: type,
                 srcFileUri: item.uri,
                 modifyTime: item.get('date_modified') as number,
-                path: '/home/Photos/backup/' + deviceInfo.marketName + albumName,
+                path: '/相册备份/' + deviceInfo.marketName + albumName,
                 status: 'pending'
               }))
             }
@@ -198,7 +214,7 @@ export async function generateBackupTaskList(context: Context, type: string) {
                     type: type,
                     srcFileUri: uri,
                     modifyTime: item.get('date_modified') as number,
-                    path: '/home/Photos/backup/' + deviceInfo.marketName + albumName,
+                    path: '/相册备份/' + deviceInfo.marketName + albumName,
                     status: 'pending'
                   })
                   await write(dirPath + id + '.txt', JSON.stringify({
@@ -206,7 +222,7 @@ export async function generateBackupTaskList(context: Context, type: string) {
                     type: type,
                     srcFileUri: uri,
                     modifyTime: item.get('date_modified') as number,
-                    path: '/home/Photos/backup/' + deviceInfo.marketName + albumName,
+                    path: '/相册备份/' + deviceInfo.marketName + albumName,
                     status: 'pending'
                   }))
                   await startBackupTask(context, id)
@@ -252,7 +268,7 @@ export async function generateBackupTaskList(context: Context, type: string) {
             type: type,
             srcFileUri: uri,
             modifyTime: stat.mtime,
-            path: '/home/' + type + '备份/' + deviceInfo.marketName + '/' + item.substring(0, item.lastIndexOf('/')),
+            path: '/' + type + '备份/' + deviceInfo.marketName + '/' + item.substring(0, item.lastIndexOf('/')),
             status: 'pending'
           })
           await write(dirPath + id + '.txt', JSON.stringify({
@@ -260,7 +276,7 @@ export async function generateBackupTaskList(context: Context, type: string) {
             type: type,
             srcFileUri: uri,
             modifyTime: stat.mtime,
-            path: '/home/' + type + '备份/' + deviceInfo.marketName + '/' + item.substring(0, item.lastIndexOf('/')),
+            path: '/' + type + '备份/' + deviceInfo.marketName + '/' + item.substring(0, item.lastIndexOf('/')),
             status: 'pending'
           }))
         }
@@ -268,7 +284,8 @@ export async function generateBackupTaskList(context: Context, type: string) {
     }
     const promises = backupTaskArray.map(async (item) => {
       if (item.type === type && item.status === 'pending') {
-        await startBackupTask(context, item.id)
+        const task = new taskpool.Task(startBackupTask, context, item.id)
+        await taskpool.execute(task)
       }
     })
     await Promise.all(promises)

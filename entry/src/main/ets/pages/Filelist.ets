@@ -1062,7 +1062,7 @@ export default struct Filelist {
                           .width('85%')
                         Text() {
                           Span(getTimeString(item.modifyTime))
-                          if (item.size && !item.isdir) {
+                          if (item.size >= 0) {
                             Span(' - ' + getSizeString(item.size))
                           }
                         }
@@ -1122,6 +1122,7 @@ export default struct Filelist {
                           this.src = accountInfo.path + '/' + item.path
                           this.srcName = item.name
                           this.isShowPlayerSheet = true
+                          return
                         }
                         if (item.size > Math.pow(1024, 3)) {
                           await promptAction.openToast({

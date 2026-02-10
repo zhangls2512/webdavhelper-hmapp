@@ -38,7 +38,7 @@ export default struct Renamefile {
                 })
               })
               dialogControllerProgress.open()
-              const res = await rn(this.context, this.editPath, this.editName)
+              const res = await rn(this.context, this.editPath, this.name)
               dialogControllerProgress.close()
               if (res !== 'fail') {
                 await promptAction.openToast({

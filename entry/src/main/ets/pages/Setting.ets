@@ -365,10 +365,13 @@ export default struct Setting {
                   this.hoverId = 4
                 }
               })
-              .onClick(() => {
-                this.pageInfos.pushPath({
-                  name: 'Backupsetting'
+              .onClick(async () => {
+                await promptAction.openToast({
+                  message: '敬请期待'
                 })
+                /*this.pageInfos.pushPath({
+                  name: 'Backupsetting'
+                })*/
               })
             }
             .backgroundColor($r('sys.color.ohos_id_color_card_bg'))

@@ -27,7 +27,7 @@ import { write } from '../common/File'
 import { getCurrentNetworkBearerType } from '../common/Network'
 import openLink from '../common/Openlink'
 
-interface JsErrorObject {
+export interface JsErrorObject {
   name: string,
   info: Error
 }

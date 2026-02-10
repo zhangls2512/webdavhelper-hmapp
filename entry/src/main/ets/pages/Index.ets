@@ -57,7 +57,7 @@ struct Index {
   })
 
   onBackPress() {
-    if (this.index === 1) {
+    if (this.index === 0) {
       const filelist = this.backDataPreferences.getSync('filelist', false)
       if (!filelist) {
         return false
@@ -159,7 +159,7 @@ struct Index {
           Me()
             .height('100%')
         }
-        .tabBar(this.tabBuilder(3, $r('app.media.me'), '我的'))
+        .tabBar(this.tabBuilder(2, $r('app.media.me'), '我的'))
       }
       .barBackgroundBlurStyle(BlurStyle.Regular)
       .barPosition(this.preferType === 0 ? BarPosition.End : BarPosition.Start)

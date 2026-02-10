@@ -10,6 +10,7 @@ import { deleteBackupTask, updateBackupTaskStatus } from './Backup'
 import { getDnsServer } from './Dnsserver'
 import { getPermission } from './Permission'
 import { getSizeString } from './Stringformat'
+import { encodePath } from './Webdav'
 import { TransferTaskItem } from '../pages/Index'
 
 @Concurrent
@@ -255,8 +256,9 @@ export async function upload(context: Context, id: string) {
       session.cancel()
     })
     try {
-      const response = await session.uploadFromFile(transferTask.accountInfo.path + '/' + transferTask.path,
-        new rcp.UploadFromFile(fileUri.getUriFromPath(transferTask.srcFileUri)))
+      const response =
+        await session.put(transferTask.accountInfo.path + '/' + encodePath(transferTask.path + '/' + transferTask.name),
+          new rcp.UploadFromFile(fileUri.getUriFromPath(transferTask.srcFileUri)))
       if (transferTask.srcFileUri.endsWith('.mv.png')) {
         await fileIo.unlink(new fileUri.FileUri(transferTask.srcFileUri).path)
       }
