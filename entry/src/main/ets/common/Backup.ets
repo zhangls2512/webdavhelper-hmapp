@@ -112,7 +112,7 @@ export async function generateBackupTaskList(context: Context, type: string) {
             }
           }
           await write(context.filesDir + '/log/error/' + Date.now() + '.txt', JSON.stringify(object))
-          await write(context.filesDir + '/log/damagejson/' + sha256hash(filestring) + '.txt', filestring)
+          await write(context.filesDir + '/log/damagedjson/' + sha256hash(filestring) + '.txt', filestring)
         }
       })
       await Promise.all(promises)
