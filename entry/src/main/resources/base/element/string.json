@@ -13,10 +13,6 @@
       "value": "用于设备间同步账号数据。"
     },
     {
-      "name": "MEDIA_LOCATION_reason",
-      "value": "用于上传保留地理位置信息的图片、视频到用户WebDAV网盘。"
-    },
-    {
       "name": "READ_WRITE_DOWNLOAD_DIRECTORY_reason",
       "value": "用于批量下载文件到公共下载目录。"
     },

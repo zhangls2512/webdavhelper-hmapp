@@ -164,16 +164,6 @@
         }
       },
       {
-        "name": "ohos.permission.MEDIA_LOCATION",
-        "reason": "$string:MEDIA_LOCATION_reason",
-        "usedScene": {
-          "abilities": [
-            "EntryAbility"
-          ],
-          "when": "inuse"
-        }
-      },
-      {
         "name": "ohos.permission.READ_WRITE_DOWNLOAD_DIRECTORY",
         "reason": "$string:READ_WRITE_DOWNLOAD_DIRECTORY_reason",
         "usedScene": {
