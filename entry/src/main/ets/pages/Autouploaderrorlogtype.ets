@@ -14,8 +14,8 @@ export function AutouploaderrorlogtypeBuilder() {
 
 @ComponentV2
 struct Autouploaderrorlogtype {
-  @Local autoUploadErrorLogType: string[] = []
   context = this.getUIContext().getHostContext()
+  autoUploadErrorLogType: string[] = []
   debugSettingDataPreferences = preferences.getPreferencesSync(this.context, {
     name: 'debugSetting'
   })
@@ -25,20 +25,12 @@ struct Autouploaderrorlogtype {
       value: 'JS_ERROR'
     },
     {
-      name: '应用崩溃',
+      name: '崩溃',
       value: 'APP_CRASH'
     },
     {
       name: '应用冻屏',
       value: 'APP_FREEZE'
-    },
-    {
-      name: '应用查杀',
-      value: 'APP_KILLED'
-    },
-    {
-      name: '应用启动耗时',
-      value: 'APP_LAUNCH'
     },
     {
       name: '资源泄漏',
@@ -53,6 +45,22 @@ struct Autouploaderrorlogtype {
       value: 'MAIN_THREAD_JANK'
     },
     {
+      name: '任务执行超时',
+      value: 'APP_HICOLLIE'
+    },
+    {
+      name: '应用终止',
+      value: 'APP_KILLED'
+    },
+    {
+      name: 'ArkWeb抛滑丢帧',
+      value: 'SCROLL_ARKWEB_FLING_JANK'
+    },
+    {
+      name: '启动耗时',
+      value: 'APP_LAUNCH'
+    },
+    {
       name: '滑动丢帧',
       value: 'SCROLL_JANK'
     },
@@ -63,18 +71,16 @@ struct Autouploaderrorlogtype {
     {
       name: '24小时功耗器件分解统计',
       value: 'BATTERY_USAGE'
+    },
+    {
+      name: '音频卡顿',
+      value: 'AUDIO_JANK_FRAME'
     }
   ]
 
   getSetting() {
-    this.autoUploadErrorLogType = this.debugSettingDataPreferences.getSync('autoUploadErrorLogType', [
-      'JS_ERROR',
-      'APP_CRASH',
-      'APP_FREEZE',
-      'APP_KILLED',
-      'RESOURCE_OVERLIMIT',
-      'ADDRESS_SANITIZER'
-    ]) as string[]
+    this.autoUploadErrorLogType =
+      this.debugSettingDataPreferences.getSync('autoUploadErrorLogType', ['JS_ERROR', 'APP_CRASH']) as string[]
   }
 
   build() {

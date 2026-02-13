@@ -18,7 +18,6 @@ struct Debugsetting {
   @Local deleteErrorLogBeforeUpdateTimeWhenAppLaunch: boolean = false
   @Local autoUploadErrorLog: boolean = false
   @Local showMemoryLevelChange: boolean = false
-  @Local processCache: boolean = false
   @Local showNetAvailableStatusChange: boolean = false
   @Local showNetBlockStatusChange: boolean = false
   @Local showNetLost: boolean = false
@@ -36,6 +35,7 @@ struct Debugsetting {
   UIContext = this.getUIContext()
   context = this.UIContext.getHostContext() as common.UIAbilityContext
   pageInfos = new NavPathStack()
+  processCache = false
   commonSettingDataPreferences = preferences.getPreferencesSync(this.context, {
     name: 'commonSetting'
   })

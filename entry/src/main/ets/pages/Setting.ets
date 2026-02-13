@@ -17,7 +17,6 @@ import { getSizeString } from '../common/Stringformat'
 export default struct Setting {
   @Local allService: boolean = false
   @Local agreedPrivacyAgreement: number | undefined = undefined
-  @Local accountDataSync: boolean = false
   @Local accountDataSyncEnabled: boolean = false
   @Local isLogin: boolean = false
   @Local accountCount: number = -1
@@ -25,6 +24,7 @@ export default struct Setting {
   UIContext = this.getUIContext()
   context = this.UIContext.getHostContext() as common.UIAbilityContext
   pageInfos = new NavPathStack()
+  accountDataSync = false
 
   async getSetting() {
     const commonSettingDataPreferences = preferences.getPreferencesSync(this.context, {
@@ -330,7 +330,7 @@ export default struct Setting {
           top: $r('sys.float.ohos_id_elements_margin_vertical_m')
         })
 
-        if (this.isLogin) {
+        /*if (this.isLogin) {
           ListItem() {
             Column() {
               Row() {
@@ -366,12 +366,9 @@ export default struct Setting {
                 }
               })
               .onClick(async () => {
-                await promptAction.openToast({
-                  message: '敬请期待'
-                })
-                /*this.pageInfos.pushPath({
+                this.pageInfos.pushPath({
                   name: 'Backupsetting'
-                })*/
+                })
               })
             }
             .backgroundColor($r('sys.color.ohos_id_color_card_bg'))
@@ -381,7 +378,7 @@ export default struct Setting {
           .margin({
             top: $r('sys.float.ohos_id_elements_margin_vertical_l')
           })
-        }
+        }*/
 
         ListItem() {
           Column() {

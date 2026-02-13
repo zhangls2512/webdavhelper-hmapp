@@ -5,8 +5,8 @@ export default struct Progresssheet {
   @Consumer() isShowProgressSheet: boolean = false
   @Consumer() transferredSize: number = 0
   @Consumer() totalSize: number = 0
-  @Local oneSecondBeforeTransferredSize: number = 0
   @Local oneSecondTransferredSize: number = 0
+  oneSecondBeforeTransferredSize = 0
   intervalId = -1
 
   getSizeString(size: number) {

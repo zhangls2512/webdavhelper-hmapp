@@ -2,8 +2,7 @@ import { common } from '@kit.AbilityKit'
 import { bookParser, readerCore, ReadPageComponent } from '@kit.ReaderKit'
 
 @ComponentV2
-export default struct Player {
-  @Consumer() isShowReaderSheet: boolean = false
+export default struct Reader {
   @Param src: string = ''
   context = this.getUIContext().getHostContext() as common.UIAbilityContext
   readerComponentController = new readerCore.ReaderComponentController()

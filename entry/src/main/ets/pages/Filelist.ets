@@ -26,12 +26,12 @@ import Renamefile from './Renamefile'
 @ComponentV2
 export default struct Filelist {
   @Provider() isShowNewfolderSheet: boolean = false
-  @Provider() isShowPlayerSheet: boolean = false
-  @Provider() isShowReaderSheet: boolean = false
   @Provider() isShowProgressSheet: boolean = false
   @Provider() isShowRenamefileSheet: boolean = false
   @Provider() transferredSize: number = 0
   @Provider() totalSize: number = 0
+  @Local isShowPlayerSheet: boolean = false
+  @Local isShowReaderSheet: boolean = false
   @Local preferType: number = 1
   @Local loading: boolean = false
   @Local fileArray: FileItem[] = []
@@ -766,19 +766,16 @@ export default struct Filelist {
           })
 
           Text() {
+            Span(' / ')
+              .fontColor($r('sys.color.font_emphasize'))
+              .onClick(() => {
+                this.dirnames = []
+                this.backDataPreferences.putSync('filelist', false)
+                this.loading = true
+              })
             ForEach(this.dirnames, (item: string, index) => {
               if (index !== 0) {
                 Span('/ ')
-              }
-              if (index === 0) {
-                Span('根目录')
-                  .fontColor($r('sys.color.font_emphasize'))
-                  .onClick(() => {
-                    this.dirnames = []
-                    this.backDataPreferences.putSync('filelist', false)
-                    this.loading = true
-                  })
-                Span(' / ')
               }
               Span(item + ' ')
                 .fontColor($r('sys.color.font_emphasize'))

@@ -6,7 +6,6 @@ import { getAccountAuthorization } from '../common/Account'
 
 @ComponentV2
 export default struct Player {
-  @Consumer() isShowPlayerSheet: boolean = false
   @Param src: string = ''
   @Local isVideo: boolean = true
   @Local videoHeight: number = 100

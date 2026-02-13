@@ -56,6 +56,7 @@
     "@performance/foreach-args-check": "off",
     "@performance/init-list-component": "off",
     "@performance/js-code-cache-by-precompile-check": "off",
+    "@performance/state-variable-usage-in-ui-format-check": "warn",
     "@cross-device-app-dev/color-contrast": "off",
     "@cross-device-app-dev/color-value": "off",
     "@cross-device-app-dev/one-multi-breakpoint-check": "off",

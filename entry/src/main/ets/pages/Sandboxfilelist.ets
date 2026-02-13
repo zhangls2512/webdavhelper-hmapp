@@ -215,18 +215,15 @@ struct Sandboxfilelist {
         Column() {
           if (this.dirnames.length > 0) {
             Text() {
+              Span(' / ')
+                .fontColor($r('sys.color.font_emphasize'))
+                .onClick(async () => {
+                  this.dirnames = []
+                  await this.get()
+                })
               ForEach(this.dirnames, (item: string, index) => {
                 if (index !== 0) {
                   Span('/ ')
-                }
-                if (index === 0) {
-                  Span('根目录')
-                    .fontColor($r('sys.color.font_emphasize'))
-                    .onClick(async () => {
-                      this.dirnames = []
-                      await this.get()
-                    })
-                  Span(' / ')
                 }
                 Span(item + ' ')
                   .fontColor($r('sys.color.font_emphasize'))

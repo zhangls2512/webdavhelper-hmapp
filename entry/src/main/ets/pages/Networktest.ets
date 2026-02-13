@@ -57,11 +57,7 @@ struct Networktest {
                   session.close()
                   dialogControllerProgress.close()
                   if (response.statusCode === 200) {
-                    let body = ''
-                    if (response.toString()) {
-                      body = response.toString() as string
-                    }
-                    const res = JSON.parse(body) as Response
+                    const res = response.toJSON() as Response
                     this.errCode = res.errCode
                     this.errMsg = res.errMsg
                     this.requestIp = res.requestIp

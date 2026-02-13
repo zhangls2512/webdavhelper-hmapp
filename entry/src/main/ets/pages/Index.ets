@@ -4,7 +4,7 @@ import { taskpool } from '@kit.ArkTS'
 import { display } from '@kit.ArkUI'
 import { fileIo } from '@kit.CoreFileKit'
 import { image } from '@kit.ImageKit'
-import { HdsTabs, HdsTabsController } from '@kit.UIDesignKit'
+import { hdsMaterial, HdsTabs, HdsTabsController } from '@kit.UIDesignKit'
 import { AccountInfo, importAccounts } from '../common/Account'
 import { getCurrentNetworkBearerType } from '../common/Network'
 import { getPreferType } from '../common/Prefertype'
@@ -141,6 +141,9 @@ struct Index {
 
         TabContent() {
           Filelist()
+            .padding({
+              bottom: this.preferType === 0 ? 64 : 0
+            })
         }
         .tabBar(this.tabBuilder(0, $r('app.media.file'), '文件'))
         .bindSheet(this.isShowNoticeSheet!!, this.NoticeSheetBuilder(), {
@@ -152,18 +155,34 @@ struct Index {
 
         TabContent() {
           Transfer()
+            .padding({
+              bottom: this.preferType === 0 ? 64 : 0
+            })
         }
         .tabBar(this.tabBuilder(1, $r('app.media.transfer'), '传输'))
 
         TabContent() {
           Me()
             .height('100%')
+            .padding({
+              bottom: this.preferType === 0 ? 64 : 0
+            })
         }
         .tabBar(this.tabBuilder(2, $r('app.media.me'), '我的'))
       }
       .barBackgroundBlurStyle(BlurStyle.Regular)
+      .barFloatingStyle({
+        barBottomMargin: 8,
+        adaptToHandedness: true,
+        thermoCtrl: true,
+        systemMaterialEffect: {
+          materialType: hdsMaterial.MaterialType.ADAPTIVE,
+          materialLevel: hdsMaterial.MaterialLevel.ADAPTIVE
+        }
+      })
+      .barOverlap(this.preferType === 0 ? true : false)
       .barPosition(this.preferType === 0 ? BarPosition.End : BarPosition.Start)
-      .barWidth(this.preferType === 0 ? '100%' : 56)
+      .barWidth(this.preferType === 0 ? 240 : 56)
       .scrollable(false)
       .vertical(this.preferType === 0 ? false : true)
       .onChange((index) => {
