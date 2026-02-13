@@ -1,6 +1,6 @@
 import { LengthMetrics, promptAction } from '@kit.ArkUI'
 import { pushService } from '@kit.PushKit'
-import { HdsNavDestination } from '@kit.UIDesignKit'
+import { hdsMaterial, HdsNavDestination } from '@kit.UIDesignKit'
 
 @Builder
 export function InfolistBuilder() {
@@ -460,6 +460,13 @@ struct Infolist {
     .titleBar({
       padding: {
         end: LengthMetrics.vp(60)
+      },
+      style: {
+        thermoCtrl: true,
+        systemMaterialEffect: {
+          materialType: hdsMaterial.MaterialType.ADAPTIVE,
+          materialLevel: hdsMaterial.MaterialLevel.ADAPTIVE
+        }
       },
       content: {
         title: {

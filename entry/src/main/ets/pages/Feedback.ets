@@ -1,6 +1,6 @@
 import { common } from '@kit.AbilityKit'
 import { LengthMetrics, LoadingDialog, promptAction } from '@kit.ArkUI'
-import { HdsNavDestination } from '@kit.UIDesignKit'
+import { hdsMaterial, HdsNavDestination } from '@kit.UIDesignKit'
 import { developerRequest } from '../common/Request'
 
 @Builder
@@ -141,6 +141,13 @@ struct Feedback {
     .titleBar({
       padding: {
         end: LengthMetrics.vp(60)
+      },
+      style: {
+        thermoCtrl: true,
+        systemMaterialEffect: {
+          materialType: hdsMaterial.MaterialType.ADAPTIVE,
+          materialLevel: hdsMaterial.MaterialLevel.ADAPTIVE
+        }
       },
       content: {
         title: {

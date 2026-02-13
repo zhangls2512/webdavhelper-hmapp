@@ -1,6 +1,6 @@
 import { LengthMetrics, promptAction } from '@kit.ArkUI'
 import { netQuality } from '@kit.NetworkBoostKit'
-import { HdsNavDestination } from '@kit.UIDesignKit'
+import { hdsMaterial, HdsNavDestination } from '@kit.UIDesignKit'
 
 @Builder
 export function ReportQoeBuilder() {
@@ -226,6 +226,13 @@ struct ReportQoe {
     .titleBar({
       padding: {
         end: LengthMetrics.vp(60)
+      },
+      style: {
+        thermoCtrl: true,
+        systemMaterialEffect: {
+          materialType: hdsMaterial.MaterialType.ADAPTIVE,
+          materialLevel: hdsMaterial.MaterialLevel.ADAPTIVE
+        }
       },
       content: {
         title: {

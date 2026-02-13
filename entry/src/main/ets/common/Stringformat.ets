@@ -1,8 +1,12 @@
-export function getTimeString(timeStamp: number) {
-  const date = new Date(timeStamp * 1000)
+export function getTimeStringFromTimeStamp(timeStamp: number): string {
+  const date = new Date(timeStamp)
   return date.getFullYear() + '/' + String(date.getMonth() + 1).padStart(2, '0') + '/' +
   String(date.getDate()).padStart(2, '0') + ' ' + String(date.getHours()).padStart(2, '0') + ':' +
   String(date.getMinutes()).padStart(2, '0') + ':' + String(date.getSeconds()).padStart(2, '0')
+}
+
+export function getTimeStringFromSecond(second: number) {
+  return getTimeStringFromTimeStamp(second * 1000)
 }
 
 export function getSizeString(size: number) {

@@ -15,7 +15,7 @@ import { getFileTypeIcon } from '../common/File'
 import { sha256hash } from '../common/Hash'
 import { getCurrentNetworkBearerType } from '../common/Network'
 import { getPreferType } from '../common/Prefertype'
-import { getSizeString, getTimeString } from '../common/Stringformat'
+import { getSizeString, getTimeStringFromTimeStamp } from '../common/Stringformat'
 import { cp, FileItem, ls, mv, rm } from '../common/Webdav'
 import Newfolder from './Newfolder'
 import Player from './Player'
@@ -845,9 +845,6 @@ export default struct Filelist {
               }
               .borderRadius(20)
               .height(40)
-              .margin({
-                right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
-              })
               .padding(11)
               .stateStyles({
                 normal: {
@@ -1116,7 +1113,7 @@ export default struct Filelist {
                           .fontWeight(FontWeight.Medium)
                           .width('85%')
                         Text() {
-                          Span(getTimeString(item.modifyTime))
+                          Span(getTimeStringFromTimeStamp(item.modifyTime))
                           if (item.size >= 0) {
                             Span(' - ' + getSizeString(item.size))
                           }

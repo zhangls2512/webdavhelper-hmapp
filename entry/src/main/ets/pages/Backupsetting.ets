@@ -2,7 +2,7 @@ import { common } from '@kit.AbilityKit'
 import { preferences } from '@kit.ArkData'
 import { LengthMetrics, LoadingDialog, promptAction } from '@kit.ArkUI'
 import { deviceInfo } from '@kit.BasicServicesKit'
-import { HdsNavDestination } from '@kit.UIDesignKit'
+import { hdsMaterial, HdsNavDestination } from '@kit.UIDesignKit'
 import { getAccountHash, getAccountInfo } from '../common/Account'
 import { generateBackupTaskList } from '../common/Backup'
 import { read, write } from '../common/File'
@@ -303,6 +303,13 @@ struct Backupsetting {
     .titleBar({
       padding: {
         end: LengthMetrics.vp(60)
+      },
+      style: {
+        thermoCtrl: true,
+        systemMaterialEffect: {
+          materialType: hdsMaterial.MaterialType.ADAPTIVE,
+          materialLevel: hdsMaterial.MaterialLevel.ADAPTIVE
+        }
       },
       content: {
         title: {

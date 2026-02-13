@@ -1,6 +1,6 @@
 import { preferences } from '@kit.ArkData'
 import { LengthMetrics } from '@kit.ArkUI'
-import { HdsNavDestination } from '@kit.UIDesignKit'
+import { hdsMaterial, HdsNavDestination } from '@kit.UIDesignKit'
 
 interface Type {
   name: string,
@@ -142,6 +142,13 @@ struct Autouploaderrorlogtype {
     .titleBar({
       padding: {
         end: LengthMetrics.vp(60)
+      },
+      style: {
+        thermoCtrl: true,
+        systemMaterialEffect: {
+          materialType: hdsMaterial.MaterialType.ADAPTIVE,
+          materialLevel: hdsMaterial.MaterialLevel.ADAPTIVE
+        }
       },
       content: {
         title: {

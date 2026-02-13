@@ -2,7 +2,7 @@ import { common } from '@kit.AbilityKit'
 import { privacyManager } from '@kit.AppGalleryKit'
 import { preferences } from '@kit.ArkData'
 import { LengthMetrics, promptAction } from '@kit.ArkUI'
-import { HdsNavDestination } from '@kit.UIDesignKit'
+import { hdsMaterial, HdsNavDestination } from '@kit.UIDesignKit'
 
 @Builder
 export function ServicemodeBuilder() {
@@ -141,6 +141,13 @@ struct Servicemode {
     .titleBar({
       padding: {
         end: LengthMetrics.vp(60)
+      },
+      style: {
+        thermoCtrl: true,
+        systemMaterialEffect: {
+          materialType: hdsMaterial.MaterialType.ADAPTIVE,
+          materialLevel: hdsMaterial.MaterialLevel.ADAPTIVE
+        }
       },
       content: {
         title: {

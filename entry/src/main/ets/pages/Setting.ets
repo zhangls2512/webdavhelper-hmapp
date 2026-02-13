@@ -6,7 +6,7 @@ import { appAccount, deviceInfo } from '@kit.BasicServicesKit'
 import { fileIo, fileUri, picker } from '@kit.CoreFileKit'
 import { formProvider } from '@kit.FormKit'
 import { harmonyShare, systemShare } from '@kit.ShareKit'
-import { HdsNavigation, HdsNavigationTitleMode } from '@kit.UIDesignKit'
+import { hdsMaterial, HdsNavigation, HdsNavigationTitleMode } from '@kit.UIDesignKit'
 import { getAccountInfo, getAccountList, getLoginStatus, importAccounts } from '../common/Account'
 import { write, writeUri } from '../common/File'
 import openLink from '../common/Openlink'
@@ -1095,6 +1095,13 @@ export default struct Setting {
     .titleBar({
       padding: {
         end: LengthMetrics.vp(60)
+      },
+      style: {
+        thermoCtrl: true,
+        systemMaterialEffect: {
+          materialType: hdsMaterial.MaterialType.ADAPTIVE,
+          materialLevel: hdsMaterial.MaterialLevel.ADAPTIVE
+        }
       },
       content: {
         title: {

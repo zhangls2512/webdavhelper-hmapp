@@ -2,9 +2,10 @@ import { common } from '@kit.AbilityKit'
 import { LengthMetrics } from '@kit.ArkUI'
 import { fileIo } from '@kit.CoreFileKit'
 import { hiAppEvent } from '@kit.PerformanceAnalysisKit'
-import { HdsNavDestination } from '@kit.UIDesignKit'
+import { hdsMaterial, HdsNavDestination } from '@kit.UIDesignKit'
 import { read } from '../common/File'
 import copy from '../common/Pasteboard'
+import { getTimeStringFromTimeStamp } from '../common/Stringformat'
 
 interface ErrorLogItem {
   type: string,
@@ -51,7 +52,7 @@ struct Errorlog {
           this.errorLogArray.push({
             type: errorLog.name,
             content: filestring,
-            time: String(new Date(Number(item.replace(errorLogDir, '').replace('.txt', '')))),
+            time: getTimeStringFromTimeStamp(Number(item.replace(errorLogDir, '').replace('.txt', ''))),
             externalLog: externalLog
           })
         } catch {
@@ -88,7 +89,7 @@ struct Errorlog {
             this.errorLogArray.push({
               type: errorLog.name,
               content: filestring,
-              time: String(new Date(Number(item.replace(errorLogDir, '').replace('.txt', '')))),
+              time: getTimeStringFromTimeStamp(Number(item.replace(errorLogDir, '').replace('.txt', ''))),
               externalLog: externalLog
             })
           }
@@ -338,6 +339,13 @@ struct Errorlog {
     .titleBar({
       padding: {
         end: LengthMetrics.vp(60)
+      },
+      style: {
+        thermoCtrl: true,
+        systemMaterialEffect: {
+          materialType: hdsMaterial.MaterialType.ADAPTIVE,
+          materialLevel: hdsMaterial.MaterialLevel.ADAPTIVE
+        }
       },
       content: {
         title: {

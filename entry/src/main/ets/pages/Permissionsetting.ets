@@ -3,7 +3,7 @@ import { preferences } from '@kit.ArkData'
 import { LengthMetrics } from '@kit.ArkUI'
 import { deviceInfo } from '@kit.BasicServicesKit'
 import { policy } from '@kit.NetworkKit'
-import { HdsNavDestination } from '@kit.UIDesignKit'
+import { hdsMaterial, HdsNavDestination } from '@kit.UIDesignKit'
 import { getPermission } from '../common/Permission'
 
 @Builder
@@ -280,6 +280,13 @@ struct Permissionsetting {
     .titleBar({
       padding: {
         end: LengthMetrics.vp(60)
+      },
+      style: {
+        thermoCtrl: true,
+        systemMaterialEffect: {
+          materialType: hdsMaterial.MaterialType.ADAPTIVE,
+          materialLevel: hdsMaterial.MaterialLevel.ADAPTIVE
+        }
       },
       content: {
         title: {

@@ -2,7 +2,7 @@ import { common } from '@kit.AbilityKit'
 import { commentManager, updateManager } from '@kit.AppGalleryKit'
 import { LengthMetrics, promptAction } from '@kit.ArkUI'
 import { call } from '@kit.TelephonyKit'
-import { HdsNavDestination } from '@kit.UIDesignKit'
+import { hdsMaterial, HdsNavDestination } from '@kit.UIDesignKit'
 import openLink from '../common/Openlink'
 import copy from '../common/Pasteboard'
 
@@ -890,6 +890,13 @@ struct About {
     .titleBar({
       padding: {
         end: LengthMetrics.vp(60)
+      },
+      style: {
+        thermoCtrl: true,
+        systemMaterialEffect: {
+          materialType: hdsMaterial.MaterialType.ADAPTIVE,
+          materialLevel: hdsMaterial.MaterialLevel.ADAPTIVE
+        }
       },
       content: {
         title: {

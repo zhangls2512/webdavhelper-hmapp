@@ -43,7 +43,7 @@ export async function ls(context: Context, path: string) {
                 name: decodeURIComponent(name).substring(decodeURIComponent(name).lastIndexOf('/') + 1),
                 isdir: isdir,
                 size: size,
-                modifyTime: Date.parse(modifyTimeMatch[1]) / 1000,
+                modifyTime: Date.parse(modifyTimeMatch[1]),
                 type: name.substring(name.lastIndexOf('.') + 1)
               })
             }
