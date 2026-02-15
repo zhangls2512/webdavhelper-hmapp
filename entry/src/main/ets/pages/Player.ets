@@ -56,7 +56,6 @@ export default struct Player {
         }
         .height(this.videoHeight)
       }
-
       ListItem() {
         Row() {
           if (this.state !== 'idle' && this.state !== 'initialized' && this.state !== 'stopped' && this.time >= 15) {
@@ -119,7 +118,14 @@ export default struct Player {
             .onClick(async () => {
               if (this.state === 'stopped') {
                 this.dialogControllerProgress.open()
-                await this.avPlayer?.prepare()
+                try {
+                  await this.avPlayer?.prepare()
+                } catch (err) {
+                  this.dialogControllerProgress.open()
+                  await promptAction.openToast({
+                    message: '发生错误，错误码：' + err.code
+                  })
+                }
               }
               await this.avPlayer?.play()
             })
@@ -159,9 +165,6 @@ export default struct Player {
             }
             .borderRadius(20)
             .height(40)
-            .margin({
-              right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
-            })
             .padding(11)
             .stateStyles({
               normal: {
@@ -189,6 +192,9 @@ export default struct Player {
             }
             .borderRadius(20)
             .height(40)
+            .margin({
+              left: $r('sys.float.ohos_id_elements_margin_horizontal_m')
+            })
             .padding(11)
             .stateStyles({
               normal: {
@@ -371,7 +377,6 @@ export default struct Player {
         context: this.context,
         componentController: this.xComponentController
       })
-
       this.dialogControllerProgress.open()
       this.avPlayer = await media.createAVPlayer()
       const mediaSource = media.createMediaSourceWithUrl(this.src, {
@@ -383,7 +388,14 @@ export default struct Player {
         if (state === 'initialized') {
           if (this.avPlayer) {
             this.avPlayer.surfaceId = this.xComponentController.getXComponentSurfaceId()
-            await this.avPlayer.prepare()
+            try {
+              await this.avPlayer.prepare()
+            } catch (err) {
+              this.dialogControllerProgress.open()
+              await promptAction.openToast({
+                message: '发生错误，错误码：' + err.code
+              })
+            }
           }
         }
         if (state === 'prepared') {

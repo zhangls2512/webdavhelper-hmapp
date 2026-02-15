@@ -6,6 +6,7 @@ import { hdsMaterial, HdsNavDestination } from '@kit.UIDesignKit'
 import { read } from '../common/File'
 import copy from '../common/Pasteboard'
 import { getTimeStringFromTimeStamp } from '../common/Stringformat'
+import { Type } from './Autouploaderrorlogtype'
 
 interface ErrorLogItem {
   type: string,
@@ -25,6 +26,64 @@ struct Errorlog {
   @Local hoverId: number | string = -1
   UIContext = this.getUIContext()
   context = this.UIContext.getHostContext() as common.UIAbilityContext
+  typeArray: Type[] = [
+    {
+      name: 'js 运行异常',
+      value: 'JS_ERROR'
+    },
+    {
+      name: '崩溃',
+      value: 'APP_CRASH'
+    },
+    {
+      name: '应用冻屏',
+      value: 'APP_FREEZE'
+    },
+    {
+      name: '资源泄漏',
+      value: 'RESOURCE_OVERLIMIT'
+    },
+    {
+      name: '地址越界',
+      value: 'ADDRESS_SANITIZER'
+    },
+    {
+      name: '主线程超时',
+      value: 'MAIN_THREAD_JANK'
+    },
+    {
+      name: '任务执行超时',
+      value: 'APP_HICOLLIE'
+    },
+    {
+      name: '应用终止',
+      value: 'APP_KILLED'
+    },
+    {
+      name: 'ArkWeb 抛滑丢帧',
+      value: 'SCROLL_ARKWEB_FLING_JANK'
+    },
+    {
+      name: '启动耗时',
+      value: 'APP_LAUNCH'
+    },
+    {
+      name: '滑动丢帧',
+      value: 'SCROLL_JANK'
+    },
+    {
+      name: 'CPU 高负载',
+      value: 'CPU_USAGE_HIGH'
+    },
+    {
+      name: '24 小时功耗器件分解统计',
+      value: 'BATTERY_USAGE'
+    },
+    {
+      name: '音频卡顿',
+      value: 'AUDIO_JANK_FRAME'
+    }
+  ]
 
   async get() {
     this.errorLogArray = []
@@ -104,63 +163,24 @@ struct Errorlog {
     HdsNavDestination() {
       Scroll() {
         Column() {
-          Select([
-            { value: '全部' },
-            { value: 'js 运行异常' },
-            { value: '应用崩溃' },
-            { value: '应用冻屏' },
-            { value: '应用查杀' },
-            { value: '应用启动耗时' },
-            { value: '资源泄漏' },
-            { value: '地址越界' },
-            { value: '主线程超时' },
-            { value: '滑动丢帧' },
-            { value: 'CPU 高负载' },
-            { value: '24 小时功耗器件分解统计' }
-          ])
-            .selected(0)
-            .value('全部')
-            .onSelect(async (index: number) => {
-              if (index === 0) {
-                await this.get()
-              }
-              if (index === 1) {
-                await this.filter('JS_ERROR')
-              }
-              if (index === 2) {
-                await this.filter('APP_CRASH')
-              }
-              if (index === 3) {
-                await this.filter('APP_FREEZE')
-              }
-              if (index === 4) {
-                await this.filter('APP_KILLED')
-              }
-              if (index === 5) {
-                await this.filter('APP_LAUNCH')
-              }
-              if (index === 6) {
-                await this.filter('RESOURCE_OVERLIMIT')
-              }
-              if (index === 7) {
-                await this.filter('ADDRESS_SANITIZER')
-              }
-              if (index === 8) {
-                await this.filter('MAIN_THREAD_JANK')
-              }
-              if (index === 9) {
-                await this.filter('SCROLL_JANK')
-              }
-              if (index === 10) {
-                await this.filter('CPU_USAGE_HIGH')
-              }
-              if (index === 11) {
-                await this.filter('BATTERY_USAGE')
-              }
-            })
+          Select(this.typeArray.map((item): SelectOption => {
+            return {
+              value: item.name
+            }
+          }))
             .margin({
               bottom: $r('sys.float.ohos_id_elements_margin_vertical_m'),
               top: $r('sys.float.ohos_id_elements_margin_vertical_m')
+            })
+            .selected(0)
+            .value('全部')
+            .onSelect(async (index) => {
+              if (index !== 0) {
+                await this.filter(this.typeArray[index].value)
+              }
+              if (index === 0) {
+                await this.get()
+              }
             })
           List() {
             if (this.errorLogArray.length === 0) {

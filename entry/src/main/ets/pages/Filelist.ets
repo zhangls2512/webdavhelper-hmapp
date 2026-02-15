@@ -412,6 +412,7 @@ export default struct Filelist {
                 await promptAction.openToast({
                   message: '删除成功'
                 })
+                this.loading = true
               }
             }
           })

@@ -160,6 +160,11 @@ struct Index {
             })
         }
         .tabBar(this.tabBuilder(1, $r('app.media.transfer'), '传输'))
+        .bindSheet(this.isShowAccountlistSheet!!, this.AccountlistSheetBuilder(), {
+          height: SheetSize.FIT_CONTENT,
+          preferType: this.preferType,
+          showClose: false
+        })
 
         TabContent() {
           Me()

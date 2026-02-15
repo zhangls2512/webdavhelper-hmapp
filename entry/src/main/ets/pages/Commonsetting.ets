@@ -993,6 +993,8 @@ struct Commonsetting {
       this.onlinePreviewMedia = this.commonSettingDataPreferences.getSync('onlinePreviewMedia', true) as boolean
       this.selectFileDownloadPath =
         this.commonSettingDataPreferences.getSync('selectFileDownloadPath', false) as boolean
+      this.showAccountlistSheetAfterAppLaunch =
+        this.commonSettingDataPreferences.getSync('showAccountlistSheetAfterAppLaunch', false) as boolean
       const cellularDataUseRemind = this.commonSettingDataPreferences.getSync('cellularDataUseRemind', 0)
       this.cellularDataUseRemindIndex = cellularDataUseRemind as number
       if (cellularDataUseRemind === 0) {
