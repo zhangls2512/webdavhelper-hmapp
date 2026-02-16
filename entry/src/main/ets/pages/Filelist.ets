@@ -43,16 +43,16 @@ export default struct Filelist {
   @Local sortDirectionValue: string = '升序'
   @Local multipleSelect: boolean = false
   @Local multipleSelectArray: FileItem[] = []
-  @Local src: string = ''
   @Local copyMovePath: string = ''
-  @Local editPath: string = ''
-  @Local editName: string = ''
   @Local hoverId: number = -1
   UIContext = this.getUIContext()
   context = this.UIContext.getHostContext() as common.UIAbilityContext
   account = ''
   remove = false
+  src = ''
   srcName = ''
+  editPath = ''
+  editName = ''
   backDataPreferences = preferences.getPreferencesSync(this.context, {
     name: 'back'
   })
@@ -425,6 +425,7 @@ export default struct Filelist {
       Column() {
         if (!this.isLogin) {
           Text('未登录账号')
+            .height('100%')
             .textAlign(TextAlign.Center)
             .width('100%')
         }

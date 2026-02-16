@@ -49,6 +49,9 @@ export default struct Newfolder {
             })
         }
       }
+      .margin({
+        top: $r('sys.float.ohos_id_elements_margin_vertical_m')
+      })
     }
     .padding({
       bottom: $r('sys.float.ohos_id_default_padding_bottom_fixed'),

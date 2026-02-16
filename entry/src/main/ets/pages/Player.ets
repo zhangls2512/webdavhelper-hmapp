@@ -55,6 +55,9 @@ export default struct Player {
             .width(this.videoWidth)
         }
         .height(this.videoHeight)
+        .margin({
+          top: $r('sys.float.ohos_id_elements_margin_vertical_m')
+        })
       }
       ListItem() {
         Row() {
