@@ -191,14 +191,14 @@ struct Backupsetting {
                     if (res) {
                       const dialogControllerProgress = new CustomDialogController({
                         builder: LoadingDialog({
-                          content: '备份准备中...'
+                          content: '准备中...'
                         })
                       })
                       dialogControllerProgress.open()
                       await generateBackupTaskList(this.context, item)
                       dialogControllerProgress.close()
                       await promptAction.openToast({
-                        message: '备份已开始'
+                        message: '已开始'
                       })
                     }
                   })

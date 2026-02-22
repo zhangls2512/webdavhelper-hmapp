@@ -35,7 +35,7 @@ struct Networktest {
               .onClick(async () => {
                 const dialogControllerProgress = new CustomDialogController({
                   builder: LoadingDialog({
-                    content: '测试中...'
+                    content: '请求中...'
                   })
                 })
                 dialogControllerProgress.open()
@@ -64,9 +64,6 @@ struct Networktest {
                     this.timeStamp = res.timeStamp
                     this.httpVersion = String(response.httpVersion)
                     this.totalTimeMs = Date.now() - startTime
-                    await promptAction.openToast({
-                      message: '测试完成'
-                    })
                   } else {
                     await promptAction.openToast({
                       message: 'HTTP 请求失败，状态码：' + response.statusCode

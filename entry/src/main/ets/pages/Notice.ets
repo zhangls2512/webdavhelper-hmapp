@@ -124,7 +124,7 @@ export default struct Notice {
                     .onChange(async () => {
                       const dialogControllerProgress = new CustomDialogController({
                         builder: LoadingDialog({
-                          content: '设置中...'
+                          content: '请求中...'
                         })
                       })
                       dialogControllerProgress.open()

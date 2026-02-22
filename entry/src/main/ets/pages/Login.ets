@@ -243,7 +243,7 @@ export default struct Login {
               })
               const dialogControllerProgress = new CustomDialogController({
                 builder: LoadingDialog({
-                  content: '登录中...'
+                  content: '请求中...'
                 })
               })
               dialogControllerProgress.open()

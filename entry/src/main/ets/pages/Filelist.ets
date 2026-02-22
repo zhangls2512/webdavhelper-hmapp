@@ -62,9 +62,9 @@ export default struct Filelist {
   debugSettingDataPreferences = preferences.getPreferencesSync(this.context, {
     name: 'debugSetting'
   })
-  deleteDialogControllerProgress = new CustomDialogController({
+  dialogControllerProgress = new CustomDialogController({
     builder: LoadingDialog({
-      content: '删除中...'
+      content: '请求中...'
     })
   })
 
@@ -405,9 +405,9 @@ export default struct Filelist {
               ]
             })
             if (data.index === 1) {
-              this.deleteDialogControllerProgress.open()
+              this.dialogControllerProgress.open()
               const res = await rm(this.context, item.path)
-              this.deleteDialogControllerProgress.close()
+              this.dialogControllerProgress.close()
               if (res !== 'fail') {
                 await promptAction.openToast({
                   message: '删除成功'
@@ -954,20 +954,15 @@ export default struct Filelist {
                 if (this.remove) {
                   text = '移动'
                 }
-                const dialogControllerProgress = new CustomDialogController({
-                  builder: LoadingDialog({
-                    content: text + '中...'
-                  })
-                })
                 let res = ''
-                dialogControllerProgress.open()
+                this.dialogControllerProgress.open()
                 if (!this.remove) {
                   res = await cp(this.context, this.copyMovePath, this.getPath())
                 }
                 if (this.remove) {
                   res = await mv(this.context, this.copyMovePath, this.getPath())
                 }
-                dialogControllerProgress.close()
+                this.dialogControllerProgress.close()
                 this.copyMovePath = ''
                 this.remove = false
                 if (res !== 'fail') {

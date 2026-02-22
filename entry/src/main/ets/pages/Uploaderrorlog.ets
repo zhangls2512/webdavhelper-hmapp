@@ -94,7 +94,7 @@ export default struct Uploaderrorlog {
             .onClick(async () => {
               const dialogControllerProgress = new CustomDialogController({
                 builder: LoadingDialog({
-                  content: '上传中...'
+                  content: '请求中...'
                 })
               })
               dialogControllerProgress.open()
