@@ -1048,7 +1048,7 @@ export default struct Filelist {
           }
           .margin({
             bottom: $r('sys.float.ohos_id_elements_margin_vertical_m'),
-            top: this.dirnames.length > 0 ? $r('sys.float.ohos_id_elements_margin_vertical_m') : 0
+            top: $r('sys.float.ohos_id_elements_margin_vertical_m')
           })
           .width('100%')
 
