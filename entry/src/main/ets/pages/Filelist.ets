@@ -204,6 +204,9 @@ export default struct Filelist {
                   }
                 }
               }
+              const transferTaskDataPreferences = preferences.getPreferencesSync(this.context, {
+                name: 'transferTask'
+              })
               try {
                 const documentSaveOptions = new picker.DocumentSaveOptions()
                 const selectFileDownloadPath =
@@ -305,9 +308,6 @@ export default struct Filelist {
                             this.context.eventHub.off('cancelDownload')
                             this.transferredSize = 0
                             this.totalSize = 0
-                            await promptAction.openToast({
-                              message: '下载完成'
-                            })
                           }
                         }
                       },
@@ -331,6 +331,11 @@ export default struct Filelist {
                     await promptAction.openToast({
                       message: '下载失败'
                     })
+                    transferTaskDataPreferences.putSync(util.generateRandomUUID(), JSON.stringify({
+                      name: item.name,
+                      status: 'cancel',
+                      type: 'download'
+                    }))
                   })
                   this.totalSize = item.size
                   this.context.eventHub.on('cancelDownload', () => {
@@ -343,12 +348,34 @@ export default struct Filelist {
                       await promptAction.openToast({
                         message: 'HTTP 请求失败，状态码：' + response.statusCode
                       })
+                      transferTaskDataPreferences.putSync(util.generateRandomUUID(), JSON.stringify({
+                        name: item.name,
+                        status: 'fail',
+                        errCode: response.statusCode,
+                        type: 'download'
+                      }))
+                    }
+                    if (response.statusCode === 200) {
+                      await promptAction.openToast({
+                        message: '下载完成'
+                      })
+                      transferTaskDataPreferences.putSync(util.generateRandomUUID(), JSON.stringify({
+                        name: item.name,
+                        status: 'success',
+                        type: 'download'
+                      }))
                     }
                   } catch (err) {
                     if (err.code !== 1007900992) {
                       await promptAction.openToast({
                         message: '下载失败，错误码：' + err.code
                       })
+                      transferTaskDataPreferences.putSync(util.generateRandomUUID(), JSON.stringify({
+                        name: item.name,
+                        status: 'fail',
+                        errCode: err.code,
+                        type: 'download'
+                      }))
                     }
                   }
                 }
@@ -356,6 +383,12 @@ export default struct Filelist {
                 await promptAction.openToast({
                   message: '发生错误，错误码：' + err.code
                 })
+                transferTaskDataPreferences.putSync(util.generateRandomUUID(), JSON.stringify({
+                  name: item.name,
+                  status: 'fail',
+                  errCode: err.code,
+                  type: 'download'
+                }))
               }
             })
         }
@@ -1287,49 +1320,6 @@ export default struct Filelist {
                                     this.context.eventHub.off('cancelDownload')
                                     this.transferredSize = 0
                                     this.totalSize = 0
-                                    const uri = fileUri.getUriFromPath(filePath)
-                                    const filePreviewType =
-                                      this.commonSettingDataPreferences.getSync('filePreviewType', 0)
-                                    if (filePreviewType === 0) {
-                                      const supportedReaderFormats = ['.epub', '.mobi', '.azw', '.azw3']
-                                      if (!supportedReaderFormats.some(formatItem => item.name.endsWith(formatItem))) {
-                                        const canPreview = await filePreview.canPreview(this.context, uri)
-                                        if (!canPreview) {
-                                          await promptAction.openToast({
-                                            message: '此类型不支持预览'
-                                          })
-                                        }
-                                        if (canPreview) {
-                                          await filePreview.openPreview(this.context, {
-                                            title: item.name,
-                                            uri: uri,
-                                            mimeType: ''
-                                          })
-                                        }
-                                      }
-                                      if (supportedReaderFormats.some(formatItem => item.name.endsWith(formatItem))) {
-                                        const dir = this.context.tempDir + '/preview/reader/' + this.account + '/' +
-                                        sha256hash(item.name)
-                                        if (!fileIo.accessSync(dir)) {
-                                          await fileIo.mkdir(dir, true)
-                                        }
-                                        const newFilePath = dir + '/' + item.name
-                                        await fileIo.moveFile(filePath, newFilePath)
-                                        this.src = newFilePath
-                                        this.srcName = item.name
-                                        this.isShowReaderSheet = true
-                                      }
-                                    }
-                                    if (filePreviewType === 1) {
-                                      await this.context.startAbility({
-                                        action: 'ohos.want.action.viewData',
-                                        uri: uri,
-                                        parameters: {
-                                          'ohos.ability.params.showDefaultPicker': true
-                                        },
-                                        flags: wantConstant.Flags.FLAG_AUTH_READ_URI_PERMISSION
-                                      })
-                                    }
                                   }
                                 }
                               },
@@ -1366,6 +1356,51 @@ export default struct Filelist {
                               await promptAction.openToast({
                                 message: 'HTTP 请求失败，状态码：' + response.statusCode
                               })
+                            }
+                            if (response.statusCode === 200) {
+                              const uri = fileUri.getUriFromPath(filePath)
+                              const filePreviewType =
+                                this.commonSettingDataPreferences.getSync('filePreviewType', 0)
+                              if (filePreviewType === 0) {
+                                const supportedReaderFormats = ['.epub', '.mobi', '.azw', '.azw3']
+                                if (!supportedReaderFormats.some(formatItem => item.name.endsWith(formatItem))) {
+                                  const canPreview = await filePreview.canPreview(this.context, uri)
+                                  if (!canPreview) {
+                                    await promptAction.openToast({
+                                      message: '此类型不支持预览'
+                                    })
+                                  }
+                                  if (canPreview) {
+                                    await filePreview.openPreview(this.context, {
+                                      title: item.name,
+                                      uri: uri,
+                                      mimeType: ''
+                                    })
+                                  }
+                                }
+                                if (supportedReaderFormats.some(formatItem => item.name.endsWith(formatItem))) {
+                                  const dir = this.context.tempDir + '/preview/reader/' + this.account + '/' +
+                                  sha256hash(item.name)
+                                  if (!fileIo.accessSync(dir)) {
+                                    await fileIo.mkdir(dir, true)
+                                  }
+                                  const newFilePath = dir + '/' + item.name
+                                  await fileIo.moveFile(filePath, newFilePath)
+                                  this.src = newFilePath
+                                  this.srcName = item.name
+                                  this.isShowReaderSheet = true
+                                }
+                              }
+                              if (filePreviewType === 1) {
+                                await this.context.startAbility({
+                                  action: 'ohos.want.action.viewData',
+                                  uri: uri,
+                                  parameters: {
+                                    'ohos.ability.params.showDefaultPicker': true
+                                  },
+                                  flags: wantConstant.Flags.FLAG_AUTH_READ_URI_PERMISSION
+                                })
+                              }
                             }
                           } catch (err) {
                             await fileIo.unlink(filePath)
