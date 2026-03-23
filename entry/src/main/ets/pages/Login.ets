@@ -5,7 +5,6 @@ import { util } from '@kit.ArkTS'
 import { LoadingDialog, promptAction } from '@kit.ArkUI'
 import { rcp } from '@kit.RemoteCommunicationKit'
 import { setAccount } from '../common/Account'
-import { autoBackup } from '../common/Backup'
 import { getDnsServer } from '../common/Dnsserver'
 import openLink from '../common/Openlink'
 
@@ -236,8 +235,8 @@ export default struct Login {
                 },
                 headers: {
                   Authorization: 'Basic ' +
-                  new util.Base64Helper().encodeToStringSync(new util.TextEncoder().encodeInto(this.name + ':' +
-                  this.password)),
+                    new util.Base64Helper().encodeToStringSync(new util.TextEncoder().encodeInto(this.name + ':' +
+                      this.password)),
                   Depth: '0'
                 }
               })
@@ -265,7 +264,6 @@ export default struct Login {
                   this.context.eventHub.emit('refreshFilelist')
                   this.context.eventHub.emit('refreshMe')
                   this.isShowLoginSheet = false
-                  await autoBackup(this.context)
                 } else {
                   if (response.statusCode !== 401) {
                     await promptAction.openToast({

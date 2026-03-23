@@ -4,9 +4,9 @@ import { LengthMetrics, promptAction } from '@kit.ArkUI'
 import { fileIo, fileUri } from '@kit.CoreFileKit'
 import { filePreview } from '@kit.PreviewKit'
 import { systemShare } from '@kit.ShareKit'
-import { hdsMaterial, HdsNavDestination } from '@kit.UIDesignKit'
+import { hdsMaterial, HdsNavDestination, HdsNavDestinationTitleMode, ScrollEffectType } from '@kit.UIDesignKit'
 import { getFileTypeIcon } from '../common/File'
-import { getTimeStringFromSecond, getSizeString } from '../common/Stringformat'
+import { getSizeString, getTimeStringFromSecond } from '../common/Stringformat'
 
 interface FileItem {
   path: string,
@@ -25,7 +25,7 @@ export function SandboxfilelistBuilder() {
 struct Sandboxfilelist {
   @Local fileArray: FileItem[] = []
   @Local dirnames: string[] = []
-  @Local hoverId: number = -1
+  @Local hoverId: number | string = -1
   UIContext = this.getUIContext()
   context = this.UIContext.getHostContext() as common.UIAbilityContext
 
@@ -36,6 +36,9 @@ struct Sandboxfilelist {
         path += '/' + item
       }
       if (index === 0) {
+        if (item === 'proc') {
+          path += '/proc/self'
+        }
         if (item === 'bundle') {
           path += this.context.bundleCodeDir
         }
@@ -60,6 +63,13 @@ struct Sandboxfilelist {
     const path = this.getPath()
     if (!path) {
       this.fileArray = [
+        {
+          path: '/proc/self',
+          name: 'proc',
+          isdir: true,
+          size: -1,
+          mtime: -1
+        },
         {
           path: this.context.bundleCodeDir,
           name: 'bundle',
@@ -245,7 +255,7 @@ struct Sandboxfilelist {
               }
               .width('100%')
             }
-            ForEach(this.fileArray, (item: FileItem, index) => {
+            ForEach(this.fileArray.filter(item => item.isdir), (item: FileItem, index) => {
               ListItem() {
                 Column() {
                   if (index !== 0) {
@@ -256,23 +266,92 @@ struct Sandboxfilelist {
                       })
                   }
                   Row() {
-                    if (!item.isdir) {
-                      Image(getFileTypeIcon(item.name))
-                        .fillColor($r('sys.color.icon_secondary'))
-                        .height(24)
+                    Image($r('app.media.foldericon'))
+                      .height(24)
+                      .margin({
+                        right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
+                      })
+                      .width(24)
+                    Column() {
+                      Text(item.name)
+                        .enableAutoSpacing(true)
+                        .fontWeight(FontWeight.Medium)
+                        .width('85%')
+                      Text(item.mtime !== -1 ? getTimeStringFromSecond(item.mtime) : '')
+                        .fontColor($r('sys.color.font_secondary'))
+                        .fontSize($r('sys.float.ohos_id_text_size_body2'))
                         .margin({
-                          right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
+                          top: $r('sys.float.ohos_id_text_margin_vertical')
                         })
-                        .width(24)
                     }
-                    if (item.isdir) {
-                      Image($r('app.media.foldericon'))
-                        .height(24)
-                        .margin({
-                          right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
-                        })
-                        .width(24)
+                    .alignItems(HorizontalAlign.Start)
+                    .layoutWeight(1)
+                    .margin({
+                      right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
+                    })
+
+                    Image($r('app.media.right'))
+                      .fillColor($r('sys.color.icon_fourth'))
+                      .height(12)
+                      .width(12)
+                  }
+                  .borderRadius(12)
+                  .padding({
+                    bottom: 12,
+                    left: 6,
+                    right: 5,
+                    top: 12
+                  })
+                  .stateStyles({
+                    normal: {
+                      .backgroundColor(this.hoverId === index + ',0' ? $r('sys.color.interactive_hover') :
+                        $r('app.color.sheet_background'))
+                    },
+                    pressed: {
+                      .backgroundColor($r('sys.color.comp_background_secondary'))
                     }
+                  })
+                  .width('100%')
+                  .onHover((isHover) => {
+                    if (!isHover) {
+                      this.hoverId = -1
+                    }
+                    if (isHover) {
+                      this.hoverId = index + ',0'
+                    }
+                  })
+                  .onClick(async () => {
+                    this.dirnames.push(item.name)
+                    await this.get()
+                  })
+                  .bindContextMenu(this.MenuBuilder(item), ResponseType.LongPress, {
+                    hapticFeedbackMode: HapticFeedbackMode.AUTO
+                  })
+                  .bindContextMenu(this.MenuBuilder(item), ResponseType.RightClick, {
+                    hapticFeedbackMode: HapticFeedbackMode.AUTO
+                  })
+                }
+                .borderRadius($r('sys.float.ohos_id_corner_radius_default_l'))
+              }
+            })
+            ForEach(this.fileArray.filter(item => !item.isdir), (item: FileItem, index) => {
+              ListItem() {
+                Column() {
+                  if (this.fileArray.find(item => item.isdir) || index !== 0) {
+                    Divider()
+                      .padding({
+                        left: 6,
+                        right: 6
+                      })
+                  }
+                  Row() {
+                    Image(getFileTypeIcon(item.name))
+                      .fillColor($r('sys.color.icon_secondary'))
+                      .height(24)
+                      .margin({
+                        right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
+                      })
+                      .width(24)
                     Column() {
                       Text(item.name)
                         .enableAutoSpacing(true)
@@ -280,9 +359,7 @@ struct Sandboxfilelist {
                         .width('85%')
                       Text() {
                         Span(item.mtime !== -1 ? getTimeStringFromSecond(item.mtime) : '')
-                        if (!item.isdir) {
-                          Span(item.size !== -1 ? ' - ' + getSizeString(item.size) : '')
-                        }
+                        Span(item.size !== -1 ? ' - ' + getSizeString(item.size) : '')
                       }
                       .fontColor($r('sys.color.font_secondary'))
                       .fontSize($r('sys.float.ohos_id_text_size_body2'))
@@ -310,7 +387,7 @@ struct Sandboxfilelist {
                   })
                   .stateStyles({
                     normal: {
-                      .backgroundColor(this.hoverId === index ? $r('sys.color.interactive_hover') :
+                      .backgroundColor(this.hoverId === index + ',1' ? $r('sys.color.interactive_hover') :
                         $r('app.color.sheet_background'))
                     },
                     pressed: {
@@ -323,34 +400,28 @@ struct Sandboxfilelist {
                       this.hoverId = -1
                     }
                     if (isHover) {
-                      this.hoverId = index
+                      this.hoverId = index + ',1'
                     }
                   })
                   .onClick(async () => {
-                    if (!item.isdir) {
-                      const uri = fileUri.getUriFromPath(item.path)
-                      const canPreview = await filePreview.canPreview(this.context, uri)
-                      if (!canPreview) {
-                        await this.context.startAbility({
-                          action: 'ohos.want.action.viewData',
-                          uri: uri,
-                          parameters: {
-                            'ohos.ability.params.showDefaultPicker': true
-                          },
-                          flags: wantConstant.Flags.FLAG_AUTH_READ_URI_PERMISSION
-                        })
-                      }
-                      if (canPreview) {
-                        await filePreview.openPreview(this.context, {
-                          title: item.name,
-                          uri: uri,
-                          mimeType: ''
-                        })
-                      }
+                    const uri = fileUri.getUriFromPath(item.path)
+                    const canPreview = await filePreview.canPreview(this.context, uri)
+                    if (!canPreview) {
+                      await this.context.startAbility({
+                        action: 'ohos.want.action.viewData',
+                        uri: uri,
+                        parameters: {
+                          'ohos.ability.params.showDefaultPicker': true
+                        },
+                        flags: wantConstant.Flags.FLAG_AUTH_READ_URI_PERMISSION
+                      })
                     }
-                    if (item.isdir) {
-                      this.dirnames.push(item.name)
-                      await this.get()
+                    if (canPreview) {
+                      await filePreview.openPreview(this.context, {
+                        title: item.name,
+                        uri: uri,
+                        mimeType: ''
+                      })
                     }
                   })
                   .bindContextMenu(this.MenuBuilder(item), ResponseType.LongPress, {
@@ -367,9 +438,12 @@ struct Sandboxfilelist {
           .layoutWeight(1)
         }
         .alignItems(HorizontalAlign.Start)
+        .margin({
+          bottom: 28,
+          top: 64
+        })
       }
       .padding({
-        bottom: $r('sys.float.ohos_id_default_padding_bottom_fixed'),
         left: $r('sys.float.ohos_id_elements_margin_horizontal_l'),
         right: $r('sys.float.ohos_id_elements_margin_horizontal_l')
       })
@@ -380,6 +454,28 @@ struct Sandboxfilelist {
         end: LengthMetrics.vp(60)
       },
       style: {
+        scrollEffectOpts: {
+          scrollEffectType: ScrollEffectType.IMMERSIVE_GRADIENT_BLUR
+        },
+        originalStyle: {
+          contentStyle: {
+            titleStyle: {
+              mainTitleColor: $r('sys.color.font_primary')
+            },
+            backIconStyle: {
+              backgroundColor: $r('sys.color.comp_background_color_floating_smooth'),
+              iconColor: $r('sys.color.icon_primary')
+            }
+          }
+        },
+        scrollEffectStyle: {
+          contentStyle: {
+            backIconStyle: {
+              backgroundColor: $r('sys.color.comp_background_color_floating_smooth'),
+              iconColor: $r('sys.color.icon_primary')
+            }
+          }
+        },
         thermoCtrl: true,
         systemMaterialEffect: {
           materialType: hdsMaterial.MaterialType.ADAPTIVE,
@@ -390,9 +486,9 @@ struct Sandboxfilelist {
         title: {
           mainTitle: '沙箱文件管理器'
         }
-      },
-      enableComponentSafeArea: true
+      }
     })
+    .titleMode(HdsNavDestinationTitleMode.MODAL)
     .onAppear(async () => {
       await this.get()
     })

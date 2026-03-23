@@ -28,6 +28,10 @@ struct Errorlog {
   context = this.UIContext.getHostContext() as common.UIAbilityContext
   typeArray: Type[] = [
     {
+      name: '全部',
+      value: ''
+    },
+    {
       name: 'js 运行异常',
       value: 'JS_ERROR'
     },

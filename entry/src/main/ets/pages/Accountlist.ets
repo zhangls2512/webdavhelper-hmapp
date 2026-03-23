@@ -4,7 +4,6 @@ import { promptAction } from '@kit.ArkUI'
 import { rcp } from '@kit.RemoteCommunicationKit'
 import { hdsEffect } from '@kit.UIDesignKit'
 import { AccountInfo, getAccountList, removeAccount, setAccount, setAccountBz } from '../common/Account'
-import { autoBackup } from '../common/Backup'
 import { getDnsServer } from '../common/Dnsserver'
 import copy from '../common/Pasteboard'
 
@@ -261,7 +260,6 @@ export default struct Accountlist {
                 this.context.eventHub.emit('refreshFilelist')
                 this.context.eventHub.emit('refreshMe')
                 this.isShowAccountlistSheet = false
-                await autoBackup(this.context)
               })
               .bindContextMenu(this.MenuBuilder(item), ResponseType.LongPress, {
                 hapticFeedbackMode: HapticFeedbackMode.AUTO

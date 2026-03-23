@@ -106,7 +106,7 @@ struct Feedback {
                 dialogControllerProgress.open()
                 const res = await developerRequest(this.context, '/product/sendFeedbackEmail', {
                   product: 'webdavhelper',
-                  version: '1.0.0.1',
+                  version: '1.0.1.0',
                   content: this.content,
                   contactType: this.contactType,
                   contactValue: this.contactValue

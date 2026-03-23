@@ -64,7 +64,7 @@ export default struct Transfer {
                       }
                       if (item.status === 'processing') {
                         Text(Number((item.transferredSize / item.totalSize).toFixed(2)) * 100 + '%(' +
-                        getSizeString(item.transferredSize) + '/' + getSizeString(item.totalSize) + ')')
+                          getSizeString(item.transferredSize) + '/' + getSizeString(item.totalSize) + ')')
                           .fontColor($r('sys.color.font_secondary'))
                           .fontSize($r('sys.float.ohos_id_text_size_body2'))
                           .margin({
@@ -146,7 +146,7 @@ export default struct Transfer {
                       }
                       if (item.status === 'processing') {
                         Text(Number((item.transferredSize / item.totalSize).toFixed(2)) * 100 + '%(' +
-                        getSizeString(item.transferredSize) + '/' + getSizeString(item.totalSize) + ')')
+                          getSizeString(item.transferredSize) + '/' + getSizeString(item.totalSize) + ')')
                           .fontColor($r('sys.color.font_secondary'))
                           .fontSize($r('sys.float.ohos_id_text_size_body2'))
                           .margin({
@@ -192,6 +192,10 @@ export default struct Transfer {
               top: $r('sys.float.ohos_id_elements_margin_vertical_m')
             })
           }
+          ListItem()
+            .margin({
+              bottom: this.preferType === 0 ? 80 : 0
+            })
         }
         .layoutWeight(1)
       }

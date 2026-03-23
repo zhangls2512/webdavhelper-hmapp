@@ -276,7 +276,7 @@ export default struct Filelist {
                                     typeCode: 8,
                                     title: '正在下载文件：' + item.name,
                                     text: '进度：' + Number((transferredSize / totalSize).toFixed(2)) * 100 + '% (' +
-                                    getSizeString(transferredSize) + '/' + getSizeString(totalSize) + ')'
+                                      getSizeString(transferredSize) + '/' + getSizeString(totalSize) + ')'
                                   }
                                 },
                                 id: continuousTaskNotificationInfo.notificationId,
@@ -1007,7 +1007,7 @@ export default struct Filelist {
             }
             if (this.multipleSelect) {
               if (!this.fileArray.every(item => this.multipleSelectArray.find(selectItem => selectItem.path ===
-              item.path))) {
+                item.path))) {
                 Blank()
                 Column() {
                   Image($r('app.media.selectall'))
@@ -1039,7 +1039,7 @@ export default struct Filelist {
                 })
               }
               if (this.fileArray.every(item => this.multipleSelectArray.find(selectItem => selectItem.path ===
-              item.path))) {
+                item.path))) {
                 Blank()
                 Column() {
                   Image($r('app.media.cancelselectall'))
@@ -1112,7 +1112,7 @@ export default struct Filelist {
                             const exist = this.multipleSelectArray.find(selectItem => selectItem.path === item.path)
                             if (!isOn && exist) {
                               this.multipleSelectArray.splice(this.multipleSelectArray.findIndex(selectItem => selectItem.path ===
-                              item.path), 1)
+                                item.path), 1)
                             }
                             if (isOn && !exist) {
                               this.multipleSelectArray.push(item)
@@ -1198,7 +1198,7 @@ export default struct Filelist {
                         }
                         const supportedformats = ['mp4', 'mkv', 'm4a', 'aac', 'mp3', 'ogg', 'wav', 'flac', 'amr', 'ape']
                         if (supportedformats.includes(houzhui) &&
-                        this.commonSettingDataPreferences.getSync('onlinePreviewMedia', true)) {
+                          this.commonSettingDataPreferences.getSync('onlinePreviewMedia', true)) {
                           const accountInfo = await getAccountInfo()
                           this.src = accountInfo.path + '/' + item.path
                           this.srcName = item.name
@@ -1288,7 +1288,7 @@ export default struct Filelist {
                                             title: '正在下载文件：' + item.name,
                                             text: '进度：' + Number((transferredSize / totalSize).toFixed(2)) * 100 +
                                               '% (' + getSizeString(transferredSize) + '/' +
-                                            getSizeString(totalSize) + ')'
+                                              getSizeString(totalSize) + ')'
                                           }
                                         },
                                         id: continuousTaskNotificationInfo.notificationId,
@@ -1379,7 +1379,7 @@ export default struct Filelist {
                                 }
                                 if (supportedReaderFormats.some(formatItem => item.name.endsWith(formatItem))) {
                                   const dir = this.context.tempDir + '/preview/reader/' + this.account + '/' +
-                                  sha256hash(item.name)
+                                    sha256hash(item.name)
                                   if (!fileIo.accessSync(dir)) {
                                     await fileIo.mkdir(dir, true)
                                   }
@@ -1441,6 +1441,10 @@ export default struct Filelist {
                   .borderRadius($r('sys.float.ohos_id_corner_radius_default_l'))
                 }
               })
+              ListItem()
+                .margin({
+                  bottom: this.preferType === 0 ? 80 : 0
+                })
             }
           }
           .layoutWeight(1)

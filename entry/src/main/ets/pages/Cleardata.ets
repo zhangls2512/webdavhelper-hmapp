@@ -9,8 +9,6 @@ import { getSizeString } from '../common/Stringformat'
 export default struct Cleardata {
   @Local setting: string[] = []
   @Local allSetting: boolean = false
-  /*@Local backupSetting: boolean = false
-  @Local backupSettingSize: string = ''*/
   @Local commonSetting: boolean = false
   @Local commonSettingSize: string = ''
   @Local permissionSetting: boolean = false
@@ -30,8 +28,6 @@ export default struct Cleardata {
   context = this.UIContext.getHostContext() as common.UIAbilityContext
 
   async getSize() {
-    /*const backupSettingSize = await getDirectorySize(this.context.filesDir + '/backupsetting')
-    this.backupSettingSize = getSizeString(backupSettingSize)*/
     this.commonSettingSize = getSizeString(getFileSize(this.context.preferencesDir + '/commonSetting'))
     this.permissionSettingSize = getSizeString(getFileSize(this.context.preferencesDir + '/permissionSetting'))
     this.debugSettingSize = getSizeString(getFileSize(this.context.preferencesDir + '/debugSetting'))
@@ -74,35 +70,6 @@ export default struct Cleardata {
             .borderRadius(12)
             .padding(12)
             .width('100%')
-
-            /*Divider()
-              .padding({
-                left: 12,
-                right: 12
-              })
-            Row() {
-              Text('备份')
-                .fontWeight(FontWeight.Medium)
-                .layoutWeight(1)
-                .margin({
-                  right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
-                })
-              Text(this.backupSettingSize)
-                .fontColor($r('sys.color.font_secondary'))
-                .fontSize($r('sys.float.ohos_id_text_size_body2'))
-                .margin({
-                  right: $r('sys.float.ohos_id_elements_margin_horizontal_s')
-                })
-              Checkbox({
-                name: 'backupSetting',
-                group: 'setting'
-              })
-                .select(this.backupSetting!!)
-                .shape(CheckBoxShape.ROUNDED_SQUARE)
-            }
-            .borderRadius(12)
-            .padding(12)
-            .width('100%')*/
 
             Divider()
               .padding({
@@ -220,19 +187,11 @@ export default struct Cleardata {
               })
               if (data.index === 1) {
                 this.setting.forEach((item) => {
-                  if (item !== 'backupSetting') {
-                    const dataPreferences = preferences.getPreferencesSync(this.context, {
-                      name: item
-                    })
-                    dataPreferences.clearSync()
-                    dataPreferences.flushSync()
-                  }
-                  /*if (item === 'backupSetting') {
-                    const backupSettingDir = this.context.filesDir + '/backupsetting'
-                    if (fileIo.accessSync(backupSettingDir)) {
-                      await fileIo.rmdir(backupSettingDir)
-                    }
-                  }*/
+                  const dataPreferences = preferences.getPreferencesSync(this.context, {
+                    name: item
+                  })
+                  dataPreferences.clearSync()
+                  dataPreferences.flushSync()
                 })
                 await this.getSize()
                 const res = await promptAction.showDialog({

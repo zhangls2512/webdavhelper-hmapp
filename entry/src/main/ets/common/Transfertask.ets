@@ -6,7 +6,6 @@ import { Environment, fileIo, fileUri, picker } from '@kit.CoreFileKit'
 import { netBoost } from '@kit.NetworkBoostKit'
 import { notificationManager } from '@kit.NotificationKit'
 import { rcp } from '@kit.RemoteCommunicationKit'
-import { deleteBackupTask, updateBackupTaskStatus } from './Backup'
 import { getDnsServer } from './Dnsserver'
 import { getPermission } from './Permission'
 import { getSizeString } from './Stringformat'
@@ -85,7 +84,7 @@ export async function download(context: Context, id: string) {
                       typeCode: 8,
                       title: '正在下载文件：' + transferTask.name,
                       text: '进度：' + Number((transferredSize / totalSize).toFixed(2)) * 100 + '% (' +
-                      getSizeString(transferredSize) + '/' + getSizeString(totalSize) + ')'
+                        getSizeString(transferredSize) + '/' + getSizeString(totalSize) + ')'
                     }
                   },
                   id: continuousTaskNotificationInfo.notificationId,
@@ -207,7 +206,7 @@ export async function upload(context: Context, id: string) {
                       typeCode: 8,
                       title: '正在上传文件：' + transferTask.name,
                       text: '进度：' + Number((transferredSize / totalSize).toFixed(2)) * 100 + '% (' +
-                      getSizeString(transferredSize) + '/' + getSizeString(totalSize) + ')'
+                        getSizeString(transferredSize) + '/' + getSizeString(totalSize) + ')'
                     }
                   },
                   id: continuousTaskNotificationInfo.notificationId,
@@ -263,50 +262,25 @@ export async function upload(context: Context, id: string) {
       if (response.statusCode !== 200) {
         transferTask.status = 'fail'
         transferTask.errCode = response.statusCode
-        if (transferTask.backupTaskId) {
-          await updateBackupTaskStatus(context, transferTask.accountInfo, transferTask.backupTaskId, false)
-        }
       }
       if (response.statusCode >= 200 && response.statusCode < 300) {
         transferTask.status = 'success'
-        if (transferTask.backupTaskId) {
-          await updateBackupTaskStatus(context, transferTask.accountInfo, transferTask.backupTaskId, true)
-          const backupSettingDataPreferences = preferences.getPreferencesSync(context, {
-            name: 'backupSetting'
-          })
-          const deleteAfterSuccess = backupSettingDataPreferences.getSync('deleteAfterSuccess', true)
-          if (deleteAfterSuccess) {
-            await deleteBackupTask(context, transferTask.accountInfo, transferTask.backupTaskId)
-          }
-        }
       } else {
         transferTask.status = 'fail'
         transferTask.errCode = response.statusCode
-        if (transferTask.backupTaskId) {
-          await updateBackupTaskStatus(context, transferTask.accountInfo, transferTask.backupTaskId, false)
-        }
       }
     } catch (err) {
       if (err.code !== 1007900992) {
         transferTask.status = 'fail'
         transferTask.errCode = err.code
-        if (transferTask.backupTaskId) {
-          await updateBackupTaskStatus(context, transferTask.accountInfo, transferTask.backupTaskId, false)
-        }
       }
       if (err.code === 1007900992) {
         transferTask.status = 'cancel'
-        if (transferTask.backupTaskId) {
-          await updateBackupTaskStatus(context, transferTask.accountInfo, transferTask.backupTaskId, false)
-        }
       }
     }
   } catch (err) {
     transferTask.status = 'fail'
     transferTask.errCode = err.code
-    if (transferTask.backupTaskId) {
-      await updateBackupTaskStatus(context, transferTask.accountInfo, transferTask.backupTaskId, false)
-    }
   }
   transferTaskDataPreferences.putSync(id, JSON.stringify(transferTask))
 }

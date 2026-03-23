@@ -39,6 +39,10 @@ export default struct Me {
 
   build() {
     List() {
+      ListItem()
+        .margin({
+          top: this.preferType === 0 ? 56 : 0
+        })
       ListItem() {
         Column() {
           Row() {
@@ -231,6 +235,10 @@ export default struct Me {
           top: $r('sys.float.ohos_id_elements_margin_vertical_l')
         })
       }
+      ListItem()
+        .margin({
+          bottom: this.preferType === 0 ? 80 : 0
+        })
     }
     .padding({
       left: $r('sys.float.ohos_id_elements_margin_horizontal_l'),

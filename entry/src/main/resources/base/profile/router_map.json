@@ -21,16 +21,6 @@
       "buildFunction": "SandboxfilelistBuilder"
     },
     {
-      "name": "Backupsetting",
-      "pageSourceFile": "src/main/ets/pages/Backupsetting.ets",
-      "buildFunction": "BackupsettingBuilder"
-    },
-    {
-      "name": "Backuptask",
-      "pageSourceFile": "src/main/ets/pages/Backuptask.ets",
-      "buildFunction": "BackuptaskBuilder"
-    },
-    {
       "name": "Debuginfo",
       "pageSourceFile": "src/main/ets/pages/Debuginfo.ets",
       "buildFunction": "DebuginfoBuilder"
