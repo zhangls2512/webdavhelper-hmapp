@@ -1,7 +1,6 @@
 import { common } from '@kit.AbilityKit'
-import { preferences } from '@kit.ArkData'
+import { sendablePreferences } from '@kit.ArkData'
 import { taskpool } from '@kit.ArkTS'
-import { display } from '@kit.ArkUI'
 import { deviceInfo } from '@kit.BasicServicesKit'
 import { fileIo } from '@kit.CoreFileKit'
 import { image } from '@kit.ImageKit'
@@ -16,6 +15,7 @@ import {
 } from '@kit.UIDesignKit'
 import { AccountInfo, importAccounts } from '../common/Account'
 import { getCurrentNetworkBearerType } from '../common/Network'
+import { getFlushPreference, getTempPreference } from '../common/Preference'
 import { getPreferType } from '../common/Prefertype'
 import { download, upload } from '../common/Transfertask'
 import Accountlist from './Accountlist'
@@ -56,16 +56,10 @@ struct Index {
   context = this.UIContext.getHostContext() as common.UIAbilityContext
   controller = new HdsTabsController()
   intervalId = -1
-  backDataPreferences = preferences.getPreferencesSync(this.context, {
-    name: 'back'
-  })
-  commonSettingDataPreferences = preferences.getPreferencesSync(this.context, {
-    name: 'commonSetting'
-  })
 
   onBackPress() {
     if (this.index === 0) {
-      const filelist = this.backDataPreferences.getSync('filelist', false)
+      const filelist = getTempPreference(this.context, 'back', 'filelist', false)
       if (!filelist) {
         return false
       } else {
@@ -75,10 +69,6 @@ struct Index {
     } else {
       return false
     }
-  }
-
-  async get() {
-    this.backgroundImagePixelMap = await this.getBackgroundImage()
   }
 
   async getBackgroundImage() {
@@ -138,28 +128,24 @@ struct Index {
           controller: this.controller
         }) {
           TabContent() {
-            if (this.preferType !== 0) {
+            HdsNavigation() {
               Filelist()
-            } else {
-              HdsNavigation() {
-                Filelist()
-                  .padding({
-                    top: 56
-                  })
-              }
-              .hideBackButton(true)
-              .padding({
-                top: 36
-              })
-              .titleBar({
-                content: {
-                  title: {
-                    mainTitle: '文件'
-                  }
-                }
-              })
-              .titleMode(HdsNavigationTitleMode.MINI)
+                .padding({
+                  top: 56
+                })
             }
+            .hideBackButton(true)
+            .padding({
+              top: 36
+            })
+            .titleBar({
+              content: {
+                title: {
+                  mainTitle: '文件'
+                }
+              }
+            })
+            .titleMode(HdsNavigationTitleMode.MINI)
           }
           .tabBar(this.tabBuilder(0, $r('app.media.file'), '文件'))
           .bindSheet(this.isShowNoticeSheet!!, this.NoticeSheetBuilder(), {
@@ -170,28 +156,24 @@ struct Index {
           })
 
           TabContent() {
-            if (this.preferType !== 0) {
+            HdsNavigation() {
               Transfer()
-            } else {
-              HdsNavigation() {
-                Transfer()
-                  .padding({
-                    top: 56
-                  })
-              }
-              .hideBackButton(true)
-              .padding({
-                top: 36
-              })
-              .titleBar({
-                content: {
-                  title: {
-                    mainTitle: '传输'
-                  }
-                }
-              })
-              .titleMode(HdsNavigationTitleMode.MINI)
+                .padding({
+                  top: 56
+                })
             }
+            .hideBackButton(true)
+            .padding({
+              top: 36
+            })
+            .titleBar({
+              content: {
+                title: {
+                  mainTitle: '传输'
+                }
+              }
+            })
+            .titleMode(HdsNavigationTitleMode.MINI)
           }
           .tabBar(this.tabBuilder(1, $r('app.media.transfer'), '传输'))
           .bindSheet(this.isShowAccountlistSheet!!, this.AccountlistSheetBuilder(), {
@@ -201,26 +183,21 @@ struct Index {
           })
 
           TabContent() {
-            if (this.preferType !== 0) {
+            HdsNavigation() {
               Me()
-                .height('100%')
-            } else {
-              HdsNavigation() {
-                Me()
-              }
-              .hideBackButton(true)
-              .padding({
-                top: 36
-              })
-              .titleBar({
-                content: {
-                  title: {
-                    mainTitle: '我的'
-                  }
-                }
-              })
-              .titleMode(HdsNavigationTitleMode.MINI)
             }
+            .hideBackButton(true)
+            .padding({
+              top: 36
+            })
+            .titleBar({
+              content: {
+                title: {
+                  mainTitle: '我的'
+                }
+              }
+            })
+            .titleMode(HdsNavigationTitleMode.MINI)
           }
           .tabBar(this.tabBuilder(2, $r('app.media.me'), '我的'))
         }
@@ -234,11 +211,10 @@ struct Index {
             materialLevel: hdsMaterial.MaterialLevel.ADAPTIVE
           }
         })
-        .barOverlap(this.preferType === 0 ? true : false)
-        .barPosition(this.preferType === 0 ? BarPosition.End : BarPosition.Start)
-        .barWidth(this.preferType === 0 ? 240 : 56)
+        .barOverlap(true)
+        .barPosition(BarPosition.End)
+        .barWidth(240)
         .scrollable(false)
-        .vertical(this.preferType === 0 ? false : true)
         .onChange((index) => {
           this.index = index
         })
@@ -290,6 +266,12 @@ struct Index {
               top: $r('sys.float.ohos_id_default_padding_top')
             })
             .width(240)
+            .bindSheet(this.isShowNoticeSheet!!, this.NoticeSheetBuilder(), {
+              preferType: this.preferType,
+              title: {
+                title: '消息通知'
+              }
+            })
           Divider()
             .vertical(true)
           if (this.index === 0) {
@@ -306,10 +288,11 @@ struct Index {
           }
         }
         .alignItems(VerticalAlign.Top)
-        .bindSheet(this.isShowNoticeSheet!!, this.NoticeSheetBuilder(), {
+        .bindSheet(this.isShowUploaderrorlogSheet!!, this.UploaderrorlogSheetBuilder(), {
+          height: SheetSize.FIT_CONTENT,
           preferType: this.preferType,
           title: {
-            title: '消息通知'
+            title: '上传故障日志'
           }
         })
       }
@@ -321,12 +304,11 @@ struct Index {
     .onAppear(async () => {
       this.intervalId = setInterval(async () => {
         const transferTaskArray: TransferTaskItem[] = []
-        const transferTaskDataPreferences = preferences.getPreferencesSync(this.context, {
+        const transferTaskDataPreferences = sendablePreferences.getPreferencesSync(this.context, {
           name: 'transferTask'
         })
         const transferTaskObject = transferTaskDataPreferences.getAllSync() as object
-        const transferTaskIdArray = Object.keys(transferTaskObject)
-        transferTaskIdArray.forEach(item => {
+        Object.keys(transferTaskObject).forEach(item => {
           const transferTaskString = transferTaskObject[item] as string
           const transferTask = JSON.parse(transferTaskString) as TransferTaskItem
           transferTaskArray.push(transferTask)
@@ -337,7 +319,8 @@ struct Index {
             const item = pendingTransferTaskArray[i]
             let exec = true
             if (getCurrentNetworkBearerType() === 0) {
-              const cellularDataUseRemind = this.commonSettingDataPreferences.getSync('cellularDataUseRemind', 0)
+              const cellularDataUseRemind =
+                getFlushPreference(this.context, 'commonSetting', 'cellularDataUseRemind', 0)
               if (cellularDataUseRemind === 0 ||
                 (cellularDataUseRemind === 1 && item.totalSize > 200 * Math.pow(1024, 2))) {
                 exec = false
@@ -430,15 +413,10 @@ struct Index {
         this.isShowUploaderrorlogSheet = true
       })
       this.preferType = getPreferType(this.UIContext)
-      display.on('change', () => {
-        setTimeout(() => {
-          this.preferType = getPreferType(this.UIContext)
-        }, 200)
-      })
       this.context.eventHub.on('refreshIndex', async () => {
-        await this.get()
+        this.backgroundImagePixelMap = await this.getBackgroundImage()
       })
-      await this.get()
+      this.backgroundImagePixelMap = await this.getBackgroundImage()
     })
     .onDisAppear(() => {
       if (this.intervalId !== -1) {
@@ -452,13 +430,9 @@ struct Index {
       this.context.eventHub.off('accountList')
       this.context.eventHub.off('notice')
       this.context.eventHub.off('clearData')
-      display.off('change')
     })
     .bindSheet(this.isShowCleardataSheet!!, this.CleardataSheetBuilder(), {
-      preferType: this.preferType,
-      title: {
-        title: '清理数据'
-      }
+      preferType: this.preferType
     })
   }
 }

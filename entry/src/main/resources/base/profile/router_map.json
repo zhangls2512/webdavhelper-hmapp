@@ -6,6 +6,11 @@
       "buildFunction": "AddressgroupBuilder"
     },
     {
+      "name": "Clearpreferencekey",
+      "pageSourceFile": "src/main/ets/pages/Clearpreferencekey.ets",
+      "buildFunction": "ClearpreferencekeyBuilder"
+    },
+    {
       "name": "About",
       "pageSourceFile": "src/main/ets/pages/About.ets",
       "buildFunction": "AboutBuilder"

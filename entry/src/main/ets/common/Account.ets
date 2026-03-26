@@ -1,4 +1,3 @@
-import { preferences } from '@kit.ArkData'
 import { util } from '@kit.ArkTS'
 import { promptAction } from '@kit.ArkUI'
 import { appAccount } from '@kit.BasicServicesKit'
@@ -7,6 +6,7 @@ import { rcp } from '@kit.RemoteCommunicationKit'
 import { getDnsServer } from './Dnsserver'
 import { readUri } from './File'
 import { sha256hash } from './Hash'
+import { getFlushPreference } from './Preference'
 import { AddressGroupItem } from '../pages/Addressgroup'
 
 export interface AccountInfo {
@@ -96,8 +96,8 @@ export async function getAccountInfo(): Promise<AccountInfo> {
 export async function getAccountAuthorization() {
   const accountInfo = await getAccountInfo()
   return 'Basic ' +
-  new util.Base64Helper().encodeToStringSync(new util.TextEncoder().encodeInto(accountInfo.name + ':' +
-  accountInfo.password))
+    new util.Base64Helper().encodeToStringSync(new util.TextEncoder().encodeInto(accountInfo.name + ':' +
+      accountInfo.password))
 }
 
 export function getAccountHash(accountInfo: AccountInfo, context?: Context, pathStart?: string): string {
@@ -209,9 +209,6 @@ export async function loginBestPathAccount(context: Context) {
       for (let i = 0; i < addressGroup.length; i++) {
         if (addressGroup[i].list.includes(currentAccountInfo.path)) {
           let bestPath = ''
-          const debugSettingDataPreferences = preferences.getPreferencesSync(context, {
-            name: 'debugSetting'
-          })
           const promises = addressGroup[i].list.map(async (item, index) => {
             const session = rcp.createSession({
               requestConfiguration: {
@@ -219,7 +216,7 @@ export async function loginBestPathAccount(context: Context) {
                   dnsRules: getDnsServer(context)
                 },
                 security: {
-                  remoteValidation: debugSettingDataPreferences.getSync('closeRemoteValidationWhenLinkWebdav',
+                  remoteValidation: getFlushPreference(context, 'debugSetting', 'closeRemoteValidationWhenLinkWebdav',
                     'system') as 'system' | 'skip',
                   tlsRange: {
                     min: 'TlsV1.2'

@@ -1,6 +1,7 @@
-import { preferences } from '@kit.ArkData'
+import { common } from '@kit.AbilityKit'
 import { LengthMetrics, promptAction } from '@kit.ArkUI'
 import { hdsMaterial, HdsNavDestination } from '@kit.UIDesignKit'
+import { deleteFlushPreferenceKey, getFlushPreference, setFlushPreference } from '../common/Preference'
 
 @Builder
 export function DnsserverBuilder() {
@@ -12,11 +13,8 @@ struct Dnsserver {
   @Local ip: string = ''
   @Local port: string = '53'
   @Local focus: boolean = false
-  context = this.getUIContext().getHostContext()
+  context = this.getUIContext().getHostContext() as common.UIAbilityContext
   pageInfos = new NavPathStack()
-  debugSettingDataPreferences = preferences.getPreferencesSync(this.context, {
-    name: 'debugSetting'
-  })
 
   build() {
     HdsNavDestination() {
@@ -65,8 +63,8 @@ struct Dnsserver {
               .width('100%')
               .onClick(async () => {
                 if (!this.ip) {
-                  this.debugSettingDataPreferences.deleteSync('dnsserverip')
-                  this.debugSettingDataPreferences.deleteSync('dnsserverport')
+                  deleteFlushPreferenceKey(this.context, 'debugSetting', 'dnsserverip')
+                  deleteFlushPreferenceKey(this.context, 'debugSetting', 'dnsserverport')
                 }
                 if (this.ip) {
                   if (!this.port) {
@@ -82,10 +80,9 @@ struct Dnsserver {
                     })
                     return
                   }
-                  this.debugSettingDataPreferences.putSync('dnsserverip', this.ip)
-                  this.debugSettingDataPreferences.putSync('dnsserverport', port)
+                  setFlushPreference(this.context, 'debugSetting', 'dnsserverip', this.ip)
+                  setFlushPreference(this.context, 'debugSetting', 'dnsserverport', port)
                 }
-                this.debugSettingDataPreferences.flushSync()
                 await promptAction.openToast({
                   message: '保存成功'
                 })
@@ -124,11 +121,11 @@ struct Dnsserver {
     })
     .onReady((context) => {
       this.pageInfos = context.pathStack
-      this.ip = this.debugSettingDataPreferences.getSync('dnsserverip', '') as string
+      this.ip = getFlushPreference(this.context, 'debugSetting', 'dnsserverip', '') as string
       if (this.ip === '') {
         this.focus = true
       }
-      this.port = String(this.debugSettingDataPreferences.getSync('dnsserverport', 53))
+      this.port = String(getFlushPreference(this.context, 'debugSetting', 'dnsserverport', 53))
     })
   }
 }

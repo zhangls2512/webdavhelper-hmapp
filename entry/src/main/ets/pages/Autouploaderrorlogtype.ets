@@ -1,6 +1,7 @@
-import { preferences } from '@kit.ArkData'
+import { common } from '@kit.AbilityKit'
 import { LengthMetrics } from '@kit.ArkUI'
 import { hdsMaterial, HdsNavDestination } from '@kit.UIDesignKit'
+import { getFlushPreference, setFlushPreference } from '../common/Preference'
 
 export interface Type {
   name: string,
@@ -14,11 +15,8 @@ export function AutouploaderrorlogtypeBuilder() {
 
 @ComponentV2
 struct Autouploaderrorlogtype {
-  context = this.getUIContext().getHostContext()
+  context = this.getUIContext().getHostContext() as common.UIAbilityContext
   autoUploadErrorLogType: string[] = []
-  debugSettingDataPreferences = preferences.getPreferencesSync(this.context, {
-    name: 'debugSetting'
-  })
   typeArray: Type[] = [
     {
       name: 'js运行异常',
@@ -78,11 +76,6 @@ struct Autouploaderrorlogtype {
     }
   ]
 
-  getSetting() {
-    this.autoUploadErrorLogType =
-      this.debugSettingDataPreferences.getSync('autoUploadErrorLogType', ['JS_ERROR', 'APP_CRASH']) as string[]
-  }
-
   build() {
     HdsNavDestination() {
       List() {
@@ -115,8 +108,8 @@ struct Autouploaderrorlogtype {
                     if (isOn) {
                       this.autoUploadErrorLogType = Array.from(new Set([...this.autoUploadErrorLogType, item.value]))
                     }
-                    this.debugSettingDataPreferences.putSync('autoUploadErrorLogType', this.autoUploadErrorLogType)
-                    this.debugSettingDataPreferences.flushSync()
+                    setFlushPreference(this.context, 'debugSetting', 'autoUploadErrorLogType',
+                      this.autoUploadErrorLogType)
                   })
               }
               .borderRadius(12)
@@ -158,7 +151,9 @@ struct Autouploaderrorlogtype {
       enableComponentSafeArea: true
     })
     .onAppear(() => {
-      this.getSetting()
+      this.autoUploadErrorLogType =
+        getFlushPreference(this.context, 'debugSetting', 'autoUploadErrorLogType',
+          ['JS_ERROR', 'APP_CRASH']) as string[]
     })
   }
 }

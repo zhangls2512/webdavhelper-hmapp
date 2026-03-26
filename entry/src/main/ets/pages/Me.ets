@@ -1,5 +1,5 @@
 import { common } from '@kit.AbilityKit'
-import { display, promptAction } from '@kit.ArkUI'
+import { promptAction } from '@kit.ArkUI'
 import { exitAccount, getAccountInfo } from '../common/Account'
 import { getPreferType } from '../common/Prefertype'
 import Accountlist from './Accountlist'
@@ -247,11 +247,6 @@ export default struct Me {
     })
     .onAppear(async () => {
       this.preferType = getPreferType(this.UIContext)
-      display.on('change', () => {
-        setTimeout(() => {
-          this.preferType = getPreferType(this.UIContext)
-        }, 200)
-      })
       this.context.eventHub.on('login', () => {
         this.isShowLoginSheet = true
       })
@@ -263,7 +258,6 @@ export default struct Me {
     .onDisAppear(() => {
       this.context.eventHub.off('refreshMe')
       this.context.eventHub.off('login')
-      display.off('change')
     })
   }
 }

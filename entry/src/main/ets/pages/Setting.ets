@@ -1,6 +1,6 @@
 import { common } from '@kit.AbilityKit'
 import { privacyManager } from '@kit.AppGalleryKit'
-import { preferences, uniformTypeDescriptor } from '@kit.ArkData'
+import { uniformTypeDescriptor } from '@kit.ArkData'
 import { LengthMetrics, promptAction } from '@kit.ArkUI'
 import { appAccount, deviceInfo } from '@kit.BasicServicesKit'
 import { fileIo, fileUri, picker } from '@kit.CoreFileKit'
@@ -11,6 +11,7 @@ import { getAccountInfo, getAccountList, getLoginStatus, importAccounts } from '
 import { write, writeUri } from '../common/File'
 import openLink from '../common/Openlink'
 import { checkPermission } from '../common/Permission'
+import { getFlushPreference } from '../common/Preference'
 import { getSizeString } from '../common/Stringformat'
 
 @ComponentV2
@@ -27,10 +28,7 @@ export default struct Setting {
   accountDataSync = false
 
   async getSetting() {
-    const commonSettingDataPreferences = preferences.getPreferencesSync(this.context, {
-      name: 'commonSetting'
-    })
-    this.allService = commonSettingDataPreferences.getSync('allService', true) as boolean
+    this.allService = getFlushPreference(this.context, 'commonSetting', 'allService', true) as boolean
     try {
       const appPrivacyResults: privacyManager.AppPrivacyResult[] = privacyManager.getAppPrivacyResult()
       this.agreedPrivacyAgreement =
@@ -1039,9 +1037,6 @@ export default struct Setting {
     }
     .backgroundColor($r('app.color.sheet_background'))
     .hideBackButton(true)
-    .padding({
-      top: $r('sys.float.ohos_id_elements_margin_vertical_m')
-    })
     .titleBar({
       padding: {
         end: LengthMetrics.vp(60)

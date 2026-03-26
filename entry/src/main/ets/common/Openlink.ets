@@ -1,11 +1,8 @@
 import { common } from '@kit.AbilityKit'
-import { preferences } from '@kit.ArkData'
+import { getFlushPreference } from './Preference'
 
 export default async function openLink(context: common.UIAbilityContext, link: string) {
-  const commonSettingDataPreferences = preferences.getPreferencesSync(context, {
-    name: 'commonSetting'
-  })
-  const openLinkType = commonSettingDataPreferences.getSync('openLinkType', 0)
+  const openLinkType = getFlushPreference(context, 'commonSetting', 'openLinkType', 0)
   if (openLinkType === 0) {
     await context.openLink(link)
   }

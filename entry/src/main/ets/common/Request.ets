@@ -1,8 +1,8 @@
-import { preferences } from '@kit.ArkData'
 import { promptAction } from '@kit.ArkUI'
 import { rcp } from '@kit.RemoteCommunicationKit'
 import { getAccountInfo } from './Account'
 import { getDnsServer } from './Dnsserver'
+import { getFlushPreference } from './Preference'
 
 interface DeveloperErrorResponse {
   errCode: number,
@@ -15,16 +15,13 @@ export async function webdavRequest(context: Context, path: string, method: stri
   if (!accountInfo.path) {
     return 'fail'
   }
-  const debugSettingDataPreferences = preferences.getPreferencesSync(context, {
-    name: 'debugSetting'
-  })
   const session = rcp.createSession({
     requestConfiguration: {
       dns: {
         dnsRules: getDnsServer(context)
       },
       security: {
-        remoteValidation: debugSettingDataPreferences.getSync('closeRemoteValidationWhenLinkWebdav',
+        remoteValidation: getFlushPreference(context, 'debugSetting', 'closeRemoteValidationWhenLinkWebdav',
           'system') as 'system' | 'skip',
         tlsRange: {
           min: 'TlsV1.2'
@@ -54,10 +51,7 @@ export async function webdavRequest(context: Context, path: string, method: stri
 }
 
 export async function developerRequest(context: Context, path: string, body: rcp.RequestContent) {
-  const commonSettingDataPreferences = preferences.getPreferencesSync(context, {
-    name: 'commonSetting'
-  })
-  const allService = commonSettingDataPreferences.getSync('allService', true)
+  const allService = getFlushPreference(context, 'commonSetting', 'allService', true)
   if (!allService) {
     context.eventHub.emit('dialog', '全量模式未开启',
       '全量模式未开启，无法使用在线功能。如需使用在线功能，请前往“我的”>“设置”>“更多”>“应用服务模式”，开启全量模式。')

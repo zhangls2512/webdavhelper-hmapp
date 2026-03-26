@@ -1,7 +1,8 @@
-import { preferences } from '@kit.ArkData'
+import { common } from '@kit.AbilityKit'
 import { LengthMetrics, promptAction } from '@kit.ArkUI'
 import { webview } from '@kit.ArkWeb'
 import { hdsMaterial, HdsNavDestination } from '@kit.UIDesignKit'
+import { getFlushPreference } from '../common/Preference'
 
 @Builder
 export function WebviewBuilder() {
@@ -14,11 +15,8 @@ struct Webview {
   @Local darkMode: WebDarkMode = WebDarkMode.Auto
   @Local optimizeParserBudget: boolean = false
   @Local title: string = ''
-  context = this.getUIContext().getHostContext()
+  context = this.getUIContext().getHostContext() as common.UIAbilityContext
   controller = new webview.WebviewController()
-  debugSettingDataPreferences = preferences.getPreferencesSync(this.context, {
-    name: 'debugSetting'
-  })
 
   build() {
     HdsNavDestination() {
@@ -77,10 +75,7 @@ struct Webview {
     })
     .onReady((context) => {
       this.url = context.pathInfo.param as string
-      const commonSettingDataPreferences = preferences.getPreferencesSync(this.context, {
-        name: 'commonSetting'
-      })
-      const colorMode = commonSettingDataPreferences.getSync('colorMode', 0)
+      const colorMode = getFlushPreference(this.context, 'commonSetting', 'colorMode', 0)
       if (colorMode === 0) {
         this.darkMode = WebDarkMode.Auto
       }
@@ -90,8 +85,9 @@ struct Webview {
       if (colorMode === 2) {
         this.darkMode = WebDarkMode.On
       }
-      this.optimizeParserBudget = this.debugSettingDataPreferences.getSync('optimizeParserBudget', true) as boolean
-      const destroyMode = this.debugSettingDataPreferences.getSync('destroyMode',
+      this.optimizeParserBudget =
+        getFlushPreference(this.context, 'debugSetting', 'optimizeParserBudget', true) as boolean
+      const destroyMode = getFlushPreference(this.context, 'debugSetting', 'destroyMode',
         webview.WebDestroyMode.NORMAL_MODE) as webview.WebDestroyMode
       webview.WebviewController.setWebDestroyMode(destroyMode)
     })

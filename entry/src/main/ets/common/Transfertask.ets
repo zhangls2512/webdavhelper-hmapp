@@ -1,5 +1,5 @@
 import { wantAgent } from '@kit.AbilityKit'
-import { preferences } from '@kit.ArkData'
+import { sendablePreferences } from '@kit.ArkData'
 import { backgroundTaskManager } from '@kit.BackgroundTasksKit'
 import { deviceInfo } from '@kit.BasicServicesKit'
 import { Environment, fileIo, fileUri, picker } from '@kit.CoreFileKit'
@@ -8,17 +8,15 @@ import { notificationManager } from '@kit.NotificationKit'
 import { rcp } from '@kit.RemoteCommunicationKit'
 import { getDnsServer } from './Dnsserver'
 import { getPermission } from './Permission'
+import { getFlushPreference } from './Preference'
 import { getSizeString } from './Stringformat'
 import { encodePath } from './Webdav'
 import { TransferTaskItem } from '../pages/Index'
 
 @Concurrent
 export async function download(context: Context, id: string) {
-  const transferTaskDataPreferences = preferences.getPreferencesSync(context, {
+  const transferTaskDataPreferences = sendablePreferences.getPreferencesSync(context, {
     name: 'transferTask'
-  })
-  const debugSettingDataPreferences = preferences.getPreferencesSync(context, {
-    name: 'debugSetting'
   })
   const transferTaskString = transferTaskDataPreferences.getSync(id, '{}') as string
   const transferTask = JSON.parse(transferTaskString) as TransferTaskItem
@@ -26,10 +24,7 @@ export async function download(context: Context, id: string) {
   transferTaskDataPreferences.putSync(id, JSON.stringify(transferTask))
   try {
     let filePath = ''
-    const commonSettingDataPreferences = preferences.getPreferencesSync(context, {
-      name: 'commonSetting'
-    })
-    const downloadDirectory = commonSettingDataPreferences.getSync('downloadDirectory', 0)
+    const downloadDirectory = getFlushPreference(context, 'commonSetting', 'downloadDirectory', 0)
     if (downloadDirectory === 1 && getPermission('ohos.permission.READ_WRITE_DOWNLOAD_DIRECTORY') &&
       deviceInfo.deviceType !== 'phone') {
       filePath = Environment.getUserDownloadDir() + '/' + transferTask.name
@@ -117,7 +112,7 @@ export async function download(context: Context, id: string) {
           dnsRules: getDnsServer(context)
         },
         security: {
-          remoteValidation: debugSettingDataPreferences.getSync('closeRemoteValidationWhenLinkWebdav',
+          remoteValidation: getFlushPreference(context, 'debugSetting', 'closeRemoteValidationWhenLinkWebdav',
             'system') as 'system' | 'skip',
           tlsRange: {
             min: 'TlsV1.2'
@@ -158,11 +153,8 @@ export async function download(context: Context, id: string) {
 
 @Concurrent
 export async function upload(context: Context, id: string) {
-  const transferTaskDataPreferences = preferences.getPreferencesSync(context, {
+  const transferTaskDataPreferences = sendablePreferences.getPreferencesSync(context, {
     name: 'transferTask'
-  })
-  const debugSettingDataPreferences = preferences.getPreferencesSync(context, {
-    name: 'debugSetting'
   })
   const transferTaskString = transferTaskDataPreferences.getSync(id, '{}') as string
   const transferTask = JSON.parse(transferTaskString) as TransferTaskItem
@@ -241,7 +233,7 @@ export async function upload(context: Context, id: string) {
           dnsRules: getDnsServer(context)
         },
         security: {
-          remoteValidation: debugSettingDataPreferences.getSync('closeRemoteValidationWhenLinkWebdav',
+          remoteValidation: getFlushPreference(context, 'debugSetting', 'closeRemoteValidationWhenLinkWebdav',
             'system') as 'system' | 'skip',
           tlsRange: {
             min: 'TlsV1.2'

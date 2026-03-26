@@ -1,12 +1,12 @@
 import { common } from '@kit.AbilityKit'
 import { privacyManager } from '@kit.AppGalleryKit'
-import { preferences } from '@kit.ArkData'
 import { util } from '@kit.ArkTS'
 import { LoadingDialog, promptAction } from '@kit.ArkUI'
 import { rcp } from '@kit.RemoteCommunicationKit'
 import { setAccount } from '../common/Account'
 import { getDnsServer } from '../common/Dnsserver'
 import openLink from '../common/Openlink'
+import { getFlushPreference } from '../common/Preference'
 
 @ComponentV2
 export default struct Login {
@@ -217,16 +217,14 @@ export default struct Login {
                 route = '/' + this.host.substring(index + 1)
               }
               path = this.scheme + '://' + host + ':' + this.port + route
-              const debugSettingDataPreferences = preferences.getPreferencesSync(this.context, {
-                name: 'debugSetting'
-              })
               const session = rcp.createSession({
                 requestConfiguration: {
                   dns: {
                     dnsRules: getDnsServer(this.context)
                   },
                   security: {
-                    remoteValidation: debugSettingDataPreferences.getSync('closeRemoteValidationWhenLinkWebdav',
+                    remoteValidation: getFlushPreference(this.context, 'debugSetting',
+                      'closeRemoteValidationWhenLinkWebdav',
                       'system') as 'system' | 'skip',
                     tlsRange: {
                       min: 'TlsV1.2'

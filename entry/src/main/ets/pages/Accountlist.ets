@@ -1,11 +1,11 @@
 import { common } from '@kit.AbilityKit'
-import { preferences } from '@kit.ArkData'
 import { promptAction } from '@kit.ArkUI'
 import { rcp } from '@kit.RemoteCommunicationKit'
 import { hdsEffect } from '@kit.UIDesignKit'
 import { AccountInfo, getAccountList, removeAccount, setAccount, setAccountBz } from '../common/Account'
 import { getDnsServer } from '../common/Dnsserver'
 import copy from '../common/Pasteboard'
+import { getFlushPreference } from '../common/Preference'
 
 @ComponentV2
 export default struct Accountlist {
@@ -17,12 +17,6 @@ export default struct Accountlist {
   @Local hoverId: number = -1
   UIContext = this.getUIContext()
   context = this.UIContext.getHostContext() as common.UIAbilityContext
-  commonSettingDataPreferences = preferences.getPreferencesSync(this.context, {
-    name: 'commonSetting'
-  })
-  debugSettingDataPreferences = preferences.getPreferencesSync(this.context, {
-    name: 'debugSetting'
-  })
 
   @Builder
   MenuBuilder(item: AccountInfo) {
@@ -339,7 +333,7 @@ export default struct Accountlist {
               dnsRules: getDnsServer(this.context)
             },
             security: {
-              remoteValidation: this.debugSettingDataPreferences.getSync('closeRemoteValidationWhenLinkWebdav',
+              remoteValidation: getFlushPreference(this.context, 'debugSetting', 'closeRemoteValidationWhenLinkWebdav',
                 'system') as 'system' | 'skip',
               tlsRange: {
                 min: 'TlsV1.2'

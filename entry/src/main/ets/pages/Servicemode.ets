@@ -1,8 +1,8 @@
 import { common } from '@kit.AbilityKit'
 import { privacyManager } from '@kit.AppGalleryKit'
-import { preferences } from '@kit.ArkData'
 import { LengthMetrics, promptAction } from '@kit.ArkUI'
 import { hdsMaterial, HdsNavDestination } from '@kit.UIDesignKit'
+import { getFlushPreference, setFlushPreference } from '../common/Preference'
 
 @Builder
 export function ServicemodeBuilder() {
@@ -14,9 +14,6 @@ struct Servicemode {
   @Local allService: boolean = false
   context = this.getUIContext().getHostContext() as common.UIAbilityContext
   pageInfos = new NavPathStack()
-  commonSettingDataPreferences = preferences.getPreferencesSync(this.context, {
-    name: 'commonSetting'
-  })
 
   build() {
     HdsNavDestination() {
@@ -38,8 +35,7 @@ struct Servicemode {
                   .enabled(!this.allService)
                   .onChange((isOn) => {
                     this.allService = isOn
-                    this.commonSettingDataPreferences.putSync('allService', isOn)
-                    this.commonSettingDataPreferences.flushSync()
+                    setFlushPreference(this.context, 'commonSetting', 'allService', isOn)
                   })
               }
               .borderRadius(12)
@@ -104,8 +100,7 @@ struct Servicemode {
                   .enabled(this.allService)
                   .onChange((isOn) => {
                     this.allService = !isOn
-                    this.commonSettingDataPreferences.putSync('allService', !isOn)
-                    this.commonSettingDataPreferences.flushSync()
+                    setFlushPreference(this.context, 'commonSetting', 'allService', !isOn)
                   })
               }
               .borderRadius(12)
@@ -158,7 +153,7 @@ struct Servicemode {
     })
     .onReady((context) => {
       this.pageInfos = context.pathStack
-      this.allService = this.commonSettingDataPreferences.getSync('allService', true) as boolean
+      this.allService = getFlushPreference(this.context, 'commonSetting', 'allService', true) as boolean
     })
     .onDisAppear(() => {
       this.context.eventHub.emit('refreshSetting')
