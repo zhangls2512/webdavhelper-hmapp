@@ -6,7 +6,7 @@ import { appAccount, deviceInfo } from '@kit.BasicServicesKit'
 import { fileIo, fileUri, picker } from '@kit.CoreFileKit'
 import { formProvider } from '@kit.FormKit'
 import { harmonyShare, systemShare } from '@kit.ShareKit'
-import { hdsMaterial, HdsNavigation, HdsNavigationTitleMode } from '@kit.UIDesignKit'
+import { hdsMaterial, HdsNavigation, HdsNavigationTitleMode, ScrollEffectType } from '@kit.UIDesignKit'
 import { getAccountInfo, getAccountList, getLoginStatus, importAccounts } from '../common/Account'
 import { write, writeUri } from '../common/File'
 import openLink from '../common/Openlink'
@@ -55,6 +55,10 @@ export default struct Setting {
   build() {
     HdsNavigation(this.pageInfos) {
       List() {
+        ListItem()
+          .margin({
+            top: 64
+          })
         ListItem() {
           Column() {
             Text('账号')
@@ -1028,20 +1032,35 @@ export default struct Setting {
         .margin({
           top: $r('sys.float.ohos_id_elements_margin_vertical_l')
         })
+
+        ListItem()
+          .margin({
+            bottom: 28
+          })
       }
       .padding({
-        bottom: $r('sys.float.ohos_id_default_padding_bottom_fixed'),
         left: $r('sys.float.ohos_id_elements_margin_horizontal_l'),
         right: $r('sys.float.ohos_id_elements_margin_horizontal_l')
       })
     }
     .backgroundColor($r('app.color.sheet_background'))
     .hideBackButton(true)
+    .recoverable(true)
     .titleBar({
       padding: {
         end: LengthMetrics.vp(60)
       },
       style: {
+        scrollEffectOpts: {
+          scrollEffectType: ScrollEffectType.IMMERSIVE_GRADIENT_BLUR
+        },
+        originalStyle: {
+          contentStyle: {
+            titleStyle: {
+              mainTitleColor: $r('sys.color.font_primary')
+            }
+          }
+        },
         thermoCtrl: true,
         systemMaterialEffect: {
           materialType: hdsMaterial.MaterialType.ADAPTIVE,
@@ -1052,10 +1071,9 @@ export default struct Setting {
         title: {
           mainTitle: '设置'
         }
-      },
-      enableComponentSafeArea: true
+      }
     })
-    .titleMode(HdsNavigationTitleMode.MINI)
+    .titleMode(HdsNavigationTitleMode.MODAL)
     .onAppear(async () => {
       this.context.eventHub.on('refreshSetting', async () => {
         await this.getSetting()

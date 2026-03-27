@@ -138,6 +138,7 @@ struct Index {
             .padding({
               top: 36
             })
+            .recoverable(true)
             .titleBar({
               content: {
                 title: {
@@ -166,6 +167,7 @@ struct Index {
             .padding({
               top: 36
             })
+            .recoverable(true)
             .titleBar({
               content: {
                 title: {
@@ -190,6 +192,7 @@ struct Index {
             .padding({
               top: 36
             })
+            .recoverable(true)
             .titleBar({
               content: {
                 title: {

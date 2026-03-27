@@ -434,12 +434,15 @@ struct Sandboxfilelist {
                 .borderRadius($r('sys.float.ohos_id_corner_radius_default_l'))
               }
             })
+            ListItem()
+              .margin({
+                bottom: 28
+              })
           }
           .layoutWeight(1)
         }
         .alignItems(HorizontalAlign.Start)
         .margin({
-          bottom: 28,
           top: 64
         })
       }
@@ -449,6 +452,7 @@ struct Sandboxfilelist {
       })
     }
     .backgroundColor($r('app.color.sheet_background'))
+    .recoverable(true)
     .titleBar({
       padding: {
         end: LengthMetrics.vp(60)
