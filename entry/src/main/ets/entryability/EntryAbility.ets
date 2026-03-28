@@ -21,7 +21,7 @@ import { connection } from '@kit.NetworkKit'
 import { notificationManager } from '@kit.NotificationKit'
 import { hiAppEvent } from '@kit.PerformanceAnalysisKit'
 import { harmonyShare, systemShare } from '@kit.ShareKit'
-import { getAccountList, getLoginStatus, loginBestPathAccount } from '../common/Account'
+import { generateBestAddress, getAccountList, getLoginStatus } from '../common/Account'
 import { clearNouseData } from '../common/Clearnousedata'
 import { write } from '../common/File'
 import { getCurrentNetworkBearerType } from '../common/Network'
@@ -321,8 +321,8 @@ export default class EntryAbility extends UIAbility {
     }
     const showAccountlistSheetAfterAppLaunch =
       getFlushPreference(this.context, 'commonSetting', 'showAccountlistSheetAfterAppLaunch', false)
-    const accounts = await getAccountList()
-    const isLogin = await getLoginStatus()
+    const accounts = await getAccountList(this.context)
+    const isLogin = await getLoginStatus(this.context)
     if (showAccountlistSheetAfterAppLaunch) {
       if (!isLogin && accounts.length !== 0) {
         this.context.eventHub.emit('accountList')
@@ -456,7 +456,7 @@ export default class EntryAbility extends UIAbility {
     }
     await this.appInit(want)
     await clearNouseData(this.context)
-    await loginBestPathAccount(this.context)
+    await generateBestAddress(this.context)
   }
 
   async onNewWant(want: Want) {

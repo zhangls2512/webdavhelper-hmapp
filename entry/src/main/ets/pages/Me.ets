@@ -18,7 +18,7 @@ export default struct Me {
   context = this.UIContext.getHostContext() as common.UIAbilityContext
 
   async get() {
-    const accountInfo = await getAccountInfo()
+    const accountInfo = await getAccountInfo(this.context)
     this.name = accountInfo.name
   }
 
@@ -224,7 +224,7 @@ export default struct Me {
             .role(ButtonRole.ERROR)
             .width('100%')
             .onClick(async () => {
-              await exitAccount()
+              await exitAccount(this.context)
               await promptAction.openToast({
                 message: '退出成功'
               })

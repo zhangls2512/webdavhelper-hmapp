@@ -16,7 +16,7 @@ export function encodePath(path: string) {
 
 export async function ls(context: Context, path: string) {
   const res = await webdavRequest(context, encodePath(path), 'PROPFIND', {
-    Authorization: await getAccountAuthorization(),
+    Authorization: await getAccountAuthorization(context),
     Depth: '1'
   })
   if (res !== 'fail') {
@@ -57,37 +57,37 @@ export async function ls(context: Context, path: string) {
 
 export async function mkdir(context: Context, path: string, name: string) {
   return await webdavRequest(context, encodePath(path + '/' + name), 'MKCOL', {
-    Authorization: await getAccountAuthorization()
+    Authorization: await getAccountAuthorization(context)
   })
 }
 
 export async function cp(context: Context, srcPath: string, destPath: string) {
-  const accountInfo = await getAccountInfo()
+  const accountInfo = await getAccountInfo(context)
   return await webdavRequest(context, encodePath(srcPath), 'COPY', {
-    Authorization: await getAccountAuthorization(),
+    Authorization: await getAccountAuthorization(context),
     Destination: accountInfo.path + '/' + encodePath(destPath + '/' + srcPath.substring(srcPath.lastIndexOf('/'))),
     Depth: 'infinity'
   })
 }
 
 export async function mv(context: Context, srcPath: string, destPath: string) {
-  const accountInfo = await getAccountInfo()
+  const accountInfo = await getAccountInfo(context)
   return await webdavRequest(context, encodePath(srcPath), 'MOVE', {
-    Authorization: await getAccountAuthorization(),
+    Authorization: await getAccountAuthorization(context),
     Destination: accountInfo.path + '/' + encodePath(destPath + '/' + srcPath.substring(srcPath.lastIndexOf('/')))
   })
 }
 
 export async function rn(context: Context, path: string, name: string) {
-  const accountInfo = await getAccountInfo()
+  const accountInfo = await getAccountInfo(context)
   return await webdavRequest(context, encodePath(path), 'MOVE', {
-    Authorization: await getAccountAuthorization(),
+    Authorization: await getAccountAuthorization(context),
     Destination: accountInfo.path + '/' + encodePath(path.substring(0, path.lastIndexOf('/')) + '/' + name)
   })
 }
 
 export async function rm(context: Context, path: string) {
   return await webdavRequest(context, encodePath(path), 'DELETE', {
-    Authorization: await getAccountAuthorization()
+    Authorization: await getAccountAuthorization(context)
   })
 }

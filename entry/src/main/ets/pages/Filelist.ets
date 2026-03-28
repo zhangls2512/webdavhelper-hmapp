@@ -69,7 +69,7 @@ export default struct Filelist {
       this.account = ''
     }
     if (this.isLogin) {
-      const accountInfo = await getAccountInfo()
+      const accountInfo = await getAccountInfo(this.context)
       const account = getAccountHash(accountInfo)
       if (this.account !== account) {
         this.dirnames = []
@@ -246,7 +246,7 @@ export default struct Filelist {
                     scene: 'download',
                     sceneEvent: netBoost.SceneEvent.SCENE_EVENT_ENTER
                   })
-                  const accountInfo = await getAccountInfo()
+                  const accountInfo = await getAccountInfo(this.context)
                   let lastUpdateTime = 0
                   const session = rcp.createSession({
                     requestConfiguration: {
@@ -318,7 +318,7 @@ export default struct Filelist {
                       }
                     },
                     headers: {
-                      Authorization: await getAccountAuthorization()
+                      Authorization: await getAccountAuthorization(this.context)
                     }
                   })
                   backgroundTaskManager.on('continuousTaskCancel', async () => {
@@ -530,8 +530,8 @@ export default struct Filelist {
                   name: 'transferTask'
                 })
                 const array = this.multipleSelectArray.filter(item => !item.isdir)
-                const accountInfo = await getAccountInfo()
-                const authorization = await getAccountAuthorization()
+                const accountInfo = await getAccountInfo(this.context)
+                const authorization = await getAccountAuthorization(this.context)
                 array.forEach(item => {
                   const id = util.generateRandomUUID()
                   transferTaskDataPreferences.putSync(id, JSON.stringify({
@@ -897,8 +897,8 @@ export default struct Filelist {
                   const transferTaskDataPreferences = sendablePreferences.getPreferencesSync(this.context, {
                     name: 'transferTask'
                   })
-                  const accountInfo = await getAccountInfo()
-                  const authorization = await getAccountAuthorization()
+                  const accountInfo = await getAccountInfo(this.context)
+                  const authorization = await getAccountAuthorization(this.context)
                   uris.forEach(item => {
                     const id = util.generateRandomUUID()
                     transferTaskDataPreferences.putSync(id, JSON.stringify({
@@ -1194,7 +1194,7 @@ export default struct Filelist {
                         const supportedformats = ['mp4', 'mkv', 'm4a', 'aac', 'mp3', 'ogg', 'wav', 'flac', 'amr', 'ape']
                         if (supportedformats.includes(houzhui) &&
                           getFlushPreference(this.context, 'commonSetting', 'onlinePreviewMedia', true)) {
-                          const accountInfo = await getAccountInfo()
+                          const accountInfo = await getAccountInfo(this.context)
                           this.src = accountInfo.path + '/' + item.path
                           this.srcName = item.name
                           this.isShowPlayerSheet = true
@@ -1259,7 +1259,7 @@ export default struct Filelist {
                             scene: 'download',
                             sceneEvent: netBoost.SceneEvent.SCENE_EVENT_ENTER
                           })
-                          const accountInfo = await getAccountInfo()
+                          const accountInfo = await getAccountInfo(this.context)
                           let lastUpdateTime = 0
                           const session = rcp.createSession({
                             requestConfiguration: {
@@ -1332,7 +1332,7 @@ export default struct Filelist {
                               }
                             },
                             headers: {
-                              Authorization: await getAccountAuthorization()
+                              Authorization: await getAccountAuthorization(this.context)
                             }
                           })
                           backgroundTaskManager.on('continuousTaskCancel', async () => {
@@ -1466,10 +1466,10 @@ export default struct Filelist {
         this.loading = true
       })
       this.context.eventHub.on('refreshFilelist', async () => {
-        this.isLogin = await getLoginStatus()
+        this.isLogin = await getLoginStatus(this.context)
         this.loading = true
       })
-      this.isLogin = await getLoginStatus()
+      this.isLogin = await getLoginStatus(this.context)
       this.loading = true
     })
     .onDisAppear(() => {

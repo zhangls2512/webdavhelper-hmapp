@@ -57,8 +57,8 @@ export default struct Accountlist {
             ]
           })
           if (data.index === 1) {
-            await removeAccount(item.id)
-            this.accountArray = await getAccountList()
+            await removeAccount(this.context, item.id)
+            this.accountArray = await getAccountList(this.context)
             if (item.isLogin === 'true') {
               this.context.eventHub.emit('refreshMe')
               this.isShowAccountlistSheet = false
@@ -303,7 +303,7 @@ export default struct Accountlist {
                   })
                   this.bzId = ''
                   this.bz = ''
-                  this.accountArray = await getAccountList()
+                  this.accountArray = await getAccountList(this.context)
                 })
             }
             .margin({
@@ -324,7 +324,7 @@ export default struct Accountlist {
       bottom: $r('sys.float.ohos_id_default_padding_bottom_fixed')
     })
     .onAppear(async () => {
-      this.accountArray = await getAccountList()
+      this.accountArray = await getAccountList(this.context)
       this.pathConnectionStatusArray = Array(this.accountArray.length).fill('connecting')
       const promises = this.accountArray.map(async (item, index) => {
         const session = rcp.createSession({

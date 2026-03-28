@@ -383,7 +383,7 @@ export default struct Player {
       this.dialogControllerProgress.open()
       this.avPlayer = await media.createAVPlayer()
       const mediaSource = media.createMediaSourceWithUrl(this.src, {
-        Authorization: await getAccountAuthorization()
+        Authorization: await getAccountAuthorization(this.context)
       })
       await this.avPlayer.setMediaSource(mediaSource)
       this.avPlayer.on('stateChange', async (state) => {

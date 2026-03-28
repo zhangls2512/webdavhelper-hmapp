@@ -38,9 +38,9 @@ export default struct Setting {
         message: '发生错误，错误码：' + err.code + '，错误信息：' + err.message
       })
     }
-    this.isLogin = await getLoginStatus()
+    this.isLogin = await getLoginStatus(this.context)
     if (this.isLogin) {
-      const accountInfo = await getAccountInfo()
+      const accountInfo = await getAccountInfo(this.context)
       const appAccountManager = appAccount.createAppAccountManager()
       const res = await checkPermission(this.context, this.UIContext, 'ohos.permission.DISTRIBUTED_DATASYNC')
       this.accountDataSyncEnabled = res
@@ -48,7 +48,7 @@ export default struct Setting {
         this.accountDataSync = await appAccountManager.checkDataSyncEnabled(accountInfo.id)
       }
     }
-    const accounts = await getAccountList()
+    const accounts = await getAccountList(this.context)
     this.accountCount = accounts.length
   }
 
@@ -86,7 +86,7 @@ export default struct Setting {
                     .enabled(this.accountDataSyncEnabled)
                     .onChange(async (isOn) => {
                       try {
-                        const accountInfo = await getAccountInfo()
+                        const accountInfo = await getAccountInfo(this.context)
                         const appAccountManager = appAccount.createAppAccountManager()
                         await appAccountManager.setDataSyncEnabled(accountInfo.id, isOn)
                       } catch (err) {
@@ -199,7 +199,7 @@ export default struct Setting {
                 const uris = await documentViewPicker.save(documentSaveOptions)
                 if (uris.length === 1) {
                   const filePath = uris[0]
-                  const array = await getAccountList()
+                  const array = await getAccountList(this.context)
                   await writeUri(filePath, JSON.stringify(array))
                   await promptAction.openToast({
                     message: '导出成功'
@@ -246,7 +246,7 @@ export default struct Setting {
                   }
                 })
                 .onClick(async () => {
-                  const array = await getAccountList()
+                  const array = await getAccountList(this.context)
                   const filePath = this.context.tempDir + '/webdavhelperaccounts.txt'
                   await write(filePath, JSON.stringify(array))
                   const shareData = new systemShare.SharedData({
