@@ -60,7 +60,7 @@ struct Networktest {
                   const response = await session.get('https://api.zhangls2512.cn/test')
                   session.close()
                   dialogControllerProgress.close()
-                  if (response.statusCode === 200) {
+                  if (response.statusCode >= 200 && response.statusCode < 300) {
                     const res = response.toJSON() as Response
                     this.errCode = res.errCode
                     this.errMsg = res.errMsg

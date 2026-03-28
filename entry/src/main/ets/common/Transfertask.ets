@@ -56,6 +56,7 @@ export async function download(context: Context, id: string) {
       scene: 'download',
       sceneEvent: netBoost.SceneEvent.SCENE_EVENT_ENTER
     })
+    let lastUpdateTime = 0
     const session = rcp.createSession({
       requestConfiguration: {
         transfer: {
@@ -69,9 +70,10 @@ export async function download(context: Context, id: string) {
               await fileStream.write(incomingData)
             },
             onDownloadProgress: async (totalSize, transferredSize) => {
-              transferTask.transferredSize = transferredSize
-              transferTaskDataPreferences.putSync(id, JSON.stringify(transferTask))
-              try {
+              const currentTime = Date.now()
+              if (currentTime - lastUpdateTime >= 50) {
+                transferTask.transferredSize = transferredSize
+                transferTaskDataPreferences.putSync(id, JSON.stringify(transferTask))
                 await notificationManager.publish({
                   content: {
                     notificationContentType: notificationManager.ContentType.NOTIFICATION_CONTENT_SYSTEM_LIVE_VIEW,
@@ -93,8 +95,8 @@ export async function download(context: Context, id: string) {
                     }
                   }
                 })
-              } catch {
               }
+              lastUpdateTime = currentTime
             },
             onDataEnd: async () => {
               session.close()
@@ -128,12 +130,11 @@ export async function download(context: Context, id: string) {
     })
     try {
       const response = await session.get(transferTask.accountInfo.path + '/' + transferTask.path)
-      if (response.statusCode !== 200) {
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        transferTask.status = 'success'
+      } else {
         transferTask.status = 'fail'
         transferTask.errCode = response.statusCode
-      }
-      if (response.statusCode === 200) {
-        transferTask.status = 'success'
       }
     } catch (err) {
       if (err.code !== 1007900992) {
@@ -178,6 +179,7 @@ export async function upload(context: Context, id: string) {
       scene: 'upload',
       sceneEvent: netBoost.SceneEvent.SCENE_EVENT_ENTER
     })
+    let lastUpdateTime = 0
     const session = rcp.createSession({
       requestConfiguration: {
         transfer: {
@@ -188,9 +190,10 @@ export async function upload(context: Context, id: string) {
         tracing: {
           httpEventsHandler: {
             onUploadProgress: async (totalSize, transferredSize) => {
-              transferTask.transferredSize = transferredSize
-              transferTaskDataPreferences.putSync(id, JSON.stringify(transferTask))
-              try {
+              const currentTime = Date.now()
+              if (currentTime - lastUpdateTime >= 50) {
+                transferTask.transferredSize = transferredSize
+                transferTaskDataPreferences.putSync(id, JSON.stringify(transferTask))
                 await notificationManager.publish({
                   content: {
                     notificationContentType: notificationManager.ContentType.NOTIFICATION_CONTENT_SYSTEM_LIVE_VIEW,
@@ -212,8 +215,8 @@ export async function upload(context: Context, id: string) {
                     }
                   }
                 })
-              } catch {
               }
+              lastUpdateTime = currentTime
             },
             onDataEnd: async () => {
               session.close()
@@ -251,10 +254,6 @@ export async function upload(context: Context, id: string) {
       const response =
         await session.put(transferTask.accountInfo.path + '/' + encodePath(transferTask.path + '/' + transferTask.name),
           new rcp.UploadFromFile(fileUri.getUriFromPath(transferTask.srcFileUri)))
-      if (response.statusCode !== 200) {
-        transferTask.status = 'fail'
-        transferTask.errCode = response.statusCode
-      }
       if (response.statusCode >= 200 && response.statusCode < 300) {
         transferTask.status = 'success'
       } else {

@@ -72,7 +72,7 @@ export async function developerRequest(context: Context, path: string, body: rcp
   try {
     const response = await session.post('https://api.zhangls2512.cn' + path, body)
     session.close()
-    if (response.statusCode === 200) {
+    if (response.statusCode >= 200 && response.statusCode < 300) {
       const res = response.toJSON() as DeveloperErrorResponse
       if (res.errCode === 0) {
         return String(response)
@@ -80,11 +80,12 @@ export async function developerRequest(context: Context, path: string, body: rcp
       context.eventHub.emit('dialog', '接口调用失败',
         '错误码：' + res.errCode + '\n错误信息：' + res.errMsg + '\n修复方法：' + res.errFix)
       return 'fail'
+    } else {
+      await promptAction.openToast({
+        message: 'HTTP 请求失败，状态码：' + response.statusCode
+      })
+      return 'fail'
     }
-    await promptAction.openToast({
-      message: 'HTTP 请求失败，状态码：' + response.statusCode
-    })
-    return 'fail'
   } catch (err) {
     session.close()
     await promptAction.openToast({

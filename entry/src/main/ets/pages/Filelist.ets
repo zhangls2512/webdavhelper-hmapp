@@ -247,6 +247,7 @@ export default struct Filelist {
                     sceneEvent: netBoost.SceneEvent.SCENE_EVENT_ENTER
                   })
                   const accountInfo = await getAccountInfo()
+                  let lastUpdateTime = 0
                   const session = rcp.createSession({
                     requestConfiguration: {
                       transfer: {
@@ -260,8 +261,9 @@ export default struct Filelist {
                             await fileStream.write(incomingData)
                           },
                           onDownloadProgress: async (totalSize, transferredSize) => {
-                            this.transferredSize = transferredSize
-                            try {
+                            const currentTime = Date.now()
+                            if (currentTime - lastUpdateTime >= 50) {
+                              this.transferredSize = transferredSize
                               await notificationManager.publish({
                                 content: {
                                   notificationContentType: notificationManager.ContentType.NOTIFICATION_CONTENT_SYSTEM_LIVE_VIEW,
@@ -284,8 +286,8 @@ export default struct Filelist {
                                   }
                                 }
                               })
-                            } catch {
                             }
+                            lastUpdateTime = currentTime
                           },
                           onDataEnd: async () => {
                             session.close()
@@ -337,7 +339,16 @@ export default struct Filelist {
                   this.isShowProgressSheet = true
                   try {
                     const response = await session.get(accountInfo.path + '/' + item.path)
-                    if (response.statusCode !== 200) {
+                    if (response.statusCode >= 200 && response.statusCode < 300) {
+                      await promptAction.openToast({
+                        message: '下载完成'
+                      })
+                      transferTaskDataPreferences.putSync(util.generateRandomUUID(), JSON.stringify({
+                        name: item.name,
+                        status: 'success',
+                        type: 'download'
+                      }))
+                    } else {
                       await promptAction.openToast({
                         message: 'HTTP 请求失败，状态码：' + response.statusCode
                       })
@@ -345,16 +356,6 @@ export default struct Filelist {
                         name: item.name,
                         status: 'fail',
                         errCode: response.statusCode,
-                        type: 'download'
-                      }))
-                    }
-                    if (response.statusCode === 200) {
-                      await promptAction.openToast({
-                        message: '下载完成'
-                      })
-                      transferTaskDataPreferences.putSync(util.generateRandomUUID(), JSON.stringify({
-                        name: item.name,
-                        status: 'success',
                         type: 'download'
                       }))
                     }
@@ -1259,6 +1260,7 @@ export default struct Filelist {
                             sceneEvent: netBoost.SceneEvent.SCENE_EVENT_ENTER
                           })
                           const accountInfo = await getAccountInfo()
+                          let lastUpdateTime = 0
                           const session = rcp.createSession({
                             requestConfiguration: {
                               transfer: {
@@ -1272,8 +1274,9 @@ export default struct Filelist {
                                     await fileStream.write(incomingData)
                                   },
                                   onDownloadProgress: async (totalSize, transferredSize) => {
-                                    this.transferredSize = transferredSize
-                                    try {
+                                    const currentTime = Date.now()
+                                    if (currentTime - lastUpdateTime >= 50) {
+                                      this.transferredSize = transferredSize
                                       await notificationManager.publish({
                                         content: {
                                           notificationContentType: notificationManager.ContentType.NOTIFICATION_CONTENT_SYSTEM_LIVE_VIEW,
@@ -1297,8 +1300,8 @@ export default struct Filelist {
                                           }
                                         }
                                       })
-                                    } catch {
                                     }
+                                    lastUpdateTime = currentTime
                                   },
                                   onDataEnd: async () => {
                                     session.close()
@@ -1345,13 +1348,7 @@ export default struct Filelist {
                           this.isShowProgressSheet = true
                           try {
                             const response = await session.get(accountInfo.path + '/' + item.path)
-                            if (response.statusCode !== 200) {
-                              await fileIo.unlink(filePath)
-                              await promptAction.openToast({
-                                message: 'HTTP 请求失败，状态码：' + response.statusCode
-                              })
-                            }
-                            if (response.statusCode === 200) {
+                            if (response.statusCode >= 200 && response.statusCode < 300) {
                               const uri = fileUri.getUriFromPath(filePath)
                               const filePreviewType =
                                 getFlushPreference(this.context, 'commonSetting', 'filePreviewType', 0)
@@ -1395,6 +1392,11 @@ export default struct Filelist {
                                   flags: wantConstant.Flags.FLAG_AUTH_READ_URI_PERMISSION
                                 })
                               }
+                            } else {
+                              await fileIo.unlink(filePath)
+                              await promptAction.openToast({
+                                message: 'HTTP 请求失败，状态码：' + response.statusCode
+                              })
                             }
                           } catch (err) {
                             await fileIo.unlink(filePath)

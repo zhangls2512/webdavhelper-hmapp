@@ -219,7 +219,7 @@ export default struct Transfer {
           transferTaskArray.push(transferTask)
         })
         this.transferTaskArray = transferTaskArray
-      }, 100)
+      }, 1000)
     })
     .onDisAppear(() => {
       if (this.intervalId !== -1) {
