@@ -1,11 +1,13 @@
 import { common } from '@kit.AbilityKit'
+import { uniformTypeDescriptor } from '@kit.ArkData'
 import { LengthMetrics } from '@kit.ArkUI'
-import { fileIo } from '@kit.CoreFileKit'
+import { fileIo, fileUri } from '@kit.CoreFileKit'
 import { hiAppEvent } from '@kit.PerformanceAnalysisKit'
+import { systemShare } from '@kit.ShareKit'
 import { hdsMaterial, HdsNavDestination, HdsNavDestinationTitleMode, ScrollEffectType } from '@kit.UIDesignKit'
 import { read } from '../common/File'
 import copy from '../common/Pasteboard'
-import { getTimeStringFromTimeStamp } from '../common/Stringformat'
+import { getSizeString, getTimeStringFromTimeStamp } from '../common/Stringformat'
 import { Type } from './Autouploaderrorlogtype'
 
 interface ErrorLogItem {
@@ -99,17 +101,11 @@ struct Errorlog {
         const filestring = await read(item)
         try {
           const errorLog = JSON.parse(filestring) as hiAppEvent.AppEventGroup
-          const externalLog: string[] = []
+          let externalLog: string[] = []
           if (errorLog.appEventInfos) {
             errorLog.appEventInfos.forEach(item => {
-              const external_log = item.params['external_log'] as string[] | undefined
-              if (external_log) {
-                external_log.forEach(item => {
-                  if (item) {
-                    externalLog.push(item)
-                  }
-                })
-              }
+              const external_log = item.params['external_log'] as string[]
+              externalLog = externalLog.concat(external_log)
             })
           }
           this.errorLogArray.push({
@@ -135,17 +131,11 @@ struct Errorlog {
         const filestring = await read(item)
         try {
           const errorLog = JSON.parse(filestring) as hiAppEvent.AppEventGroup
-          const externalLog: string[] = []
+          let externalLog: string[] = []
           if (errorLog.appEventInfos) {
             errorLog.appEventInfos.forEach(item => {
-              const external_log = item.params['external_log'] as string[] | undefined
-              if (external_log) {
-                external_log.forEach(item => {
-                  if (item) {
-                    externalLog.push(item)
-                  }
-                })
-              }
+              const external_log = item.params['external_log'] as string[]
+              externalLog = externalLog.concat(external_log)
             })
           }
           if (errorLog.name === type) {
@@ -316,27 +306,14 @@ struct Errorlog {
                       }
                     })
                     .onClick(async () => {
-                      const filestring = await read(externalLogItem)
-                      if (filestring !== 'fail') {
-                        const promptAction = this.UIContext.getPromptAction()
-                        const data = await promptAction.showDialog({
-                          title: externalLogItem,
-                          message: filestring,
-                          buttons: [
-                            {
-                              text: '关闭',
-                              color: $r('sys.color.warning')
-                            },
-                            {
-                              text: '复制',
-                              color: $r('sys.color.font_emphasize')
-                            }
-                          ]
-                        })
-                        if (data.index === 1) {
-                          await copy(this.context, this.UIContext, filestring)
-                        }
-                      }
+                      const shareData = new systemShare.SharedData({
+                        utd: uniformTypeDescriptor.UniformDataType.FILE,
+                        title: externalLogItem.substring(externalLogItem.lastIndexOf('/') + 1),
+                        description: getSizeString(fileIo.statSync(externalLogItem).size),
+                        uri: fileUri.getUriFromPath(externalLogItem)
+                      })
+                      const shareController = new systemShare.ShareController(shareData)
+                      await shareController.show(this.context, {})
                     })
                   })
                 }
