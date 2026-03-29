@@ -83,7 +83,7 @@ export async function getLoginStatus(context: Context) {
 }
 
 export async function getAccountInfo(context: Context): Promise<AccountInfo> {
-  const accounts = await getAccountList(context)
+  const accounts = await getAccountList(context, true)
   const account = accounts.find(item => item.isLogin === 'true')
   if (account) {
     return account
@@ -128,7 +128,7 @@ export function getAccountHash(accountInfo: AccountInfo, context?: Context, path
   }
 }
 
-export async function getAccountList(context: Context): Promise<AccountInfo[]> {
+export async function getAccountList(context: Context, bestPath?: boolean): Promise<AccountInfo[]> {
   const appAccountManager = appAccount.createAppAccountManager()
   const appAccountIds = await appAccountManager.getAccountsByOwner('com.zhuzx.webdavhelper')
   const appAccounts: AccountInfo[] = []
@@ -137,7 +137,8 @@ export async function getAccountList(context: Context): Promise<AccountInfo[]> {
     try {
       appAccounts.push({
         id: id,
-        path: getBestAddress(context, appAccountManager.getCustomDataSync(id, 'path')),
+        path: bestPath ? getBestAddress(context, appAccountManager.getCustomDataSync(id, 'path')) :
+          appAccountManager.getCustomDataSync(id, 'path'),
         name: appAccountManager.getCustomDataSync(id, 'name'),
         password: await appAccountManager.getCredential(id, 'password'),
         bz: appAccountManager.getCustomDataSync(item.name, 'bz'),
