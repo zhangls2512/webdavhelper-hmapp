@@ -52,9 +52,10 @@ struct Dnsserver {
                 placeholder: '请输入端口',
                 text: this.port!!
               })
-                .type(InputType.Number)
+                .enableAutoSpacing(true)
                 .layoutWeight(1)
                 .maxLength(5)
+                .type(InputType.Number)
             }
             .margin({
               top: $r('sys.float.ohos_id_elements_margin_vertical_m')
