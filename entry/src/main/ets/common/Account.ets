@@ -224,9 +224,9 @@ export async function generateBestAddress(context: Context) {
   const filePath = context.filesDir + '/addressgroup.txt'
   if (fileIo.accessSync(filePath)) {
     const addressGroup = JSON.parse(fileIo.readTextSync(filePath)) as AddressGroupItem[]
-    const promisesa = addressGroup.map(async (addressItem) => {
+    const promisesa = addressGroup.map(async (addressItem, indexa) => {
       let bestAddress = ''
-      const promisesb = addressItem.list.map(async (item, index) => {
+      const promisesb = addressItem.list.map(async (item, indexb) => {
         const session = rcp.createSession({
           requestConfiguration: {
             dns: {
@@ -241,18 +241,18 @@ export async function generateBestAddress(context: Context) {
             }
           }
         })
-        context.eventHub.on('cancelTry' + index, (cancelTryIndex: number) => {
-          if (cancelTryIndex !== index) {
+        context.eventHub.on('cancelTry,' + indexa + ',' + indexb, (cancelTryIndex: number) => {
+          if (cancelTryIndex !== indexb) {
             session.cancel()
           }
-          context.eventHub.off('cancelTry' + index)
+          context.eventHub.off('cancelTry,' + indexa + ',' + indexb)
         })
         try {
           await session.get(item)
           session.close()
           bestAddress = item
           for (let j = 0; j < addressItem.list.length; j++) {
-            context.eventHub.emit('cancelTry' + j, index)
+            context.eventHub.emit('cancelTry,' + indexa + ',' + j, indexb)
           }
         } catch {
           session.close()
