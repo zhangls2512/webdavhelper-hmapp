@@ -84,7 +84,6 @@ struct Debuginfo {
               })
             Row() {
               Text('应用版本')
-                .enableAutoSpacing(true)
                 .fontWeight(FontWeight.Medium)
                 .margin({
                   right: $r('sys.float.ohos_id_elements_margin_horizontal_m')

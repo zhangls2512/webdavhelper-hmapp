@@ -26,7 +26,7 @@ interface InAccountInfo {
   isLogin: string
 }
 
-interface BestAddressItem {
+export interface BestAddressItem {
   list: string[],
   best: string
 }
