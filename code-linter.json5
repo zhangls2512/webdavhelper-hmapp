@@ -51,6 +51,7 @@
     "@performance/bad-deep-clone-check": "off",
     "@performance/foreach-args-check": "off",
     "@performance/init-list-component": "off",
+    "@performance/reuse-date-instances-check": "off",
     "@performance/state-variable-usage-in-ui-format-check": "off",
     "@cross-device-app-dev/color-contrast": "off",
     "@cross-device-app-dev/color-value": "off",

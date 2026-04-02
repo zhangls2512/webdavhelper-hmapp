@@ -42,7 +42,7 @@ struct Hmappsearch {
   @Local page: number = 1
   @Local pageSize: number = 10
   @Local logic: string = 'and'
-  @Local ruleArray: RuleItem[] = [{ "key": "app_id", "op": "ne", "value": "C5765880207854862721" }]
+  @Local ruleArray: RuleItem[] = []
   @Local hoverId: number = -1
   context = this.getUIContext().getHostContext() as common.UIAbilityContext
 
