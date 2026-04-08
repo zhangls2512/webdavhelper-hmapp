@@ -346,7 +346,6 @@ struct Sandboxfilelist {
                   }
                   Row() {
                     Image(getFileTypeIcon(item.name))
-                      .fillColor($r('sys.color.icon_secondary'))
                       .height(24)
                       .margin({
                         right: $r('sys.float.ohos_id_elements_margin_horizontal_m')

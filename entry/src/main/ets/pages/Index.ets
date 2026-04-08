@@ -18,7 +18,6 @@ import { getCurrentNetworkBearerType } from '../common/Network'
 import { getFlushPreference, getTempPreference } from '../common/Preference'
 import { getPreferType } from '../common/Prefertype'
 import { download, upload } from '../common/Transfertask'
-import Accountlist from './Accountlist'
 import Cleardata from './Cleardata'
 import Filelist from './Filelist'
 import Me from './Me'
@@ -109,11 +108,6 @@ struct Index {
   }
 
   @Builder
-  AccountlistSheetBuilder() {
-    Accountlist()
-  }
-
-  @Builder
   UploaderrorlogSheetBuilder() {
     Uploaderrorlog({
       errorType: this.errorType,
@@ -178,11 +172,6 @@ struct Index {
             .titleMode(HdsNavigationTitleMode.MINI)
           }
           .tabBar(this.tabBuilder(1, $r('app.media.transfer'), '传输'))
-          .bindSheet(this.isShowAccountlistSheet!!, this.AccountlistSheetBuilder(), {
-            height: SheetSize.FIT_CONTENT,
-            preferType: this.preferType,
-            showClose: false
-          })
 
           TabContent() {
             HdsNavigation() {
@@ -354,11 +343,6 @@ struct Index {
           this.isShowNoticeSheet = true
         }
       })
-      this.context.eventHub.on('accountList', () => {
-        if (!this.isShowAccountlistSheet) {
-          this.isShowAccountlistSheet = true
-        }
-      })
       const promptAction = this.UIContext.getPromptAction()
       this.context.eventHub.on('file', async () => {
         if (deviceInfo.deviceType !== '2in1') {
@@ -430,7 +414,6 @@ struct Index {
       this.context.eventHub.off('dialog')
       this.context.eventHub.off('wantUri')
       this.context.eventHub.off('file')
-      this.context.eventHub.off('accountList')
       this.context.eventHub.off('notice')
       this.context.eventHub.off('clearData')
     })

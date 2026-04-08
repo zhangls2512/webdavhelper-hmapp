@@ -9,7 +9,16 @@ import { notificationManager } from '@kit.NotificationKit'
 import { filePreview } from '@kit.PreviewKit'
 import { rcp } from '@kit.RemoteCommunicationKit'
 import { hdsEffect } from '@kit.UIDesignKit'
-import { getAccountAuthorization, getAccountHash, getAccountInfo, getLoginStatus } from '../common/Account'
+import {
+  AccountInfo,
+  exitAccount,
+  getAccountAuthorization,
+  getAccountHash,
+  getAccountInfo,
+  getAccountList,
+  getLoginStatus,
+  setAccount
+} from '../common/Account'
 import { getDnsServer } from '../common/Dnsserver'
 import { getFileTypeIcon } from '../common/File'
 import { sha256hash } from '../common/Hash'
@@ -35,6 +44,7 @@ export default struct Filelist {
   @Local isShowReaderSheet: boolean = false
   @Local preferType: number = 1
   @Local loading: boolean = false
+  @Local accountArray: AccountInfo[] = []
   @Local fileArray: FileItem[] = []
   @Local dirnames: string[] = []
   @Local isLogin: boolean = false
@@ -65,8 +75,11 @@ export default struct Filelist {
   }
 
   async get() {
+    this.isLogin = await getLoginStatus(this.context)
+    setTempPreference(this.context, 'back', 'filelist', this.isLogin)
     if (!this.isLogin) {
       this.account = ''
+      this.accountArray = await getAccountList(this.context)
     }
     if (this.isLogin) {
       const accountInfo = await getAccountInfo(this.context)
@@ -451,10 +464,110 @@ export default struct Filelist {
     Scroll() {
       Column() {
         if (!this.isLogin) {
-          Text('未登录账号')
-            .height('100%')
-            .textAlign(TextAlign.Center)
-            .width('100%')
+          Refresh({
+            refreshing: $$this.loading
+          }) {
+            List() {
+              if (this.accountArray.length === 0) {
+                ListItem() {
+                  Text('无数据')
+                }
+                .width('100%')
+              }
+              ForEach(this.accountArray, (item: AccountInfo, index) => {
+                ListItem() {
+                  Column() {
+                    if (index !== 0) {
+                      Divider()
+                        .padding({
+                          left: 6,
+                          right: 6
+                        })
+                    }
+                    Row() {
+                      Image($r('app.media.me_tab'))
+                        .height(24)
+                        .margin({
+                          right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
+                        })
+                        .width(24)
+                      Column() {
+                        Text(item.name)
+                          .fontWeight(FontWeight.Medium)
+                          .width('85%')
+                        Text() {
+                          Span(item.path)
+                          if (item.bz) {
+                            Span('\n' + '备注：' + item.bz)
+                          }
+                        }
+                        .enableAutoSpacing(true)
+                        .fontColor($r('sys.color.font_secondary'))
+                        .fontSize($r('sys.float.ohos_id_text_size_body2'))
+                        .margin({
+                          top: $r('sys.float.ohos_id_text_margin_vertical')
+                        })
+                      }
+                      .alignItems(HorizontalAlign.Start)
+                      .layoutWeight(1)
+                      .margin({
+                        right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
+                      })
+
+                      Image($r('app.media.right'))
+                        .fillColor($r('sys.color.icon_fourth'))
+                        .height(12)
+                        .width(12)
+                    }
+                    .borderRadius(12)
+                    .padding({
+                      bottom: 12,
+                      left: 6,
+                      right: 5,
+                      top: 12
+                    })
+                    .stateStyles({
+                      normal: {
+                        .backgroundColor(this.hoverId === index ? $r('sys.color.interactive_hover') :
+                          $r('sys.color.background_secondary'))
+                      },
+                      pressed: {
+                        .backgroundColor($r('sys.color.comp_background_secondary'))
+                      }
+                    })
+                    .width('100%')
+                    .onHover((isHover) => {
+                      if (!isHover) {
+                        this.hoverId = -1
+                      }
+                      if (isHover) {
+                        this.hoverId = index
+                      }
+                    })
+                    .onClick(async () => {
+                      await setAccount(this.context, {
+                        path: item.path,
+                        name: item.name,
+                        password: item.password,
+                        bz: item.bz,
+                        isLogin: 'true'
+                      })
+                      this.loading = true
+                    })
+                  }
+                }
+              })
+              ListItem()
+                .margin({
+                  bottom: this.preferType === 0 ? 80 : 0
+                })
+            }
+          }
+          .height('100%')
+          .onRefreshing(async () => {
+            await this.get()
+            this.loading = false
+          })
         }
         if (this.isLogin) {
           if (this.multipleSelect) {
@@ -751,7 +864,6 @@ export default struct Filelist {
               .width(40)
               .onClick(() => {
                 this.dirnames.pop()
-                setTempPreference(this.context, 'back', 'filelist', this.dirnames.length === 0 ? false : true)
                 this.loading = true
               })
             }
@@ -795,11 +907,22 @@ export default struct Filelist {
           })
 
           Text() {
-            Span(' / ')
+            Span('/')
+            Span(' 账号列表 ')
+              .fontColor($r('sys.color.font_emphasize'))
+              .onClick(async () => {
+                if (this.multipleSelect || this.copyMovePath) {
+                  return
+                }
+                this.dirnames = []
+                await exitAccount(this.context)
+                this.loading = true
+              })
+            Span('/')
+            Span(' 当前账号 / ')
               .fontColor($r('sys.color.font_emphasize'))
               .onClick(() => {
                 this.dirnames = []
-                setTempPreference(this.context, 'back', 'filelist', false)
                 this.loading = true
               })
             ForEach(this.dirnames, (item: string, index) => {
@@ -810,7 +933,6 @@ export default struct Filelist {
                 .fontColor($r('sys.color.font_emphasize'))
                 .onClick(() => {
                   this.dirnames = this.dirnames.slice(0, index + 1)
-                  setTempPreference(this.context, 'back', 'filelist', this.dirnames.length === 0 ? false : true)
                   this.loading = true
                 })
             })
@@ -1116,7 +1238,6 @@ export default struct Filelist {
                       }
                       if (!item.isdir) {
                         Image(getFileTypeIcon(item.name))
-                          .fillColor($r('sys.color.icon_secondary'))
                           .height(24)
                           .margin({
                             right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
@@ -1414,7 +1535,6 @@ export default struct Filelist {
                       }
                       if (item.isdir) {
                         this.dirnames.push(item.name)
-                        setTempPreference(this.context, 'back', 'filelist', true)
                         this.loading = true
                       }
                     })
@@ -1460,16 +1580,26 @@ export default struct Filelist {
     })
     .onAppear(async () => {
       this.preferType = getPreferType(this.UIContext)
-      this.context.eventHub.on('backFilelist', () => {
-        this.dirnames.pop()
-        setTempPreference(this.context, 'back', 'filelist', this.dirnames.length === 0 ? false : true)
+      this.context.eventHub.on('backFilelist', async () => {
+        if (this.dirnames.length > 0) {
+          this.dirnames.pop()
+        } else {
+          this.dirnames = []
+          await exitAccount(this.context)
+        }
         this.loading = true
       })
       this.context.eventHub.on('refreshFilelist', async () => {
-        this.isLogin = await getLoginStatus(this.context)
         this.loading = true
       })
-      this.isLogin = await getLoginStatus(this.context)
+      const showAccountlistAfterAppLaunch =
+        getFlushPreference(this.context, 'commonSetting', 'showAccountlistAfterAppLaunch', false)
+      const isLogin = await getLoginStatus(this.context)
+      if (showAccountlistAfterAppLaunch) {
+        if (isLogin) {
+          await exitAccount(this.context)
+        }
+      }
       this.loading = true
     })
     .onDisAppear(() => {

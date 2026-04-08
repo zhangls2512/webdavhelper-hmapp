@@ -21,7 +21,7 @@ import { connection } from '@kit.NetworkKit'
 import { notificationManager } from '@kit.NotificationKit'
 import { hiAppEvent } from '@kit.PerformanceAnalysisKit'
 import { harmonyShare, systemShare } from '@kit.ShareKit'
-import { generateBestAddress, getAccountList, getLoginStatus } from '../common/Account'
+import { generateBestAddress } from '../common/Account'
 import { clearNouseData } from '../common/Clearnousedata'
 import { write } from '../common/File'
 import { getCurrentNetworkBearerType } from '../common/Network'
@@ -317,18 +317,6 @@ export default class EntryAbility extends UIAbility {
           }
         })
         await Promise.all(promises)
-      }
-    }
-    const showAccountlistSheetAfterAppLaunch =
-      getFlushPreference(this.context, 'commonSetting', 'showAccountlistSheetAfterAppLaunch', false)
-    const accounts = await getAccountList(this.context)
-    const isLogin = await getLoginStatus(this.context)
-    if (showAccountlistSheetAfterAppLaunch) {
-      if (!isLogin && accounts.length !== 0) {
-        this.context.eventHub.emit('accountList')
-      }
-      if (isLogin && accounts.length > 1) {
-        this.context.eventHub.emit('accountList')
       }
     }
     if (getCurrentNetworkBearerType() !== -1) {

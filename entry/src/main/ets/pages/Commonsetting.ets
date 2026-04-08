@@ -33,7 +33,7 @@ struct Commonsetting {
   @Local filePreviewTypeValue: string = '系统预览'
   @Local onlinePreviewMedia: boolean = false
   @Local selectFileDownloadPath: boolean = false
-  @Local showAccountlistSheetAfterAppLaunch: boolean = false
+  @Local showAccountlistAfterAppLaunch: boolean = false
   @Local cellularDataUseRemindIndex: number = 0
   @Local cellularDataUseRemindValue: string = '始终'
   @Local checkVersionUpdateIndex: number = 1
@@ -913,7 +913,7 @@ struct Commonsetting {
               })
             Column() {
               Row() {
-                Text('应用启动后拉起切换账号弹窗')
+                Text('应用启动后显示账号列表')
                   .fontWeight(FontWeight.Medium)
                   .layoutWeight(1)
                   .margin({
@@ -921,10 +921,10 @@ struct Commonsetting {
                   })
                 Toggle({
                   type: ToggleType.Switch,
-                  isOn: this.showAccountlistSheetAfterAppLaunch!!
+                  isOn: this.showAccountlistAfterAppLaunch!!
                 })
                   .onChange((isOn) => {
-                    setFlushPreference(this.context, 'commonSetting', 'showAccountlistSheetAfterAppLaunch', isOn)
+                    setFlushPreference(this.context, 'commonSetting', 'showAccountlistAfterAppLaunch', isOn)
                   })
               }
               .borderRadius(12)
@@ -1117,8 +1117,8 @@ struct Commonsetting {
       this.onlinePreviewMedia = getFlushPreference(this.context, 'commonSetting', 'onlinePreviewMedia', true) as boolean
       this.selectFileDownloadPath =
         getFlushPreference(this.context, 'commonSetting', 'selectFileDownloadPath', false) as boolean
-      this.showAccountlistSheetAfterAppLaunch =
-        getFlushPreference(this.context, 'commonSetting', 'showAccountlistSheetAfterAppLaunch', false) as boolean
+      this.showAccountlistAfterAppLaunch =
+        getFlushPreference(this.context, 'commonSetting', 'showAccountlistAfterAppLaunch', false) as boolean
       const cellularDataUseRemind = getFlushPreference(this.context, 'commonSetting', 'cellularDataUseRemind', 0)
       this.cellularDataUseRemindIndex = cellularDataUseRemind as number
       if (cellularDataUseRemind === 0) {
