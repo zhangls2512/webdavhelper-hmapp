@@ -1,6 +1,6 @@
 import { LengthMetrics, LoadingDialog, promptAction } from '@kit.ArkUI'
 import { rcp } from '@kit.RemoteCommunicationKit'
-import { HdsNavDestination } from '@kit.UIDesignKit'
+import { hdsMaterial, HdsNavDestination, HdsNavDestinationTitleMode, ScrollEffectType } from '@kit.UIDesignKit'
 import { getDnsServer } from '../common/Dnsserver'
 
 interface Response {
@@ -28,6 +28,10 @@ struct Networktest {
   build() {
     HdsNavDestination() {
       List() {
+        ListItem()
+          .margin({
+            top: 64
+          })
         ListItem() {
           Column() {
             Button('测试')
@@ -35,7 +39,7 @@ struct Networktest {
               .onClick(async () => {
                 const dialogControllerProgress = new CustomDialogController({
                   builder: LoadingDialog({
-                    content: '测试中...'
+                    content: '请求中...'
                   })
                 })
                 dialogControllerProgress.open()
@@ -56,21 +60,14 @@ struct Networktest {
                   const response = await session.get('https://api.zhangls2512.cn/test')
                   session.close()
                   dialogControllerProgress.close()
-                  if (response.statusCode === 200) {
-                    let body = ''
-                    if (response.toString()) {
-                      body = response.toString() as string
-                    }
-                    const res = JSON.parse(body) as Response
+                  if (response.statusCode >= 200 && response.statusCode < 300) {
+                    const res = response.toJSON() as Response
                     this.errCode = res.errCode
                     this.errMsg = res.errMsg
                     this.requestIp = res.requestIp
                     this.timeStamp = res.timeStamp
                     this.httpVersion = String(response.httpVersion)
                     this.totalTimeMs = Date.now() - startTime
-                    await promptAction.openToast({
-                      message: '测试完成'
-                    })
                   } else {
                     await promptAction.openToast({
                       message: 'HTTP 请求失败，状态码：' + response.statusCode
@@ -99,7 +96,6 @@ struct Networktest {
               }
               .borderRadius(12)
               .padding(12)
-              .width('100%')
 
               Divider()
                 .padding({
@@ -120,7 +116,6 @@ struct Networktest {
               }
               .borderRadius(12)
               .padding(12)
-              .width('100%')
 
               Divider()
                 .padding({
@@ -141,7 +136,6 @@ struct Networktest {
               }
               .borderRadius(12)
               .padding(12)
-              .width('100%')
 
               Divider()
                 .padding({
@@ -163,7 +157,6 @@ struct Networktest {
               }
               .borderRadius(12)
               .padding(12)
-              .width('100%')
 
               Divider()
                 .padding({
@@ -184,7 +177,6 @@ struct Networktest {
               }
               .borderRadius(12)
               .padding(12)
-              .width('100%')
 
               Divider()
                 .padding({
@@ -206,7 +198,6 @@ struct Networktest {
               }
               .borderRadius(12)
               .padding(12)
-              .width('100%')
 
               Divider()
                 .padding({
@@ -227,7 +218,6 @@ struct Networktest {
               }
               .borderRadius(12)
               .padding(12)
-              .width('100%')
             }
             .backgroundColor($r('sys.color.ohos_id_color_card_bg'))
             .borderRadius($r('sys.float.ohos_id_corner_radius_default_l'))
@@ -240,24 +230,58 @@ struct Networktest {
         .margin({
           top: $r('sys.float.ohos_id_elements_margin_vertical_m')
         })
+
+        ListItem()
+          .margin({
+            bottom: 28
+          })
       }
       .padding({
-        bottom: $r('sys.float.ohos_id_default_padding_bottom_fixed'),
         left: $r('sys.float.ohos_id_elements_margin_horizontal_l'),
         right: $r('sys.float.ohos_id_elements_margin_horizontal_l')
       })
     }
     .backgroundColor($r('app.color.sheet_background'))
+    .recoverable(true)
     .titleBar({
       padding: {
         end: LengthMetrics.vp(60)
+      },
+      style: {
+        scrollEffectOpts: {
+          scrollEffectType: ScrollEffectType.IMMERSIVE_GRADIENT_BLUR
+        },
+        originalStyle: {
+          contentStyle: {
+            titleStyle: {
+              mainTitleColor: $r('sys.color.font_primary')
+            },
+            backIconStyle: {
+              backgroundColor: $r('sys.color.comp_background_color_floating_smooth'),
+              iconColor: $r('sys.color.icon_primary')
+            }
+          }
+        },
+        scrollEffectStyle: {
+          contentStyle: {
+            backIconStyle: {
+              backgroundColor: $r('sys.color.comp_background_color_floating_smooth'),
+              iconColor: $r('sys.color.icon_primary')
+            }
+          }
+        },
+        thermoCtrl: true,
+        systemMaterialEffect: {
+          materialType: hdsMaterial.MaterialType.ADAPTIVE,
+          materialLevel: hdsMaterial.MaterialLevel.ADAPTIVE
+        }
       },
       content: {
         title: {
           mainTitle: '网络测试'
         }
-      },
-      enableComponentSafeArea: true
+      }
     })
+    .titleMode(HdsNavDestinationTitleMode.MODAL)
   }
 }

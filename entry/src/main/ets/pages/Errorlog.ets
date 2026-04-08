@@ -1,10 +1,14 @@
 import { common } from '@kit.AbilityKit'
+import { uniformTypeDescriptor } from '@kit.ArkData'
 import { LengthMetrics } from '@kit.ArkUI'
-import { fileIo } from '@kit.CoreFileKit'
+import { fileIo, fileUri } from '@kit.CoreFileKit'
 import { hiAppEvent } from '@kit.PerformanceAnalysisKit'
-import { HdsNavDestination } from '@kit.UIDesignKit'
+import { systemShare } from '@kit.ShareKit'
+import { hdsMaterial, HdsNavDestination, HdsNavDestinationTitleMode, ScrollEffectType } from '@kit.UIDesignKit'
 import { read } from '../common/File'
 import copy from '../common/Pasteboard'
+import { getSizeString, getTimeStringFromTimeStamp } from '../common/Stringformat'
+import { Type } from './Autouploaderrorlogtype'
 
 interface ErrorLogItem {
   type: string,
@@ -24,6 +28,68 @@ struct Errorlog {
   @Local hoverId: number | string = -1
   UIContext = this.getUIContext()
   context = this.UIContext.getHostContext() as common.UIAbilityContext
+  typeArray: Type[] = [
+    {
+      name: '全部',
+      value: ''
+    },
+    {
+      name: 'js 运行异常',
+      value: 'JS_ERROR'
+    },
+    {
+      name: '崩溃',
+      value: 'APP_CRASH'
+    },
+    {
+      name: '应用冻屏',
+      value: 'APP_FREEZE'
+    },
+    {
+      name: '资源泄漏',
+      value: 'RESOURCE_OVERLIMIT'
+    },
+    {
+      name: '地址越界',
+      value: 'ADDRESS_SANITIZER'
+    },
+    {
+      name: '主线程超时',
+      value: 'MAIN_THREAD_JANK'
+    },
+    {
+      name: '任务执行超时',
+      value: 'APP_HICOLLIE'
+    },
+    {
+      name: '应用终止',
+      value: 'APP_KILLED'
+    },
+    {
+      name: 'ArkWeb 抛滑丢帧',
+      value: 'SCROLL_ARKWEB_FLING_JANK'
+    },
+    {
+      name: '启动耗时',
+      value: 'APP_LAUNCH'
+    },
+    {
+      name: '滑动丢帧',
+      value: 'SCROLL_JANK'
+    },
+    {
+      name: 'CPU 高负载',
+      value: 'CPU_USAGE_HIGH'
+    },
+    {
+      name: '24 小时功耗器件分解统计',
+      value: 'BATTERY_USAGE'
+    },
+    {
+      name: '音频卡顿',
+      value: 'AUDIO_JANK_FRAME'
+    }
+  ]
 
   async get() {
     this.errorLogArray = []
@@ -35,23 +101,17 @@ struct Errorlog {
         const filestring = await read(item)
         try {
           const errorLog = JSON.parse(filestring) as hiAppEvent.AppEventGroup
-          const externalLog: string[] = []
+          let externalLog: string[] = []
           if (errorLog.appEventInfos) {
             errorLog.appEventInfos.forEach(item => {
-              const external_log = item.params['external_log'] as string[] | undefined
-              if (external_log) {
-                external_log.forEach(item => {
-                  if (item) {
-                    externalLog.push(item)
-                  }
-                })
-              }
+              const external_log = item.params['external_log'] as string[]
+              externalLog = externalLog.concat(external_log)
             })
           }
           this.errorLogArray.push({
             type: errorLog.name,
             content: filestring,
-            time: String(new Date(Number(item.replace(errorLogDir, '').replace('.txt', '')))),
+            time: getTimeStringFromTimeStamp(Number(item.replace(errorLogDir, '').replace('.txt', ''))),
             externalLog: externalLog
           })
         } catch {
@@ -71,24 +131,18 @@ struct Errorlog {
         const filestring = await read(item)
         try {
           const errorLog = JSON.parse(filestring) as hiAppEvent.AppEventGroup
-          const externalLog: string[] = []
+          let externalLog: string[] = []
           if (errorLog.appEventInfos) {
             errorLog.appEventInfos.forEach(item => {
-              const external_log = item.params['external_log'] as string[] | undefined
-              if (external_log) {
-                external_log.forEach(item => {
-                  if (item) {
-                    externalLog.push(item)
-                  }
-                })
-              }
+              const external_log = item.params['external_log'] as string[]
+              externalLog = externalLog.concat(external_log)
             })
           }
           if (errorLog.name === type) {
             this.errorLogArray.push({
               type: errorLog.name,
               content: filestring,
-              time: String(new Date(Number(item.replace(errorLogDir, '').replace('.txt', '')))),
+              time: getTimeStringFromTimeStamp(Number(item.replace(errorLogDir, '').replace('.txt', ''))),
               externalLog: externalLog
             })
           }
@@ -103,63 +157,24 @@ struct Errorlog {
     HdsNavDestination() {
       Scroll() {
         Column() {
-          Select([
-            { value: '全部' },
-            { value: 'js 运行异常' },
-            { value: '应用崩溃' },
-            { value: '应用冻屏' },
-            { value: '应用查杀' },
-            { value: '应用启动耗时' },
-            { value: '资源泄漏' },
-            { value: '地址越界' },
-            { value: '主线程超时' },
-            { value: '滑动丢帧' },
-            { value: 'CPU 高负载' },
-            { value: '24 小时功耗器件分解统计' }
-          ])
-            .selected(0)
-            .value('全部')
-            .onSelect(async (index: number) => {
-              if (index === 0) {
-                await this.get()
-              }
-              if (index === 1) {
-                await this.filter('JS_ERROR')
-              }
-              if (index === 2) {
-                await this.filter('APP_CRASH')
-              }
-              if (index === 3) {
-                await this.filter('APP_FREEZE')
-              }
-              if (index === 4) {
-                await this.filter('APP_KILLED')
-              }
-              if (index === 5) {
-                await this.filter('APP_LAUNCH')
-              }
-              if (index === 6) {
-                await this.filter('RESOURCE_OVERLIMIT')
-              }
-              if (index === 7) {
-                await this.filter('ADDRESS_SANITIZER')
-              }
-              if (index === 8) {
-                await this.filter('MAIN_THREAD_JANK')
-              }
-              if (index === 9) {
-                await this.filter('SCROLL_JANK')
-              }
-              if (index === 10) {
-                await this.filter('CPU_USAGE_HIGH')
-              }
-              if (index === 11) {
-                await this.filter('BATTERY_USAGE')
-              }
-            })
+          Select(this.typeArray.map((item): SelectOption => {
+            return {
+              value: item.name
+            }
+          }))
             .margin({
               bottom: $r('sys.float.ohos_id_elements_margin_vertical_m'),
               top: $r('sys.float.ohos_id_elements_margin_vertical_m')
+            })
+            .selected(0)
+            .value('全部')
+            .onSelect(async (index) => {
+              if (index !== 0) {
+                await this.filter(this.typeArray[index].value)
+              }
+              if (index === 0) {
+                await this.get()
+              }
             })
           List() {
             if (this.errorLogArray.length === 0) {
@@ -188,7 +203,6 @@ struct Errorlog {
                   }
                   .borderRadius(12)
                   .padding(12)
-                  .width('100%')
 
                   Divider()
                     .padding({
@@ -218,7 +232,6 @@ struct Errorlog {
                       .backgroundColor($r('sys.color.interactive_pressed'))
                     }
                   })
-                  .width('100%')
                   .onHover((isHover) => {
                     if (!isHover) {
                       this.hoverId = -1
@@ -250,7 +263,6 @@ struct Errorlog {
                   }
                   .borderRadius(12)
                   .padding(12)
-                  .width('100%')
 
                   ForEach(errorLogItem.externalLog, (externalLogItem: string, externalLogIndex) => {
                     Divider()
@@ -281,7 +293,6 @@ struct Errorlog {
                         .backgroundColor($r('sys.color.interactive_pressed'))
                       }
                     })
-                    .width('100%')
                     .onHover((isHover) => {
                       if (!isHover) {
                         this.hoverId = -1
@@ -291,27 +302,14 @@ struct Errorlog {
                       }
                     })
                     .onClick(async () => {
-                      const filestring = await read(externalLogItem)
-                      if (filestring !== 'fail') {
-                        const promptAction = this.UIContext.getPromptAction()
-                        const data = await promptAction.showDialog({
-                          title: externalLogItem,
-                          message: filestring,
-                          buttons: [
-                            {
-                              text: '关闭',
-                              color: $r('sys.color.warning')
-                            },
-                            {
-                              text: '复制',
-                              color: $r('sys.color.font_emphasize')
-                            }
-                          ]
-                        })
-                        if (data.index === 1) {
-                          await copy(this.context, this.UIContext, filestring)
-                        }
-                      }
+                      const shareData = new systemShare.SharedData({
+                        utd: uniformTypeDescriptor.UniformDataType.FILE,
+                        title: externalLogItem.substring(externalLogItem.lastIndexOf('/') + 1),
+                        description: getSizeString(fileIo.statSync(externalLogItem).size),
+                        uri: fileUri.getUriFromPath(externalLogItem)
+                      })
+                      const shareController = new systemShare.ShareController(shareData)
+                      await shareController.show(this.context, {})
                     })
                   })
                 }
@@ -323,29 +321,65 @@ struct Errorlog {
                 top: $r('sys.float.ohos_id_elements_margin_vertical_m')
               })
             })
+            ListItem()
+              .margin({
+                bottom: 28
+              })
           }
           .layoutWeight(1)
         }
         .alignItems(HorizontalAlign.Start)
+        .margin({
+          top: 64
+        })
       }
       .padding({
-        bottom: $r('sys.float.ohos_id_default_padding_bottom_fixed'),
         left: $r('sys.float.ohos_id_elements_margin_horizontal_l'),
         right: $r('sys.float.ohos_id_elements_margin_horizontal_l')
       })
     }
     .backgroundColor($r('app.color.sheet_background'))
+    .recoverable(true)
     .titleBar({
       padding: {
         end: LengthMetrics.vp(60)
+      },
+      style: {
+        scrollEffectOpts: {
+          scrollEffectType: ScrollEffectType.IMMERSIVE_GRADIENT_BLUR
+        },
+        originalStyle: {
+          contentStyle: {
+            titleStyle: {
+              mainTitleColor: $r('sys.color.font_primary')
+            },
+            backIconStyle: {
+              backgroundColor: $r('sys.color.comp_background_color_floating_smooth'),
+              iconColor: $r('sys.color.icon_primary')
+            }
+          }
+        },
+        scrollEffectStyle: {
+          contentStyle: {
+            backIconStyle: {
+              backgroundColor: $r('sys.color.comp_background_color_floating_smooth'),
+              iconColor: $r('sys.color.icon_primary')
+            }
+          }
+        },
+        thermoCtrl: true,
+        systemMaterialEffect: {
+          materialType: hdsMaterial.MaterialType.ADAPTIVE,
+          materialLevel: hdsMaterial.MaterialLevel.ADAPTIVE
+        }
       },
       content: {
         title: {
           mainTitle: '故障日志'
         }
-      },
-      enableComponentSafeArea: true
+      }
     })
+    .titleMode(HdsNavDestinationTitleMode.MODAL)
     .onAppear(async () => {
       await this.get()
     })

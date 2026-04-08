@@ -1,6 +1,7 @@
-import { preferences } from '@kit.ArkData'
+import { common } from '@kit.AbilityKit'
 import { LengthMetrics, promptAction } from '@kit.ArkUI'
-import { HdsNavDestination } from '@kit.UIDesignKit'
+import { hdsMaterial, HdsNavDestination, HdsNavDestinationTitleMode, ScrollEffectType } from '@kit.UIDesignKit'
+import { deleteFlushPreferenceKey, getFlushPreference, setFlushPreference } from '../common/Preference'
 
 @Builder
 export function DnsserverBuilder() {
@@ -12,15 +13,16 @@ struct Dnsserver {
   @Local ip: string = ''
   @Local port: string = '53'
   @Local focus: boolean = false
-  context = this.getUIContext().getHostContext()
+  context = this.getUIContext().getHostContext() as common.UIAbilityContext
   pageInfos = new NavPathStack()
-  debugSettingDataPreferences = preferences.getPreferencesSync(this.context, {
-    name: 'debugSetting'
-  })
 
   build() {
     HdsNavDestination() {
       List() {
+        ListItem()
+          .margin({
+            top: 64
+          })
         ListItem() {
           Column() {
             Row() {
@@ -50,9 +52,10 @@ struct Dnsserver {
                 placeholder: '请输入端口',
                 text: this.port!!
               })
-                .type(InputType.Number)
+                .enableAutoSpacing(true)
                 .layoutWeight(1)
                 .maxLength(5)
+                .type(InputType.Number)
             }
             .margin({
               top: $r('sys.float.ohos_id_elements_margin_vertical_m')
@@ -65,8 +68,8 @@ struct Dnsserver {
               .width('100%')
               .onClick(async () => {
                 if (!this.ip) {
-                  this.debugSettingDataPreferences.deleteSync('dnsserverip')
-                  this.debugSettingDataPreferences.deleteSync('dnsserverport')
+                  deleteFlushPreferenceKey(this.context, 'debugSetting', 'dnsserverip')
+                  deleteFlushPreferenceKey(this.context, 'debugSetting', 'dnsserverport')
                 }
                 if (this.ip) {
                   if (!this.port) {
@@ -82,10 +85,9 @@ struct Dnsserver {
                     })
                     return
                   }
-                  this.debugSettingDataPreferences.putSync('dnsserverip', this.ip)
-                  this.debugSettingDataPreferences.putSync('dnsserverport', port)
+                  setFlushPreference(this.context, 'debugSetting', 'dnsserverip', this.ip)
+                  setFlushPreference(this.context, 'debugSetting', 'dnsserverport', port)
                 }
-                this.debugSettingDataPreferences.flushSync()
                 await promptAction.openToast({
                   message: '保存成功'
                 })
@@ -96,32 +98,66 @@ struct Dnsserver {
         .margin({
           top: $r('sys.float.ohos_id_elements_margin_vertical_m')
         })
+
+        ListItem()
+          .margin({
+            bottom: 28
+          })
       }
       .padding({
-        bottom: $r('sys.float.ohos_id_default_padding_bottom_fixed'),
         left: $r('sys.float.ohos_id_elements_margin_horizontal_l'),
         right: $r('sys.float.ohos_id_elements_margin_horizontal_l')
       })
     }
     .backgroundColor($r('app.color.sheet_background'))
+    .recoverable(true)
     .titleBar({
       padding: {
         end: LengthMetrics.vp(60)
+      },
+      style: {
+        scrollEffectOpts: {
+          scrollEffectType: ScrollEffectType.IMMERSIVE_GRADIENT_BLUR
+        },
+        originalStyle: {
+          contentStyle: {
+            titleStyle: {
+              mainTitleColor: $r('sys.color.font_primary')
+            },
+            backIconStyle: {
+              backgroundColor: $r('sys.color.comp_background_color_floating_smooth'),
+              iconColor: $r('sys.color.icon_primary')
+            }
+          }
+        },
+        scrollEffectStyle: {
+          contentStyle: {
+            backIconStyle: {
+              backgroundColor: $r('sys.color.comp_background_color_floating_smooth'),
+              iconColor: $r('sys.color.icon_primary')
+            }
+          }
+        },
+        thermoCtrl: true,
+        systemMaterialEffect: {
+          materialType: hdsMaterial.MaterialType.ADAPTIVE,
+          materialLevel: hdsMaterial.MaterialLevel.ADAPTIVE
+        }
       },
       content: {
         title: {
           mainTitle: '自定义 DNS 服务器'
         }
-      },
-      enableComponentSafeArea: true
+      }
     })
+    .titleMode(HdsNavDestinationTitleMode.MODAL)
     .onReady((context) => {
       this.pageInfos = context.pathStack
-      this.ip = this.debugSettingDataPreferences.getSync('dnsserverip', '') as string
+      this.ip = getFlushPreference(this.context, 'debugSetting', 'dnsserverip', '') as string
       if (this.ip === '') {
         this.focus = true
       }
-      this.port = String(this.debugSettingDataPreferences.getSync('dnsserverport', 53))
+      this.port = String(getFlushPreference(this.context, 'debugSetting', 'dnsserverport', 53))
     })
   }
 }

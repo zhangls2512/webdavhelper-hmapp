@@ -1,5 +1,5 @@
 import { common } from '@kit.AbilityKit'
-import { display, promptAction } from '@kit.ArkUI'
+import { promptAction } from '@kit.ArkUI'
 import { exitAccount, getAccountInfo } from '../common/Account'
 import { getPreferType } from '../common/Prefertype'
 import Accountlist from './Accountlist'
@@ -18,7 +18,7 @@ export default struct Me {
   context = this.UIContext.getHostContext() as common.UIAbilityContext
 
   async get() {
-    const accountInfo = await getAccountInfo()
+    const accountInfo = await getAccountInfo(this.context)
     this.name = accountInfo.name
   }
 
@@ -39,6 +39,10 @@ export default struct Me {
 
   build() {
     List() {
+      ListItem()
+        .margin({
+          top: this.preferType === 0 ? 56 : 0
+        })
       ListItem() {
         Column() {
           Row() {
@@ -72,7 +76,6 @@ export default struct Me {
               .backgroundColor($r('sys.color.comp_background_secondary'))
             }
           })
-          .width('100%')
           .onHover((isHover) => {
             if (!isHover) {
               this.hoverId = -1
@@ -132,7 +135,6 @@ export default struct Me {
               .backgroundColor($r('sys.color.comp_background_secondary'))
             }
           })
-          .width('100%')
           .onHover((isHover) => {
             if (!isHover) {
               this.hoverId = -1
@@ -187,7 +189,6 @@ export default struct Me {
               .backgroundColor($r('sys.color.comp_background_secondary'))
             }
           })
-          .width('100%')
           .onHover((isHover) => {
             if (!isHover) {
               this.hoverId = -1
@@ -220,7 +221,7 @@ export default struct Me {
             .role(ButtonRole.ERROR)
             .width('100%')
             .onClick(async () => {
-              await exitAccount()
+              await exitAccount(this.context)
               await promptAction.openToast({
                 message: '退出成功'
               })
@@ -231,6 +232,10 @@ export default struct Me {
           top: $r('sys.float.ohos_id_elements_margin_vertical_l')
         })
       }
+      ListItem()
+        .margin({
+          bottom: this.preferType === 0 ? 80 : 0
+        })
     }
     .padding({
       left: $r('sys.float.ohos_id_elements_margin_horizontal_l'),
@@ -239,11 +244,6 @@ export default struct Me {
     })
     .onAppear(async () => {
       this.preferType = getPreferType(this.UIContext)
-      display.on('change', () => {
-        setTimeout(() => {
-          this.preferType = getPreferType(this.UIContext)
-        }, 200)
-      })
       this.context.eventHub.on('login', () => {
         this.isShowLoginSheet = true
       })
@@ -255,7 +255,6 @@ export default struct Me {
     .onDisAppear(() => {
       this.context.eventHub.off('refreshMe')
       this.context.eventHub.off('login')
-      display.off('change')
     })
   }
 }

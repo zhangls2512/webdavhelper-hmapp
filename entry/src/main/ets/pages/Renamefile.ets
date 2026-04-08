@@ -34,7 +34,7 @@ export default struct Renamefile {
               }
               const dialogControllerProgress = new CustomDialogController({
                 builder: LoadingDialog({
-                  content: '重命名中...'
+                  content: '请求中...'
                 })
               })
               dialogControllerProgress.open()
@@ -50,6 +50,9 @@ export default struct Renamefile {
             })
         }
       }
+      .margin({
+        top: $r('sys.float.ohos_id_elements_margin_vertical_m')
+      })
     }
     .padding({
       bottom: $r('sys.float.ohos_id_default_padding_bottom_fixed'),

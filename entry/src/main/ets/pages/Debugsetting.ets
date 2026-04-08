@@ -3,7 +3,8 @@ import { preferences } from '@kit.ArkData'
 import { LengthMetrics, promptAction } from '@kit.ArkUI'
 import { webview } from '@kit.ArkWeb'
 import { deviceInfo } from '@kit.BasicServicesKit'
-import { HdsNavDestination } from '@kit.UIDesignKit'
+import { hdsMaterial, HdsNavDestination, HdsNavDestinationTitleMode, ScrollEffectType } from '@kit.UIDesignKit'
+import { getFlushPreference, setFlushPreference } from '../common/Preference'
 
 @Builder
 export function DebugsettingBuilder() {
@@ -18,7 +19,6 @@ struct Debugsetting {
   @Local deleteErrorLogBeforeUpdateTimeWhenAppLaunch: boolean = false
   @Local autoUploadErrorLog: boolean = false
   @Local showMemoryLevelChange: boolean = false
-  @Local processCache: boolean = false
   @Local showNetAvailableStatusChange: boolean = false
   @Local showNetBlockStatusChange: boolean = false
   @Local showNetLost: boolean = false
@@ -36,15 +36,10 @@ struct Debugsetting {
   UIContext = this.getUIContext()
   context = this.UIContext.getHostContext() as common.UIAbilityContext
   pageInfos = new NavPathStack()
-  commonSettingDataPreferences = preferences.getPreferencesSync(this.context, {
-    name: 'commonSetting'
-  })
-  debugSettingDataPreferences = preferences.getPreferencesSync(this.context, {
-    name: 'debugSetting'
-  })
+  processCache = false
 
   getSetting() {
-    const globalErrorShowType = this.debugSettingDataPreferences.getSync('globalErrorShowType', 0)
+    const globalErrorShowType = getFlushPreference(this.context, 'debugSetting', 'globalErrorShowType', 0)
     this.globalErrorShowTypeIndex = globalErrorShowType as number
     if (globalErrorShowType === 0) {
       this.globalErrorShowTypeValue = 'Toast'
@@ -52,24 +47,27 @@ struct Debugsetting {
     if (globalErrorShowType === 1) {
       this.globalErrorShowTypeValue = 'Dialog'
     }
-    this.saveErrorLog = this.debugSettingDataPreferences.getSync('saveErrorLog', true) as boolean
+    this.saveErrorLog = getFlushPreference(this.context, 'debugSetting', 'saveErrorLog', true) as boolean
     this.deleteErrorLogBeforeUpdateTimeWhenAppLaunch =
-      this.debugSettingDataPreferences.getSync('deleteErrorLogBeforeUpdateTimeWhenAppLaunch', true) as boolean
-    this.autoUploadErrorLog = this.debugSettingDataPreferences.getSync('autoUploadErrorLog', true) as boolean
-    this.showMemoryLevelChange = this.debugSettingDataPreferences.getSync('showMemoryLevelChange', false) as boolean
-    this.processCache = this.debugSettingDataPreferences.getSync('processCache', true) as boolean
-    this.autoReportHighLatency = this.debugSettingDataPreferences.getSync('autoReportHighLatency', true) as boolean
+      getFlushPreference(this.context, 'debugSetting', 'deleteErrorLogBeforeUpdateTimeWhenAppLaunch', true) as boolean
+    this.autoUploadErrorLog = getFlushPreference(this.context, 'debugSetting', 'autoUploadErrorLog', true) as boolean
+    this.showMemoryLevelChange =
+      getFlushPreference(this.context, 'debugSetting', 'showMemoryLevelChange', false) as boolean
+    this.processCache = getFlushPreference(this.context, 'debugSetting', 'processCache', true) as boolean
+    this.autoReportHighLatency =
+      getFlushPreference(this.context, 'debugSetting', 'autoReportHighLatency', true) as boolean
     this.showNetAvailableStatusChange =
-      this.debugSettingDataPreferences.getSync('showNetAvailableStatusChange', false) as boolean
+      getFlushPreference(this.context, 'debugSetting', 'showNetAvailableStatusChange', false) as boolean
     this.showNetBlockStatusChange =
-      this.debugSettingDataPreferences.getSync('showNetBlockStatusChange', false) as boolean
-    this.showNetLost = this.debugSettingDataPreferences.getSync('showNetLost', false) as boolean
+      getFlushPreference(this.context, 'debugSetting', 'showNetBlockStatusChange', false) as boolean
+    this.showNetLost = getFlushPreference(this.context, 'debugSetting', 'showNetLost', false) as boolean
     this.showNetCapabilitiesChange =
-      this.debugSettingDataPreferences.getSync('showNetCapabilitiesChange', false) as boolean
-    this.showNetQosChange = this.debugSettingDataPreferences.getSync('showNetQosChange', false) as boolean
-    this.showNetSceneChange = this.debugSettingDataPreferences.getSync('showNetSceneChange', false) as boolean
-    this.highLatencyThreshold = String(this.debugSettingDataPreferences.getSync('highLatencyThreshold', 200))
-    const destroyMode = this.debugSettingDataPreferences.getSync('destroyMode', webview.WebDestroyMode.NORMAL_MODE)
+      getFlushPreference(this.context, 'debugSetting', 'showNetCapabilitiesChange', false) as boolean
+    this.showNetQosChange = getFlushPreference(this.context, 'debugSetting', 'showNetQosChange', false) as boolean
+    this.showNetSceneChange = getFlushPreference(this.context, 'debugSetting', 'showNetSceneChange', false) as boolean
+    this.highLatencyThreshold = String(getFlushPreference(this.context, 'debugSetting', 'highLatencyThreshold', 200))
+    const destroyMode =
+      getFlushPreference(this.context, 'debugSetting', 'destroyMode', webview.WebDestroyMode.NORMAL_MODE)
     this.destroyModeIndex = destroyMode as webview.WebDestroyMode
     if (destroyMode === 0) {
       this.destroyModeValue = '普通'
@@ -77,16 +75,17 @@ struct Debugsetting {
     if (destroyMode === 1) {
       this.destroyModeValue = '快速'
     }
-    this.optimizeParserBudget = this.debugSettingDataPreferences.getSync('optimizeParserBudget', true) as boolean
+    this.optimizeParserBudget =
+      getFlushPreference(this.context, 'debugSetting', 'optimizeParserBudget', true) as boolean
     const closeRemoteValidationWhenLinkWebdav =
-      this.debugSettingDataPreferences.getSync('closeRemoteValidationWhenLinkWebdav', 'system')
+      getFlushPreference(this.context, 'debugSetting', 'closeRemoteValidationWhenLinkWebdav', 'system')
     if (closeRemoteValidationWhenLinkWebdav === 'system') {
       this.closeRemoteValidationWhenLinkWebdav = false
     }
     if (closeRemoteValidationWhenLinkWebdav === 'skip') {
       this.closeRemoteValidationWhenLinkWebdav = true
     }
-    const allService = this.commonSettingDataPreferences.getSync('allService', true)
+    const allService = getFlushPreference(this.context, 'commonSetting', 'allService', true)
     this.allService = allService as boolean
     if (!allService) {
       this.autoUploadErrorLog = false
@@ -96,6 +95,10 @@ struct Debugsetting {
   build() {
     HdsNavDestination() {
       List() {
+        ListItem()
+          .margin({
+            top: 64
+          })
         ListItem() {
           Column() {
             Text('基础')
@@ -122,13 +125,11 @@ struct Debugsetting {
                   .selected(this.globalErrorShowTypeIndex!!)
                   .value(this.globalErrorShowTypeValue!!)
                   .onSelect((index) => {
-                    this.debugSettingDataPreferences.putSync('globalErrorShowType', index)
-                    this.debugSettingDataPreferences.flushSync()
+                    setFlushPreference(this.context, 'debugSetting', 'globalErrorShowType', index)
                   })
               }
               .borderRadius(12)
               .padding(12)
-              .width('100%')
 
               Divider()
                 .padding({
@@ -147,13 +148,11 @@ struct Debugsetting {
                   isOn: this.saveErrorLog!!
                 })
                   .onChange((isOn) => {
-                    this.debugSettingDataPreferences.putSync('saveErrorLog', isOn)
-                    this.debugSettingDataPreferences.flushSync()
+                    setFlushPreference(this.context, 'debugSetting', 'saveErrorLog', isOn)
                   })
               }
               .borderRadius(12)
               .padding(12)
-              .width('100%')
 
               Divider()
                 .padding({
@@ -172,13 +171,12 @@ struct Debugsetting {
                   isOn: this.deleteErrorLogBeforeUpdateTimeWhenAppLaunch!!
                 })
                   .onChange((isOn) => {
-                    this.debugSettingDataPreferences.putSync('deleteErrorLogBeforeUpdateTimeWhenAppLaunch', isOn)
-                    this.debugSettingDataPreferences.flushSync()
+                    setFlushPreference(this.context, 'debugSetting', 'deleteErrorLogBeforeUpdateTimeWhenAppLaunch',
+                      isOn)
                   })
               }
               .borderRadius(12)
               .padding(12)
-              .width('100%')
 
               Divider()
                 .padding({
@@ -198,13 +196,11 @@ struct Debugsetting {
                 })
                   .enabled(this.allService)
                   .onChange((isOn) => {
-                    this.debugSettingDataPreferences.putSync('autoUploadErrorLog', isOn)
-                    this.debugSettingDataPreferences.flushSync()
+                    setFlushPreference(this.context, 'debugSetting', 'autoUploadErrorLog', isOn)
                   })
               }
               .borderRadius(12)
               .padding(12)
-              .width('100%')
 
               Divider()
                 .padding({
@@ -234,7 +230,6 @@ struct Debugsetting {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .width('100%')
               .onHover((isHover) => {
                 if (!isHover) {
                   this.hoverId = -1
@@ -277,7 +272,6 @@ struct Debugsetting {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .width('100%')
               .onHover((isHover) => {
                 if (!isHover) {
                   this.hoverId = -1
@@ -309,13 +303,11 @@ struct Debugsetting {
                   isOn: this.showMemoryLevelChange!!
                 })
                   .onChange((isOn) => {
-                    this.debugSettingDataPreferences.putSync('showMemoryLevelChange', isOn)
-                    this.debugSettingDataPreferences.flushSync()
+                    setFlushPreference(this.context, 'debugSetting', 'showMemoryLevelChange', isOn)
                   })
               }
               .borderRadius(12)
               .padding(12)
-              .width('100%')
 
               if (deviceInfo.deviceType !== 'tablet') {
                 Divider()
@@ -335,8 +327,7 @@ struct Debugsetting {
                     isOn: this.processCache!!
                   })
                     .onChange(async (isOn) => {
-                      this.debugSettingDataPreferences.putSync('processCache', isOn)
-                      this.debugSettingDataPreferences.flushSync()
+                      setFlushPreference(this.context, 'debugSetting', 'processCache', isOn)
                       const promptAction = this.UIContext.getPromptAction()
                       const data = await promptAction.showDialog({
                         title: '提示',
@@ -363,7 +354,6 @@ struct Debugsetting {
                 }
                 .borderRadius(12)
                 .padding(12)
-                .width('100%')
               }
             }
             .backgroundColor($r('sys.color.ohos_id_color_card_bg'))
@@ -411,7 +401,6 @@ struct Debugsetting {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .width('100%')
               .onHover((isHover) => {
                 if (!isHover) {
                   this.hoverId = -1
@@ -455,7 +444,6 @@ struct Debugsetting {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .width('100%')
               .onHover((isHover) => {
                 if (!isHover) {
                   this.hoverId = -1
@@ -515,7 +503,6 @@ struct Debugsetting {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .width('100%')
               .onHover((isHover) => {
                 if (!isHover) {
                   this.hoverId = -1
@@ -594,7 +581,6 @@ struct Debugsetting {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .width('100%')
               .onHover((isHover) => {
                 if (!isHover) {
                   this.hoverId = -1
@@ -635,7 +621,6 @@ struct Debugsetting {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .width('100%')
               .onHover((isHover) => {
                 if (!isHover) {
                   this.hoverId = -1
@@ -681,7 +666,6 @@ struct Debugsetting {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .width('100%')
               .onHover((isHover) => {
                 if (!isHover) {
                   this.hoverId = -1
@@ -730,13 +714,11 @@ struct Debugsetting {
                   isOn: this.showNetAvailableStatusChange!!
                 })
                   .onChange((isOn) => {
-                    this.debugSettingDataPreferences.putSync('showNetAvailableStatusChange', isOn)
-                    this.debugSettingDataPreferences.flushSync()
+                    setFlushPreference(this.context, 'debugSetting', 'showNetAvailableStatusChange', isOn)
                   })
               }
               .borderRadius(12)
               .padding(12)
-              .width('100%')
 
               Divider()
                 .padding({
@@ -755,13 +737,11 @@ struct Debugsetting {
                   isOn: this.showNetBlockStatusChange!!
                 })
                   .onChange((isOn) => {
-                    this.debugSettingDataPreferences.putSync('showNetBlockStatusChange', isOn)
-                    this.debugSettingDataPreferences.flushSync()
+                    setFlushPreference(this.context, 'debugSetting', 'showNetBlockStatusChange', isOn)
                   })
               }
               .borderRadius(12)
               .padding(12)
-              .width('100%')
 
               Divider()
                 .padding({
@@ -780,13 +760,11 @@ struct Debugsetting {
                   isOn: this.showNetLost!!
                 })
                   .onChange((isOn) => {
-                    this.debugSettingDataPreferences.putSync('showNetLost', isOn)
-                    this.debugSettingDataPreferences.flushSync()
+                    setFlushPreference(this.context, 'debugSetting', 'showNetLost', isOn)
                   })
               }
               .borderRadius(12)
               .padding(12)
-              .width('100%')
 
               Divider()
                 .padding({
@@ -805,13 +783,11 @@ struct Debugsetting {
                   isOn: this.showNetCapabilitiesChange!!
                 })
                   .onChange((isOn) => {
-                    this.debugSettingDataPreferences.putSync('showNetCapabilitiesChange', isOn)
-                    this.debugSettingDataPreferences.flushSync()
+                    setFlushPreference(this.context, 'debugSetting', 'showNetCapabilitiesChange', isOn)
                   })
               }
               .borderRadius(12)
               .padding(12)
-              .width('100%')
 
               Divider()
                 .padding({
@@ -830,13 +806,11 @@ struct Debugsetting {
                   isOn: this.showNetQosChange!!
                 })
                   .onChange((isOn) => {
-                    this.debugSettingDataPreferences.putSync('showNetQosChange', isOn)
-                    this.debugSettingDataPreferences.flushSync()
+                    setFlushPreference(this.context, 'debugSetting', 'showNetQosChange', isOn)
                   })
               }
               .borderRadius(12)
               .padding(12)
-              .width('100%')
 
               Divider()
                 .padding({
@@ -855,13 +829,11 @@ struct Debugsetting {
                   isOn: this.showNetSceneChange!!
                 })
                   .onChange((isOn) => {
-                    this.debugSettingDataPreferences.putSync('showNetSceneChange', isOn)
-                    this.debugSettingDataPreferences.flushSync()
+                    setFlushPreference(this.context, 'debugSetting', 'showNetSceneChange', isOn)
                   })
               }
               .borderRadius(12)
               .padding(12)
-              .width('100%')
 
               Divider()
                 .padding({
@@ -880,13 +852,11 @@ struct Debugsetting {
                   isOn: this.autoReportHighLatency!!
                 })
                   .onChange((isOn) => {
-                    this.debugSettingDataPreferences.putSync('autoReportHighLatency', isOn)
-                    this.debugSettingDataPreferences.flushSync()
+                    setFlushPreference(this.context, 'debugSetting', 'autoReportHighLatency', isOn)
                   })
               }
               .borderRadius(12)
               .padding(12)
-              .width('100%')
 
               Divider()
                 .padding({
@@ -908,8 +878,7 @@ struct Debugsetting {
                   .type(InputType.Number)
                   .width('35%')
                   .onSubmit(async (enterKey, event) => {
-                    this.debugSettingDataPreferences.putSync('highLatencyThreshold', Number(event.text))
-                    this.debugSettingDataPreferences.flushSync()
+                    setFlushPreference(this.context, 'debugSetting', 'highLatencyThreshold', Number(event.text))
                     await promptAction.openToast({
                       message: '设置成功'
                     })
@@ -924,7 +893,6 @@ struct Debugsetting {
               }
               .borderRadius(12)
               .padding(12)
-              .width('100%')
 
               Divider()
                 .padding({
@@ -954,7 +922,6 @@ struct Debugsetting {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .width('100%')
               .onHover((isHover) => {
                 if (!isHover) {
                   this.hoverId = -1
@@ -997,7 +964,6 @@ struct Debugsetting {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .width('100%')
               .onHover((isHover) => {
                 if (!isHover) {
                   this.hoverId = -1
@@ -1041,7 +1007,6 @@ struct Debugsetting {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .width('100%')
               .onHover((isHover) => {
                 if (!isHover) {
                   this.hoverId = -1
@@ -1075,17 +1040,15 @@ struct Debugsetting {
                 })
                   .onChange((isOn) => {
                     if (!isOn) {
-                      this.debugSettingDataPreferences.putSync('closeRemoteValidationWhenLinkWebdav', 'system')
+                      setFlushPreference(this.context, 'debugSetting', 'closeRemoteValidationWhenLinkWebdav', 'system')
                     }
                     if (isOn) {
-                      this.debugSettingDataPreferences.putSync('closeRemoteValidationWhenLinkWebdav', 'skip')
+                      setFlushPreference(this.context, 'debugSetting', 'closeRemoteValidationWhenLinkWebdav', 'skip')
                     }
-                    this.debugSettingDataPreferences.flushSync()
                   })
               }
               .borderRadius(12)
               .padding(12)
-              .width('100%')
             }
             .backgroundColor($r('sys.color.ohos_id_color_card_bg'))
             .borderRadius($r('sys.float.ohos_id_corner_radius_default_l'))
@@ -1122,13 +1085,11 @@ struct Debugsetting {
                   isOn: this.optimizeParserBudget!!
                 })
                   .onChange((isOn) => {
-                    this.debugSettingDataPreferences.putSync('optimizeParserBudget', isOn)
-                    this.debugSettingDataPreferences.flushSync()
+                    setFlushPreference(this.context, 'debugSetting', 'optimizeParserBudget', isOn)
                   })
               }
               .borderRadius(12)
               .padding(12)
-              .width('100%')
 
               Divider()
                 .padding({
@@ -1149,13 +1110,112 @@ struct Debugsetting {
                   .selected(this.destroyModeIndex!!)
                   .value(this.destroyModeValue!!)
                   .onSelect((index) => {
-                    this.debugSettingDataPreferences.putSync('destroyMode', index)
-                    this.debugSettingDataPreferences.flushSync()
+                    setFlushPreference(this.context, 'debugSetting', 'destroyMode', index)
                   })
               }
               .borderRadius(12)
               .padding(12)
-              .width('100%')
+            }
+            .backgroundColor($r('sys.color.ohos_id_color_card_bg'))
+            .borderRadius($r('sys.float.ohos_id_corner_radius_default_l'))
+            .padding($r('sys.float.ohos_id_corner_radius_mark'))
+          }
+          .alignItems(HorizontalAlign.Start)
+        }
+        .margin({
+          top: $r('sys.float.ohos_id_elements_margin_vertical_l')
+        })
+
+        ListItem() {
+          Column() {
+            Text('隐藏功能')
+              .fontColor($r('sys.color.font_secondary'))
+              .fontSize($r('sys.float.ohos_id_text_size_body2'))
+              .fontWeight(FontWeight.Medium)
+              .margin({
+                bottom: 6,
+                left: 12,
+                right: 12
+              })
+            Column() {
+              Row() {
+                Text('鸿蒙应用搜索')
+                  .fontWeight(FontWeight.Medium)
+                  .layoutWeight(1)
+                  .margin({
+                    right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
+                  })
+                Image($r('app.media.right'))
+                  .fillColor($r('sys.color.icon_fourth'))
+                  .height(12)
+                  .width(12)
+              }
+              .borderRadius(12)
+              .padding(12)
+              .stateStyles({
+                normal: {
+                  .backgroundColor(this.hoverId === 11 ? $r('sys.color.interactive_hover') :
+                    $r('sys.color.ohos_id_color_card_bg'))
+                },
+                pressed: {
+                  .backgroundColor($r('sys.color.interactive_pressed'))
+                }
+              })
+              .onHover((isHover) => {
+                if (!isHover) {
+                  this.hoverId = -1
+                }
+                if (isHover) {
+                  this.hoverId = 11
+                }
+              })
+              .onClick(() => {
+                this.pageInfos.pushPath({
+                  name: 'Hmappsearch'
+                })
+              })
+
+              Divider()
+                .padding({
+                  left: 12,
+                  right: 12
+                })
+              Row() {
+                Text("Let's Encrypt RSS")
+                  .fontWeight(FontWeight.Medium)
+                  .layoutWeight(1)
+                  .margin({
+                    right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
+                  })
+                Image($r('app.media.right'))
+                  .fillColor($r('sys.color.icon_fourth'))
+                  .height(12)
+                  .width(12)
+              }
+              .borderRadius(12)
+              .padding(12)
+              .stateStyles({
+                normal: {
+                  .backgroundColor(this.hoverId === 12 ? $r('sys.color.interactive_hover') :
+                    $r('sys.color.ohos_id_color_card_bg'))
+                },
+                pressed: {
+                  .backgroundColor($r('sys.color.interactive_pressed'))
+                }
+              })
+              .onHover((isHover) => {
+                if (!isHover) {
+                  this.hoverId = -1
+                }
+                if (isHover) {
+                  this.hoverId = 12
+                }
+              })
+              .onClick(() => {
+                this.pageInfos.pushPath({
+                  name: 'Letsencryptrss'
+                })
+              })
             }
             .backgroundColor($r('sys.color.ohos_id_color_card_bg'))
             .borderRadius($r('sys.float.ohos_id_corner_radius_default_l'))
@@ -1169,7 +1229,6 @@ struct Debugsetting {
 
         ListItem() {
           Button('恢复默认设置')
-            .align(Alignment.Center)
             .width('100%')
             .onClick(async () => {
               const promptAction = this.UIContext.getPromptAction()
@@ -1188,8 +1247,11 @@ struct Debugsetting {
                 ]
               })
               if (data.index === 1) {
-                this.debugSettingDataPreferences.clearSync()
-                this.debugSettingDataPreferences.flushSync()
+                const debugSettingDataPreferences = preferences.getPreferencesSync(this.context, {
+                  name: 'debugSetting',
+                  storageType: preferences.StorageType.GSKV
+                })
+                debugSettingDataPreferences.clearSync()
                 await promptAction.openToast({
                   message: '恢复成功'
                 })
@@ -1200,25 +1262,59 @@ struct Debugsetting {
         .margin({
           top: $r('sys.float.ohos_id_elements_margin_vertical_l')
         })
+
+        ListItem()
+          .margin({
+            bottom: 28
+          })
       }
       .padding({
-        bottom: $r('sys.float.ohos_id_default_padding_bottom_fixed'),
         left: $r('sys.float.ohos_id_elements_margin_horizontal_l'),
         right: $r('sys.float.ohos_id_elements_margin_horizontal_l')
       })
     }
     .backgroundColor($r('app.color.sheet_background'))
+    .recoverable(true)
     .titleBar({
       padding: {
         end: LengthMetrics.vp(60)
+      },
+      style: {
+        scrollEffectOpts: {
+          scrollEffectType: ScrollEffectType.IMMERSIVE_GRADIENT_BLUR
+        },
+        originalStyle: {
+          contentStyle: {
+            titleStyle: {
+              mainTitleColor: $r('sys.color.font_primary')
+            },
+            backIconStyle: {
+              backgroundColor: $r('sys.color.comp_background_color_floating_smooth'),
+              iconColor: $r('sys.color.icon_primary')
+            }
+          }
+        },
+        scrollEffectStyle: {
+          contentStyle: {
+            backIconStyle: {
+              backgroundColor: $r('sys.color.comp_background_color_floating_smooth'),
+              iconColor: $r('sys.color.icon_primary')
+            }
+          }
+        },
+        thermoCtrl: true,
+        systemMaterialEffect: {
+          materialType: hdsMaterial.MaterialType.ADAPTIVE,
+          materialLevel: hdsMaterial.MaterialLevel.ADAPTIVE
+        }
       },
       content: {
         title: {
           mainTitle: '调试设置'
         }
-      },
-      enableComponentSafeArea: true
+      }
     })
+    .titleMode(HdsNavDestinationTitleMode.MODAL)
     .onReady((context) => {
       this.pageInfos = context.pathStack
       this.getSetting()

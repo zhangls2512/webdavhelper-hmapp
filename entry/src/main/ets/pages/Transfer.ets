@@ -1,6 +1,6 @@
 import { common } from '@kit.AbilityKit'
-import { preferences } from '@kit.ArkData'
-import { display, SegmentButtonV2Items, TabSegmentButtonV2 } from '@kit.ArkUI'
+import { sendablePreferences } from '@kit.ArkData'
+import { SegmentButtonV2Items, TabSegmentButtonV2 } from '@kit.ArkUI'
 import { getPreferType } from '../common/Prefertype'
 import { getSizeString } from '../common/Stringformat'
 import { TransferTaskItem } from './Index'
@@ -64,7 +64,7 @@ export default struct Transfer {
                       }
                       if (item.status === 'processing') {
                         Text(Number((item.transferredSize / item.totalSize).toFixed(2)) * 100 + '%(' +
-                        getSizeString(item.transferredSize) + '/' + getSizeString(item.totalSize) + ')')
+                          getSizeString(item.transferredSize) + '/' + getSizeString(item.totalSize) + ')')
                           .fontColor($r('sys.color.font_secondary'))
                           .fontSize($r('sys.float.ohos_id_text_size_body2'))
                           .margin({
@@ -146,7 +146,7 @@ export default struct Transfer {
                       }
                       if (item.status === 'processing') {
                         Text(Number((item.transferredSize / item.totalSize).toFixed(2)) * 100 + '%(' +
-                        getSizeString(item.transferredSize) + '/' + getSizeString(item.totalSize) + ')')
+                          getSizeString(item.transferredSize) + '/' + getSizeString(item.totalSize) + ')')
                           .fontColor($r('sys.color.font_secondary'))
                           .fontSize($r('sys.float.ohos_id_text_size_body2'))
                           .margin({
@@ -192,6 +192,10 @@ export default struct Transfer {
               top: $r('sys.float.ohos_id_elements_margin_vertical_m')
             })
           }
+          ListItem()
+            .margin({
+              bottom: this.preferType === 0 ? 80 : 0
+            })
         }
         .layoutWeight(1)
       }
@@ -203,31 +207,24 @@ export default struct Transfer {
     })
     .onAppear(() => {
       this.preferType = getPreferType(this.UIContext)
-      display.on('change', () => {
-        setTimeout(() => {
-          this.preferType = getPreferType(this.UIContext)
-        }, 200)
-      })
       this.intervalId = setInterval(() => {
         const transferTaskArray: TransferTaskItem[] = []
-        const transferTaskDataPreferences = preferences.getPreferencesSync(this.context, {
+        const transferTaskDataPreferences = sendablePreferences.getPreferencesSync(this.context, {
           name: 'transferTask'
         })
         const transferTaskObject = transferTaskDataPreferences.getAllSync() as object
-        const transferTaskIdArray = Object.keys(transferTaskObject)
-        transferTaskIdArray.forEach(item => {
+        Object.keys(transferTaskObject).forEach(item => {
           const transferTaskString = transferTaskObject[item] as string
           const transferTask = JSON.parse(transferTaskString) as TransferTaskItem
           transferTaskArray.push(transferTask)
         })
         this.transferTaskArray = transferTaskArray
-      }, 100)
+      }, 1000)
     })
     .onDisAppear(() => {
       if (this.intervalId !== -1) {
         clearInterval(this.intervalId)
       }
-      display.off('change')
     })
   }
 }

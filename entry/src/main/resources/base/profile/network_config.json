@@ -1,0 +1,22 @@
+{
+  "network-security-config": {
+    "base-config": {
+      "cleartextTrafficPermitted": true
+    },
+    "domain-config": [
+      {
+        "domains": [
+          {
+            "name": "api.zhangls2512.cn"
+          }
+        ],
+        "cleartextTrafficPermitted": false
+      }
+    ],
+    "component-config": {
+      "Remote Communication Kit": true
+    }
+  },
+  "trust-global-user-ca": false,
+  "trust-current-user-ca": false
+}

@@ -94,13 +94,13 @@ export default struct Uploaderrorlog {
             .onClick(async () => {
               const dialogControllerProgress = new CustomDialogController({
                 builder: LoadingDialog({
-                  content: '上传中...'
+                  content: '请求中...'
                 })
               })
               dialogControllerProgress.open()
               const res = await developerRequest(this.context, '/product/newErrorLog', {
                 product: 'webdavhelper',
-                version: '1.0.0.0',
+                version: '1.0.1.0',
                 errorObject: JSON.parse(this.errorObject),
                 contactType: this.contactType,
                 contactValue: this.contactValue

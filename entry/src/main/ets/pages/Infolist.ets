@@ -1,6 +1,6 @@
 import { LengthMetrics, promptAction } from '@kit.ArkUI'
 import { pushService } from '@kit.PushKit'
-import { HdsNavDestination } from '@kit.UIDesignKit'
+import { hdsMaterial, HdsNavDestination, HdsNavDestinationTitleMode, ScrollEffectType } from '@kit.UIDesignKit'
 
 @Builder
 export function InfolistBuilder() {
@@ -15,6 +15,10 @@ struct Infolist {
   build() {
     HdsNavDestination() {
       List() {
+        ListItem()
+          .margin({
+            top: 64
+          })
         ListItem() {
           Text('朱子轩 (以下简称我) 会严格遵从国家的法规要求，将合法合规融入产品设计和业务流程中，并采用业界先进的安全技术保证数据安全。\n在新的服务需求及业务功能变更时，我可能会调整我收集信息的范围，并及时在本说明中向您说明情况。')
             .fontColor($r('sys.color.font_secondary'))
@@ -142,7 +146,6 @@ struct Infolist {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .width('100%')
               .onHover((isHover) => {
                 if (!isHover) {
                   this.hoverId = -1
@@ -307,7 +310,6 @@ struct Infolist {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .width('100%')
               .onHover((isHover) => {
                 if (!isHover) {
                   this.hoverId = -1
@@ -449,25 +451,59 @@ struct Infolist {
         .margin({
           top: $r('sys.float.ohos_id_elements_margin_vertical_l')
         })
+
+        ListItem()
+          .margin({
+            bottom: 28
+          })
       }
       .padding({
-        bottom: $r('sys.float.ohos_id_default_padding_bottom_fixed'),
         left: $r('sys.float.ohos_id_elements_margin_horizontal_l'),
         right: $r('sys.float.ohos_id_elements_margin_horizontal_l')
       })
     }
     .backgroundColor($r('app.color.sheet_background'))
+    .recoverable(true)
     .titleBar({
       padding: {
         end: LengthMetrics.vp(60)
+      },
+      style: {
+        scrollEffectOpts: {
+          scrollEffectType: ScrollEffectType.IMMERSIVE_GRADIENT_BLUR
+        },
+        originalStyle: {
+          contentStyle: {
+            titleStyle: {
+              mainTitleColor: $r('sys.color.font_primary')
+            },
+            backIconStyle: {
+              backgroundColor: $r('sys.color.comp_background_color_floating_smooth'),
+              iconColor: $r('sys.color.icon_primary')
+            }
+          }
+        },
+        scrollEffectStyle: {
+          contentStyle: {
+            backIconStyle: {
+              backgroundColor: $r('sys.color.comp_background_color_floating_smooth'),
+              iconColor: $r('sys.color.icon_primary')
+            }
+          }
+        },
+        thermoCtrl: true,
+        systemMaterialEffect: {
+          materialType: hdsMaterial.MaterialType.ADAPTIVE,
+          materialLevel: hdsMaterial.MaterialLevel.ADAPTIVE
+        }
       },
       content: {
         title: {
           mainTitle: '已收集个人信息清单'
         }
-      },
-      enableComponentSafeArea: true
+      }
     })
+    .titleMode(HdsNavDestinationTitleMode.MODAL)
     .onReady((context) => {
       this.pageInfos = context.pathStack
     })

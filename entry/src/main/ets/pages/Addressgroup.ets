@@ -1,6 +1,6 @@
 import { common } from '@kit.AbilityKit'
 import { LengthMetrics, promptAction } from '@kit.ArkUI'
-import { HdsNavDestination } from '@kit.UIDesignKit'
+import { hdsMaterial, HdsNavDestination, HdsNavDestinationTitleMode, ScrollEffectType } from '@kit.UIDesignKit'
 import { read, write } from '../common/File'
 
 export interface AddressGroupItem {
@@ -23,6 +23,17 @@ struct Addressgroup {
   build() {
     HdsNavDestination() {
       List() {
+        ListItem()
+          .margin({
+            top: 64
+          })
+        ListItem() {
+          Text('系统认为同一地址组内的多个地址对应相同的服务器，用于自动选择最佳地址加速网络连接。建议将同一服务器的公网、内网地址添加到同一地址组。')
+        }
+        .margin({
+          top: $r('sys.float.ohos_id_elements_margin_vertical_m')
+        })
+
         ListItem() {
           Column() {
             TextInput({
@@ -54,7 +65,7 @@ struct Addressgroup {
           }
         }
         .margin({
-          top: $r('sys.float.ohos_id_elements_margin_vertical_m')
+          top: $r('sys.float.ohos_id_elements_margin_vertical_l')
         })
 
         ForEach(this.addressGroup, (item: AddressGroupItem, index) => {
@@ -118,7 +129,6 @@ struct Addressgroup {
               Column() {
                 Row() {
                   Text(listItem)
-                    .enableAutoSpacing(true)
                     .layoutWeight(1)
                     .margin({
                       right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
@@ -134,7 +144,6 @@ struct Addressgroup {
                 }
                 .borderRadius(12)
                 .padding(12)
-                .width('100%')
               }
               .backgroundColor($r('sys.color.ohos_id_color_card_bg'))
               .borderRadius($r('sys.float.ohos_id_corner_radius_default_l'))
@@ -145,25 +154,58 @@ struct Addressgroup {
             })
           })
         })
+        ListItem()
+          .margin({
+            bottom: 28
+          })
       }
       .padding({
-        bottom: $r('sys.float.ohos_id_default_padding_bottom_fixed'),
         left: $r('sys.float.ohos_id_elements_margin_horizontal_l'),
         right: $r('sys.float.ohos_id_elements_margin_horizontal_l')
       })
     }
     .backgroundColor($r('app.color.sheet_background'))
+    .recoverable(true)
     .titleBar({
       padding: {
         end: LengthMetrics.vp(60)
+      },
+      style: {
+        scrollEffectOpts: {
+          scrollEffectType: ScrollEffectType.IMMERSIVE_GRADIENT_BLUR
+        },
+        originalStyle: {
+          contentStyle: {
+            titleStyle: {
+              mainTitleColor: $r('sys.color.font_primary')
+            },
+            backIconStyle: {
+              backgroundColor: $r('sys.color.comp_background_color_floating_smooth'),
+              iconColor: $r('sys.color.icon_primary')
+            }
+          }
+        },
+        scrollEffectStyle: {
+          contentStyle: {
+            backIconStyle: {
+              backgroundColor: $r('sys.color.comp_background_color_floating_smooth'),
+              iconColor: $r('sys.color.icon_primary')
+            }
+          }
+        },
+        thermoCtrl: true,
+        systemMaterialEffect: {
+          materialType: hdsMaterial.MaterialType.ADAPTIVE,
+          materialLevel: hdsMaterial.MaterialLevel.ADAPTIVE
+        }
       },
       content: {
         title: {
           mainTitle: '地址组'
         }
-      },
-      enableComponentSafeArea: true
+      }
     })
+    .titleMode(HdsNavDestinationTitleMode.MODAL)
     .onAppear(async () => {
       const filestring = await read(this.context.filesDir + '/addressgroup.txt', true)
       if (filestring !== 'fail') {
