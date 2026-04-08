@@ -103,7 +103,6 @@ struct Commonsetting {
               }
               .borderRadius(12)
               .padding(12)
-              .width('100%')
 
               Divider()
                 .padding({
@@ -127,7 +126,6 @@ struct Commonsetting {
               }
               .borderRadius(12)
               .padding(12)
-              .width('100%')
 
               Divider()
                 .padding({
@@ -173,7 +171,6 @@ struct Commonsetting {
               }
               .borderRadius(12)
               .padding(12)
-              .width('100%')
 
               Divider()
                 .padding({
@@ -197,7 +194,6 @@ struct Commonsetting {
               }
               .borderRadius(12)
               .padding(12)
-              .width('100%')
 
               Divider()
                 .padding({
@@ -221,7 +217,6 @@ struct Commonsetting {
               }
               .borderRadius(12)
               .padding(12)
-              .width('100%')
 
               if (deviceInfo.deviceType === '2in1') {
                 Divider()
@@ -268,7 +263,6 @@ struct Commonsetting {
                 }
                 .borderRadius(12)
                 .padding(12)
-                .width('100%')
               }
               Divider()
                 .padding({
@@ -304,7 +298,6 @@ struct Commonsetting {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .width('100%')
               .onHover((isHover) => {
                 if (!isHover) {
                   this.hoverId = -1
@@ -386,7 +379,6 @@ struct Commonsetting {
               }
               .borderRadius(12)
               .padding(12)
-              .width('100%')
 
               if (deviceInfo.deviceType === '2in1') {
                 Divider()
@@ -433,7 +425,6 @@ struct Commonsetting {
                 }
                 .borderRadius(12)
                 .padding(12)
-                .width('100%')
 
                 Divider()
                   .padding({
@@ -459,7 +450,6 @@ struct Commonsetting {
                 }
                 .borderRadius(12)
                 .padding(12)
-                .width('100%')
               }
               Divider()
                 .padding({
@@ -494,7 +484,6 @@ struct Commonsetting {
               }
               .borderRadius(12)
               .padding(12)
-              .width('100%')
 
               Divider()
                 .padding({
@@ -524,7 +513,6 @@ struct Commonsetting {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .width('100%')
               .onHover((isHover) => {
                 if (!isHover) {
                   this.hoverId = -1
@@ -675,7 +663,6 @@ struct Commonsetting {
                 }
                 .borderRadius(12)
                 .padding(12)
-                .width('100%')
               }
               .backgroundColor($r('sys.color.ohos_id_color_card_bg'))
               .borderRadius($r('sys.float.ohos_id_corner_radius_default_l'))
@@ -718,7 +705,6 @@ struct Commonsetting {
               }
               .borderRadius(12)
               .padding(12)
-              .width('100%')
 
               Divider()
                 .padding({
@@ -753,7 +739,6 @@ struct Commonsetting {
               }
               .borderRadius(12)
               .padding(12)
-              .width('100%')
 
               Divider()
                 .padding({
@@ -777,7 +762,6 @@ struct Commonsetting {
               }
               .borderRadius(12)
               .padding(12)
-              .width('100%')
             }
             .backgroundColor($r('sys.color.ohos_id_color_card_bg'))
             .borderRadius($r('sys.float.ohos_id_corner_radius_default_l'))
@@ -824,7 +808,6 @@ struct Commonsetting {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .width('100%')
               .onHover((isHover) => {
                 if (!isHover) {
                   this.hoverId = -1
@@ -875,7 +858,6 @@ struct Commonsetting {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .width('100%')
               .onHover((isHover) => {
                 if (!isHover) {
                   this.hoverId = -1
@@ -929,7 +911,6 @@ struct Commonsetting {
               }
               .borderRadius(12)
               .padding(12)
-              .width('100%')
 
               Divider()
                 .padding({
@@ -956,7 +937,6 @@ struct Commonsetting {
               }
               .borderRadius(12)
               .padding(12)
-              .width('100%')
 
               Divider()
                 .padding({
@@ -983,7 +963,6 @@ struct Commonsetting {
               }
               .borderRadius(12)
               .padding(12)
-              .width('100%')
 
               Divider()
                 .padding({
@@ -1009,7 +988,6 @@ struct Commonsetting {
               }
               .borderRadius(12)
               .padding(12)
-              .width('100%')
             }
             .backgroundColor($r('sys.color.ohos_id_color_card_bg'))
             .borderRadius($r('sys.float.ohos_id_corner_radius_default_l'))

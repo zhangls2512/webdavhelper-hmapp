@@ -203,7 +203,6 @@ struct Errorlog {
                   }
                   .borderRadius(12)
                   .padding(12)
-                  .width('100%')
 
                   Divider()
                     .padding({
@@ -233,7 +232,6 @@ struct Errorlog {
                       .backgroundColor($r('sys.color.interactive_pressed'))
                     }
                   })
-                  .width('100%')
                   .onHover((isHover) => {
                     if (!isHover) {
                       this.hoverId = -1
@@ -265,7 +263,6 @@ struct Errorlog {
                   }
                   .borderRadius(12)
                   .padding(12)
-                  .width('100%')
 
                   ForEach(errorLogItem.externalLog, (externalLogItem: string, externalLogIndex) => {
                     Divider()
@@ -296,7 +293,6 @@ struct Errorlog {
                         .backgroundColor($r('sys.color.interactive_pressed'))
                       }
                     })
-                    .width('100%')
                     .onHover((isHover) => {
                       if (!isHover) {
                         this.hoverId = -1

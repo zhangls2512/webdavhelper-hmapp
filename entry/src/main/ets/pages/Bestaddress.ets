@@ -76,7 +76,6 @@ struct Bestaddress {
                         Row() {
                           Text(addressItem)
                             .fontWeight(FontWeight.Medium)
-                            .layoutWeight(1)
                             .margin({
                               right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
                             })

@@ -305,7 +305,6 @@ export default struct Player {
             }
             .borderRadius(12)
             .padding(12)
-            .width('100%')
 
             Divider()
               .padding({
@@ -331,7 +330,6 @@ export default struct Player {
             }
             .borderRadius(12)
             .padding(12)
-            .width('100%')
 
             if (this.isVideo) {
               Divider()
@@ -356,7 +354,6 @@ export default struct Player {
               }
               .borderRadius(12)
               .padding(12)
-              .width('100%')
             }
           }
         }
