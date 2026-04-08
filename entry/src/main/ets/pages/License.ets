@@ -1,6 +1,6 @@
 import { common } from '@kit.AbilityKit'
 import { LengthMetrics } from '@kit.ArkUI'
-import { HdsNavDestination } from '@kit.UIDesignKit'
+import { hdsMaterial, HdsNavDestination, HdsNavDestinationTitleMode, ScrollEffectType } from '@kit.UIDesignKit'
 import openLink from '../common/Openlink'
 
 interface Item {
@@ -27,6 +27,10 @@ struct License {
   build() {
     HdsNavDestination() {
       List() {
+        ListItem()
+          .margin({
+            top: 64
+          })
         ListItem() {
           Text() {
             Span('ICP备案：')
@@ -103,24 +107,58 @@ struct License {
         .margin({
           top: $r('sys.float.ohos_id_elements_margin_vertical_l')
         })
+
+        ListItem()
+          .margin({
+            bottom: 28
+          })
       }
       .padding({
-        bottom: $r('sys.float.ohos_id_default_padding_bottom_fixed'),
         left: $r('sys.float.ohos_id_elements_margin_horizontal_l'),
         right: $r('sys.float.ohos_id_elements_margin_horizontal_l')
       })
     }
     .backgroundColor($r('app.color.sheet_background'))
+    .recoverable(true)
     .titleBar({
       padding: {
         end: LengthMetrics.vp(60)
+      },
+      style: {
+        scrollEffectOpts: {
+          scrollEffectType: ScrollEffectType.IMMERSIVE_GRADIENT_BLUR
+        },
+        originalStyle: {
+          contentStyle: {
+            titleStyle: {
+              mainTitleColor: $r('sys.color.font_primary')
+            },
+            backIconStyle: {
+              backgroundColor: $r('sys.color.comp_background_color_floating_smooth'),
+              iconColor: $r('sys.color.icon_primary')
+            }
+          }
+        },
+        scrollEffectStyle: {
+          contentStyle: {
+            backIconStyle: {
+              backgroundColor: $r('sys.color.comp_background_color_floating_smooth'),
+              iconColor: $r('sys.color.icon_primary')
+            }
+          }
+        },
+        thermoCtrl: true,
+        systemMaterialEffect: {
+          materialType: hdsMaterial.MaterialType.ADAPTIVE,
+          materialLevel: hdsMaterial.MaterialLevel.ADAPTIVE
+        }
       },
       content: {
         title: {
           mainTitle: '资质证照'
         }
-      },
-      enableComponentSafeArea: true
+      }
     })
+    .titleMode(HdsNavDestinationTitleMode.MODAL)
   }
 }

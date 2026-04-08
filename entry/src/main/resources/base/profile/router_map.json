@@ -6,6 +6,26 @@
       "buildFunction": "AddressgroupBuilder"
     },
     {
+      "name": "Hmappsearch",
+      "pageSourceFile": "src/main/ets/pages/Hmappsearch.ets",
+      "buildFunction": "HmappsearchBuilder"
+    },
+    {
+      "name": "Letsencryptrss",
+      "pageSourceFile": "src/main/ets/pages/Letsencryptrss.ets",
+      "buildFunction": "LetsencryptrssBuilder"
+    },
+    {
+      "name": "Bestaddress",
+      "pageSourceFile": "src/main/ets/pages/Bestaddress.ets",
+      "buildFunction": "BestaddressBuilder"
+    },
+    {
+      "name": "Clearpreferencekey",
+      "pageSourceFile": "src/main/ets/pages/Clearpreferencekey.ets",
+      "buildFunction": "ClearpreferencekeyBuilder"
+    },
+    {
       "name": "About",
       "pageSourceFile": "src/main/ets/pages/About.ets",
       "buildFunction": "AboutBuilder"
@@ -19,16 +39,6 @@
       "name": "Sandboxfilelist",
       "pageSourceFile": "src/main/ets/pages/Sandboxfilelist.ets",
       "buildFunction": "SandboxfilelistBuilder"
-    },
-    {
-      "name": "Backupsetting",
-      "pageSourceFile": "src/main/ets/pages/Backupsetting.ets",
-      "buildFunction": "BackupsettingBuilder"
-    },
-    {
-      "name": "Backuptask",
-      "pageSourceFile": "src/main/ets/pages/Backuptask.ets",
-      "buildFunction": "BackuptaskBuilder"
     },
     {
       "name": "Debuginfo",

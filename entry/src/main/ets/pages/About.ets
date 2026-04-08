@@ -2,7 +2,7 @@ import { common } from '@kit.AbilityKit'
 import { commentManager, updateManager } from '@kit.AppGalleryKit'
 import { LengthMetrics, promptAction } from '@kit.ArkUI'
 import { call } from '@kit.TelephonyKit'
-import { HdsNavDestination } from '@kit.UIDesignKit'
+import { hdsMaterial, HdsNavDestination, HdsNavDestinationTitleMode, ScrollEffectType } from '@kit.UIDesignKit'
 import openLink from '../common/Openlink'
 import copy from '../common/Pasteboard'
 
@@ -23,6 +23,10 @@ struct About {
   build() {
     HdsNavDestination() {
       List() {
+        ListItem()
+          .margin({
+            top: 64
+          })
         ListItem() {
           Column() {
             Image($r('app.media.foreground'))
@@ -70,6 +74,9 @@ struct About {
           }
           .width('100%')
         }
+        .margin({
+          top: $r('sys.float.ohos_id_elements_margin_vertical_m')
+        })
 
         ListItem() {
           Column() {
@@ -137,7 +144,6 @@ struct About {
                 .backgroundColor($r('sys.color.interactive_pressed'))
               }
             })
-            .width('100%')
             .onHover((isHover) => {
               if (!isHover) {
                 this.hoverId = -1
@@ -176,9 +182,9 @@ struct About {
               })
             Row() {
               Column() {
-                Text('更新日志')
+                Text('邀请测试')
                   .fontWeight(FontWeight.Medium)
-                Text('https://www.zhangls2512.cn/product/updatelog/webdavhelper')
+                Text('https://appgallery.huawei.com/apptest/71oWIm6wkNt')
                   .fontColor($r('sys.color.font_secondary'))
                   .fontSize($r('sys.float.ohos_id_text_size_body2'))
                   .margin({
@@ -207,13 +213,62 @@ struct About {
                 .backgroundColor($r('sys.color.interactive_pressed'))
               }
             })
-            .width('100%')
             .onHover((isHover) => {
               if (!isHover) {
                 this.hoverId = -1
               }
               if (isHover) {
                 this.hoverId = 1
+              }
+            })
+            .onClick(async () => {
+              await openLink(this.context, 'https://appgallery.huawei.com/apptest/71oWIm6wkNt')
+            })
+
+            Divider()
+              .padding({
+                left: 12,
+                right: 12
+              })
+            Row() {
+              Column() {
+                Text('更新日志')
+                  .fontWeight(FontWeight.Medium)
+                Text('https://www.zhangls2512.cn/product/updatelog/webdavhelper')
+                  .fontColor($r('sys.color.font_secondary'))
+                  .fontSize($r('sys.float.ohos_id_text_size_body2'))
+                  .margin({
+                    top: $r('sys.float.ohos_id_text_margin_vertical')
+                  })
+              }
+              .alignItems(HorizontalAlign.Start)
+              .layoutWeight(1)
+              .margin({
+                right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
+              })
+
+              Image($r('app.media.right'))
+                .fillColor($r('sys.color.icon_fourth'))
+                .height(12)
+                .width(12)
+            }
+            .borderRadius(12)
+            .padding(12)
+            .stateStyles({
+              normal: {
+                .backgroundColor(this.hoverId === 2 ? $r('sys.color.interactive_hover') :
+                  $r('sys.color.ohos_id_color_card_bg'))
+              },
+              pressed: {
+                .backgroundColor($r('sys.color.interactive_pressed'))
+              }
+            })
+            .onHover((isHover) => {
+              if (!isHover) {
+                this.hoverId = -1
+              }
+              if (isHover) {
+                this.hoverId = 2
               }
             })
             .onClick(() => {
@@ -254,20 +309,19 @@ struct About {
             .padding(12)
             .stateStyles({
               normal: {
-                .backgroundColor(this.hoverId === 2 ? $r('sys.color.interactive_hover') :
+                .backgroundColor(this.hoverId === 3 ? $r('sys.color.interactive_hover') :
                   $r('sys.color.ohos_id_color_card_bg'))
               },
               pressed: {
                 .backgroundColor($r('sys.color.interactive_pressed'))
               }
             })
-            .width('100%')
             .onHover((isHover) => {
               if (!isHover) {
                 this.hoverId = -1
               }
               if (isHover) {
-                this.hoverId = 2
+                this.hoverId = 3
               }
             })
             .onClick(async () => {
@@ -295,20 +349,19 @@ struct About {
             .padding(12)
             .stateStyles({
               normal: {
-                .backgroundColor(this.hoverId === 3 ? $r('sys.color.interactive_hover') :
+                .backgroundColor(this.hoverId === 4 ? $r('sys.color.interactive_hover') :
                   $r('sys.color.ohos_id_color_card_bg'))
               },
               pressed: {
                 .backgroundColor($r('sys.color.interactive_pressed'))
               }
             })
-            .width('100%')
             .onHover((isHover) => {
               if (!isHover) {
                 this.hoverId = -1
               }
               if (isHover) {
-                this.hoverId = 3
+                this.hoverId = 4
               }
             })
             .onClick(async () => {
@@ -336,20 +389,19 @@ struct About {
             .padding(12)
             .stateStyles({
               normal: {
-                .backgroundColor(this.hoverId === 4 ? $r('sys.color.interactive_hover') :
+                .backgroundColor(this.hoverId === 5 ? $r('sys.color.interactive_hover') :
                   $r('sys.color.ohos_id_color_card_bg'))
               },
               pressed: {
                 .backgroundColor($r('sys.color.interactive_pressed'))
               }
             })
-            .width('100%')
             .onHover((isHover) => {
               if (!isHover) {
                 this.hoverId = -1
               }
               if (isHover) {
-                this.hoverId = 4
+                this.hoverId = 5
               }
             })
             .onClick(async () => {
@@ -377,20 +429,19 @@ struct About {
             .padding(12)
             .stateStyles({
               normal: {
-                .backgroundColor(this.hoverId === 5 ? $r('sys.color.interactive_hover') :
+                .backgroundColor(this.hoverId === 6 ? $r('sys.color.interactive_hover') :
                   $r('sys.color.ohos_id_color_card_bg'))
               },
               pressed: {
                 .backgroundColor($r('sys.color.interactive_pressed'))
               }
             })
-            .width('100%')
             .onHover((isHover) => {
               if (!isHover) {
                 this.hoverId = -1
               }
               if (isHover) {
-                this.hoverId = 5
+                this.hoverId = 6
               }
             })
             .onClick(() => {
@@ -445,20 +496,19 @@ struct About {
               .padding(12)
               .stateStyles({
                 normal: {
-                  .backgroundColor(this.hoverId === 6 ? $r('sys.color.interactive_hover') :
+                  .backgroundColor(this.hoverId === 7 ? $r('sys.color.interactive_hover') :
                     $r('sys.color.ohos_id_color_card_bg'))
                 },
                 pressed: {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .width('100%')
               .onHover((isHover) => {
                 if (!isHover) {
                   this.hoverId = -1
                 }
                 if (isHover) {
-                  this.hoverId = 6
+                  this.hoverId = 7
                 }
               })
               .onClick(async () => {
@@ -496,20 +546,19 @@ struct About {
               .padding(12)
               .stateStyles({
                 normal: {
-                  .backgroundColor(this.hoverId === 7 ? $r('sys.color.interactive_hover') :
+                  .backgroundColor(this.hoverId === 8 ? $r('sys.color.interactive_hover') :
                     $r('sys.color.ohos_id_color_card_bg'))
                 },
                 pressed: {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .width('100%')
               .onHover((isHover) => {
                 if (!isHover) {
                   this.hoverId = -1
                 }
                 if (isHover) {
-                  this.hoverId = 7
+                  this.hoverId = 8
                 }
               })
               .onClick(async () => {
@@ -552,20 +601,19 @@ struct About {
               .padding(12)
               .stateStyles({
                 normal: {
-                  .backgroundColor(this.hoverId === 8 ? $r('sys.color.interactive_hover') :
+                  .backgroundColor(this.hoverId === 9 ? $r('sys.color.interactive_hover') :
                     $r('sys.color.ohos_id_color_card_bg'))
                 },
                 pressed: {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .width('100%')
               .onHover((isHover) => {
                 if (!isHover) {
                   this.hoverId = -1
                 }
                 if (isHover) {
-                  this.hoverId = 8
+                  this.hoverId = 9
                 }
               })
               .onClick(async () => {
@@ -604,20 +652,19 @@ struct About {
               .padding(12)
               .stateStyles({
                 normal: {
-                  .backgroundColor(this.hoverId === 9 ? $r('sys.color.interactive_hover') :
+                  .backgroundColor(this.hoverId === 10 ? $r('sys.color.interactive_hover') :
                     $r('sys.color.ohos_id_color_card_bg'))
                 },
                 pressed: {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .width('100%')
               .onHover((isHover) => {
                 if (!isHover) {
                   this.hoverId = -1
                 }
                 if (isHover) {
-                  this.hoverId = 9
+                  this.hoverId = 10
                 }
               })
               .onClick(async () => {
@@ -656,20 +703,19 @@ struct About {
               .padding(12)
               .stateStyles({
                 normal: {
-                  .backgroundColor(this.hoverId === 10 ? $r('sys.color.interactive_hover') :
+                  .backgroundColor(this.hoverId === 11 ? $r('sys.color.interactive_hover') :
                     $r('sys.color.ohos_id_color_card_bg'))
                 },
                 pressed: {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .width('100%')
               .onHover((isHover) => {
                 if (!isHover) {
                   this.hoverId = -1
                 }
                 if (isHover) {
-                  this.hoverId = 10
+                  this.hoverId = 11
                 }
               })
               .onClick(async () => {
@@ -724,20 +770,19 @@ struct About {
               .padding(12)
               .stateStyles({
                 normal: {
-                  .backgroundColor(this.hoverId === 11 ? $r('sys.color.interactive_hover') :
+                  .backgroundColor(this.hoverId === 12 ? $r('sys.color.interactive_hover') :
                     $r('sys.color.ohos_id_color_card_bg'))
                 },
                 pressed: {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .width('100%')
               .onHover((isHover) => {
                 if (!isHover) {
                   this.hoverId = -1
                 }
                 if (isHover) {
-                  this.hoverId = 11
+                  this.hoverId = 12
                 }
               })
               .onClick(async () => {
@@ -775,20 +820,19 @@ struct About {
               .padding(12)
               .stateStyles({
                 normal: {
-                  .backgroundColor(this.hoverId === 12 ? $r('sys.color.interactive_hover') :
+                  .backgroundColor(this.hoverId === 13 ? $r('sys.color.interactive_hover') :
                     $r('sys.color.ohos_id_color_card_bg'))
                 },
                 pressed: {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .width('100%')
               .onHover((isHover) => {
                 if (!isHover) {
                   this.hoverId = -1
                 }
                 if (isHover) {
-                  this.hoverId = 12
+                  this.hoverId = 13
                 }
               })
               .onClick(async () => {
@@ -826,20 +870,19 @@ struct About {
               .padding(12)
               .stateStyles({
                 normal: {
-                  .backgroundColor(this.hoverId === 13 ? $r('sys.color.interactive_hover') :
+                  .backgroundColor(this.hoverId === 14 ? $r('sys.color.interactive_hover') :
                     $r('sys.color.ohos_id_color_card_bg'))
                 },
                 pressed: {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .width('100%')
               .onHover((isHover) => {
                 if (!isHover) {
                   this.hoverId = -1
                 }
                 if (isHover) {
-                  this.hoverId = 13
+                  this.hoverId = 14
                 }
               })
               .onClick(async () => {
@@ -879,25 +922,59 @@ struct About {
         .margin({
           top: $r('sys.float.ohos_id_elements_margin_vertical_l')
         })
+
+        ListItem()
+          .margin({
+            bottom: 28
+          })
       }
       .padding({
-        bottom: $r('sys.float.ohos_id_default_padding_bottom_fixed'),
         left: $r('sys.float.ohos_id_elements_margin_horizontal_l'),
         right: $r('sys.float.ohos_id_elements_margin_horizontal_l')
       })
     }
     .backgroundColor($r('app.color.sheet_background'))
+    .recoverable(true)
     .titleBar({
       padding: {
         end: LengthMetrics.vp(60)
+      },
+      style: {
+        scrollEffectOpts: {
+          scrollEffectType: ScrollEffectType.IMMERSIVE_GRADIENT_BLUR
+        },
+        originalStyle: {
+          contentStyle: {
+            titleStyle: {
+              mainTitleColor: $r('sys.color.font_primary')
+            },
+            backIconStyle: {
+              backgroundColor: $r('sys.color.comp_background_color_floating_smooth'),
+              iconColor: $r('sys.color.icon_primary')
+            }
+          }
+        },
+        scrollEffectStyle: {
+          contentStyle: {
+            backIconStyle: {
+              backgroundColor: $r('sys.color.comp_background_color_floating_smooth'),
+              iconColor: $r('sys.color.icon_primary')
+            }
+          }
+        },
+        thermoCtrl: true,
+        systemMaterialEffect: {
+          materialType: hdsMaterial.MaterialType.ADAPTIVE,
+          materialLevel: hdsMaterial.MaterialLevel.ADAPTIVE
+        }
       },
       content: {
         title: {
           mainTitle: '关于'
         }
-      },
-      enableComponentSafeArea: true
+      }
     })
+    .titleMode(HdsNavDestinationTitleMode.MODAL)
     .onReady(async (context) => {
       this.pageInfos = context.pathStack
       try {

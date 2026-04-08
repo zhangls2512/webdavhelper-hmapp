@@ -1,7 +1,8 @@
-import { preferences } from '@kit.ArkData'
+import { common } from '@kit.AbilityKit'
 import { LengthMetrics, promptAction } from '@kit.ArkUI'
 import { webview } from '@kit.ArkWeb'
-import { HdsNavDestination } from '@kit.UIDesignKit'
+import { hdsMaterial, HdsNavDestination, HdsNavDestinationTitleMode, ScrollEffectType } from '@kit.UIDesignKit'
+import { getFlushPreference } from '../common/Preference'
 
 @Builder
 export function WebviewBuilder() {
@@ -14,11 +15,8 @@ struct Webview {
   @Local darkMode: WebDarkMode = WebDarkMode.Auto
   @Local optimizeParserBudget: boolean = false
   @Local title: string = ''
-  context = this.getUIContext().getHostContext()
+  context = this.getUIContext().getHostContext() as common.UIAbilityContext
   controller = new webview.WebviewController()
-  debugSettingDataPreferences = preferences.getPreferencesSync(this.context, {
-    name: 'debugSetting'
-  })
 
   build() {
     HdsNavDestination() {
@@ -32,7 +30,8 @@ struct Webview {
         .enableNativeEmbedMode(true)
         .geolocationAccess(false)
         .margin({
-          bottom: $r('sys.float.ohos_id_default_padding_bottom_fixed')
+          bottom: 28,
+          top: 64
         })
         .nestedScroll({
           scrollForward: NestedScrollMode.SELF_ONLY,
@@ -57,23 +56,50 @@ struct Webview {
         })
     }
     .backgroundColor($r('app.color.sheet_background'))
+    .recoverable(true)
     .titleBar({
       padding: {
         end: LengthMetrics.vp(60)
+      },
+      style: {
+        scrollEffectOpts: {
+          scrollEffectType: ScrollEffectType.IMMERSIVE_GRADIENT_BLUR
+        },
+        originalStyle: {
+          contentStyle: {
+            titleStyle: {
+              mainTitleColor: $r('sys.color.font_primary')
+            },
+            backIconStyle: {
+              backgroundColor: $r('sys.color.comp_background_color_floating_smooth'),
+              iconColor: $r('sys.color.icon_primary')
+            }
+          }
+        },
+        scrollEffectStyle: {
+          contentStyle: {
+            backIconStyle: {
+              backgroundColor: $r('sys.color.comp_background_color_floating_smooth'),
+              iconColor: $r('sys.color.icon_primary')
+            }
+          }
+        },
+        thermoCtrl: true,
+        systemMaterialEffect: {
+          materialType: hdsMaterial.MaterialType.ADAPTIVE,
+          materialLevel: hdsMaterial.MaterialLevel.ADAPTIVE
+        }
       },
       content: {
         title: {
           mainTitle: this.title
         }
-      },
-      enableComponentSafeArea: true
+      }
     })
+    .titleMode(HdsNavDestinationTitleMode.MODAL)
     .onReady((context) => {
       this.url = context.pathInfo.param as string
-      const commonSettingDataPreferences = preferences.getPreferencesSync(this.context, {
-        name: 'commonSetting'
-      })
-      const colorMode = commonSettingDataPreferences.getSync('colorMode', 0)
+      const colorMode = getFlushPreference(this.context, 'commonSetting', 'colorMode', 0)
       if (colorMode === 0) {
         this.darkMode = WebDarkMode.Auto
       }
@@ -83,8 +109,9 @@ struct Webview {
       if (colorMode === 2) {
         this.darkMode = WebDarkMode.On
       }
-      this.optimizeParserBudget = this.debugSettingDataPreferences.getSync('optimizeParserBudget', true) as boolean
-      const destroyMode = this.debugSettingDataPreferences.getSync('destroyMode',
+      this.optimizeParserBudget =
+        getFlushPreference(this.context, 'debugSetting', 'optimizeParserBudget', true) as boolean
+      const destroyMode = getFlushPreference(this.context, 'debugSetting', 'destroyMode',
         webview.WebDestroyMode.NORMAL_MODE) as webview.WebDestroyMode
       webview.WebviewController.setWebDestroyMode(destroyMode)
     })

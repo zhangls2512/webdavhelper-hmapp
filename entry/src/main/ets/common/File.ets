@@ -68,6 +68,14 @@ export async function writeUri(uri: string, content: string) {
   }
 }
 
+export function getFileSize(path: string) {
+  try {
+    return fileIo.statSync(path).size
+  } catch {
+    return 0
+  }
+}
+
 export async function getDirectorySize(path: string) {
   let totalSize = 0
   try {

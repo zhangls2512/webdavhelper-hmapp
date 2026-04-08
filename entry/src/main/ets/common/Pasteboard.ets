@@ -1,6 +1,6 @@
-import { preferences } from '@kit.ArkData'
 import { promptAction } from '@kit.ArkUI'
 import { pasteboard } from '@kit.BasicServicesKit'
+import { getFlushPreference, setFlushPreference } from './Preference'
 
 async function writePasteBoard(text: string) {
   const pasteData = pasteboard.createData(pasteboard.MIMETYPE_TEXT_PLAIN, text)
@@ -12,10 +12,7 @@ async function writePasteBoard(text: string) {
 }
 
 export default async function copy(context: Context, UIContext: UIContext, text: string) {
-  const permissionSettingDataPreferences = preferences.getPreferencesSync(context, {
-    name: 'permissionSetting'
-  })
-  const canWritePasteBoard = permissionSettingDataPreferences.getSync('writePasteBoard', false)
+  const canWritePasteBoard = getFlushPreference(context, 'permissionSetting', 'writePasteBoard', false)
   if (canWritePasteBoard) {
     await writePasteBoard(text)
   }
@@ -36,8 +33,7 @@ export default async function copy(context: Context, UIContext: UIContext, text:
       ]
     })
     if (data.index === 1) {
-      permissionSettingDataPreferences.putSync('writePasteBoard', true)
-      permissionSettingDataPreferences.flushSync()
+      setFlushPreference(context, 'permissionSetting', 'writePasteBoard', true)
       await writePasteBoard(text)
     }
   }

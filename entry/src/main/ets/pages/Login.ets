@@ -1,9 +1,12 @@
 import { common } from '@kit.AbilityKit'
 import { privacyManager } from '@kit.AppGalleryKit'
-import { promptAction } from '@kit.ArkUI'
+import { util } from '@kit.ArkTS'
+import { LoadingDialog, promptAction } from '@kit.ArkUI'
+import { rcp } from '@kit.RemoteCommunicationKit'
 import { setAccount } from '../common/Account'
-import { autoBackup } from '../common/Backup'
+import { getDnsServer } from '../common/Dnsserver'
 import openLink from '../common/Openlink'
+import { getFlushPreference } from '../common/Preference'
 
 @ComponentV2
 export default struct Login {
@@ -214,20 +217,70 @@ export default struct Login {
                 route = '/' + this.host.substring(index + 1)
               }
               path = this.scheme + '://' + host + ':' + this.port + route
-              await setAccount(this.context, {
-                path: path,
-                name: this.name,
-                password: this.password,
-                bz: this.bz,
-                isLogin: 'true'
+              const session = rcp.createSession({
+                requestConfiguration: {
+                  dns: {
+                    dnsRules: getDnsServer(this.context)
+                  },
+                  security: {
+                    remoteValidation: getFlushPreference(this.context, 'debugSetting',
+                      'closeRemoteValidationWhenLinkWebdav',
+                      'system') as 'system' | 'skip',
+                    tlsRange: {
+                      min: 'TlsV1.2'
+                    }
+                  }
+                },
+                headers: {
+                  Authorization: 'Basic ' +
+                    new util.Base64Helper().encodeToStringSync(new util.TextEncoder().encodeInto(this.name + ':' +
+                      this.password)),
+                  Depth: '0'
+                }
               })
-              await promptAction.openToast({
-                message: '登录成功'
+              const dialogControllerProgress = new CustomDialogController({
+                builder: LoadingDialog({
+                  content: '请求中...'
+                })
               })
-              this.context.eventHub.emit('refreshFilelist')
-              this.context.eventHub.emit('refreshMe')
-              this.isShowLoginSheet = false
-              await autoBackup(this.context)
+              dialogControllerProgress.open()
+              try {
+                const response = await session.fetch(new rcp.Request(path + '/', 'PROPFIND'))
+                session.close()
+                dialogControllerProgress.close()
+                if (response.statusCode >= 200 && response.statusCode < 300) {
+                  await setAccount(this.context, {
+                    path: path,
+                    name: this.name,
+                    password: this.password,
+                    bz: this.bz,
+                    isLogin: 'true'
+                  })
+                  await promptAction.openToast({
+                    message: '登录成功'
+                  })
+                  this.context.eventHub.emit('refreshFilelist')
+                  this.context.eventHub.emit('refreshMe')
+                  this.isShowLoginSheet = false
+                } else {
+                  if (response.statusCode !== 401) {
+                    await promptAction.openToast({
+                      message: 'HTTP 请求失败，状态码：' + response.statusCode
+                    })
+                  }
+                  if (response.statusCode === 401) {
+                    await promptAction.openToast({
+                      message: '登录失败，原因：账号密码错误'
+                    })
+                  }
+                }
+              } catch (err) {
+                session.close()
+                dialogControllerProgress.close()
+                await promptAction.openToast({
+                  message: '发生错误，错误码：' + err.code
+                })
+              }
             })
           Row() {
             Toggle({
@@ -276,6 +329,9 @@ export default struct Login {
           })
         }
       }
+      .margin({
+        top: $r('sys.float.ohos_id_elements_margin_vertical_m')
+      })
     }
     .padding({
       bottom: $r('sys.float.ohos_id_default_padding_bottom_fixed'),

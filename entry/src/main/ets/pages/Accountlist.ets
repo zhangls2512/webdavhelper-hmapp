@@ -1,12 +1,11 @@
 import { common } from '@kit.AbilityKit'
-import { preferences } from '@kit.ArkData'
 import { promptAction } from '@kit.ArkUI'
 import { rcp } from '@kit.RemoteCommunicationKit'
 import { hdsEffect } from '@kit.UIDesignKit'
 import { AccountInfo, getAccountList, removeAccount, setAccount, setAccountBz } from '../common/Account'
-import { autoBackup } from '../common/Backup'
 import { getDnsServer } from '../common/Dnsserver'
 import copy from '../common/Pasteboard'
+import { getFlushPreference } from '../common/Preference'
 
 @ComponentV2
 export default struct Accountlist {
@@ -18,12 +17,6 @@ export default struct Accountlist {
   @Local hoverId: number = -1
   UIContext = this.getUIContext()
   context = this.UIContext.getHostContext() as common.UIAbilityContext
-  commonSettingDataPreferences = preferences.getPreferencesSync(this.context, {
-    name: 'commonSetting'
-  })
-  debugSettingDataPreferences = preferences.getPreferencesSync(this.context, {
-    name: 'debugSetting'
-  })
 
   @Builder
   MenuBuilder(item: AccountInfo) {
@@ -64,8 +57,8 @@ export default struct Accountlist {
             ]
           })
           if (data.index === 1) {
-            await removeAccount(item.id)
-            this.accountArray = await getAccountList()
+            await removeAccount(this.context, item.id)
+            this.accountArray = await getAccountList(this.context)
             if (item.isLogin === 'true') {
               this.context.eventHub.emit('refreshMe')
               this.isShowAccountlistSheet = false
@@ -234,7 +227,6 @@ export default struct Accountlist {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .width('100%')
               .onHover((isHover) => {
                 if (!isHover) {
                   this.hoverId = -1
@@ -261,7 +253,6 @@ export default struct Accountlist {
                 this.context.eventHub.emit('refreshFilelist')
                 this.context.eventHub.emit('refreshMe')
                 this.isShowAccountlistSheet = false
-                await autoBackup(this.context)
               })
               .bindContextMenu(this.MenuBuilder(item), ResponseType.LongPress, {
                 hapticFeedbackMode: HapticFeedbackMode.AUTO
@@ -311,7 +302,7 @@ export default struct Accountlist {
                   })
                   this.bzId = ''
                   this.bz = ''
-                  this.accountArray = await getAccountList()
+                  this.accountArray = await getAccountList(this.context)
                 })
             }
             .margin({
@@ -332,7 +323,7 @@ export default struct Accountlist {
       bottom: $r('sys.float.ohos_id_default_padding_bottom_fixed')
     })
     .onAppear(async () => {
-      this.accountArray = await getAccountList()
+      this.accountArray = await getAccountList(this.context)
       this.pathConnectionStatusArray = Array(this.accountArray.length).fill('connecting')
       const promises = this.accountArray.map(async (item, index) => {
         const session = rcp.createSession({
@@ -341,7 +332,7 @@ export default struct Accountlist {
               dnsRules: getDnsServer(this.context)
             },
             security: {
-              remoteValidation: this.debugSettingDataPreferences.getSync('closeRemoteValidationWhenLinkWebdav',
+              remoteValidation: getFlushPreference(this.context, 'debugSetting', 'closeRemoteValidationWhenLinkWebdav',
                 'system') as 'system' | 'skip',
               tlsRange: {
                 min: 'TlsV1.2'

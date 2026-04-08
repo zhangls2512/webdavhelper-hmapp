@@ -1,7 +1,7 @@
 import { common, wantAgent, wantConstant } from '@kit.AbilityKit'
-import { preferences } from '@kit.ArkData'
+import { sendablePreferences } from '@kit.ArkData'
 import { util } from '@kit.ArkTS'
-import { display, LoadingDialog, promptAction } from '@kit.ArkUI'
+import { LoadingDialog, promptAction } from '@kit.ArkUI'
 import { backgroundTaskManager } from '@kit.BackgroundTasksKit'
 import { fileIo, fileUri, picker } from '@kit.CoreFileKit'
 import { netBoost } from '@kit.NetworkBoostKit'
@@ -9,13 +9,23 @@ import { notificationManager } from '@kit.NotificationKit'
 import { filePreview } from '@kit.PreviewKit'
 import { rcp } from '@kit.RemoteCommunicationKit'
 import { hdsEffect } from '@kit.UIDesignKit'
-import { getAccountAuthorization, getAccountHash, getAccountInfo, getLoginStatus } from '../common/Account'
+import {
+  AccountInfo,
+  exitAccount,
+  getAccountAuthorization,
+  getAccountHash,
+  getAccountInfo,
+  getAccountList,
+  getLoginStatus,
+  setAccount
+} from '../common/Account'
 import { getDnsServer } from '../common/Dnsserver'
 import { getFileTypeIcon } from '../common/File'
 import { sha256hash } from '../common/Hash'
 import { getCurrentNetworkBearerType } from '../common/Network'
+import { getFlushPreference, setTempPreference } from '../common/Preference'
 import { getPreferType } from '../common/Prefertype'
-import { getSizeString, getTimeString } from '../common/Stringformat'
+import { getSizeString, getTimeStringFromTimeStamp } from '../common/Stringformat'
 import { cp, FileItem, ls, mv, rm } from '../common/Webdav'
 import Newfolder from './Newfolder'
 import Player from './Player'
@@ -26,14 +36,15 @@ import Renamefile from './Renamefile'
 @ComponentV2
 export default struct Filelist {
   @Provider() isShowNewfolderSheet: boolean = false
-  @Provider() isShowPlayerSheet: boolean = false
-  @Provider() isShowReaderSheet: boolean = false
   @Provider() isShowProgressSheet: boolean = false
   @Provider() isShowRenamefileSheet: boolean = false
   @Provider() transferredSize: number = 0
   @Provider() totalSize: number = 0
+  @Local isShowPlayerSheet: boolean = false
+  @Local isShowReaderSheet: boolean = false
   @Local preferType: number = 1
   @Local loading: boolean = false
+  @Local accountArray: AccountInfo[] = []
   @Local fileArray: FileItem[] = []
   @Local dirnames: string[] = []
   @Local isLogin: boolean = false
@@ -43,28 +54,19 @@ export default struct Filelist {
   @Local sortDirectionValue: string = '升序'
   @Local multipleSelect: boolean = false
   @Local multipleSelectArray: FileItem[] = []
-  @Local src: string = ''
   @Local copyMovePath: string = ''
-  @Local editPath: string = ''
-  @Local editName: string = ''
   @Local hoverId: number = -1
   UIContext = this.getUIContext()
   context = this.UIContext.getHostContext() as common.UIAbilityContext
   account = ''
   remove = false
+  src = ''
   srcName = ''
-  backDataPreferences = preferences.getPreferencesSync(this.context, {
-    name: 'back'
-  })
-  commonSettingDataPreferences = preferences.getPreferencesSync(this.context, {
-    name: 'commonSetting'
-  })
-  debugSettingDataPreferences = preferences.getPreferencesSync(this.context, {
-    name: 'debugSetting'
-  })
-  deleteDialogControllerProgress = new CustomDialogController({
+  editPath = ''
+  editName = ''
+  dialogControllerProgress = new CustomDialogController({
     builder: LoadingDialog({
-      content: '删除中...'
+      content: '请求中...'
     })
   })
 
@@ -73,12 +75,14 @@ export default struct Filelist {
   }
 
   async get() {
-    this.isLogin = await getLoginStatus()
+    this.isLogin = await getLoginStatus(this.context)
+    setTempPreference(this.context, 'back', 'filelist', this.isLogin)
     if (!this.isLogin) {
       this.account = ''
+      this.accountArray = await getAccountList(this.context)
     }
     if (this.isLogin) {
-      const accountInfo = await getAccountInfo()
+      const accountInfo = await getAccountInfo(this.context)
       const account = getAccountHash(accountInfo)
       if (this.account !== account) {
         this.dirnames = []
@@ -181,7 +185,8 @@ export default struct Filelist {
           })
             .onClick(async () => {
               if (getCurrentNetworkBearerType() === 0) {
-                const cellularDataUseRemind = this.commonSettingDataPreferences.getSync('cellularDataUseRemind', 0)
+                const cellularDataUseRemind =
+                  getFlushPreference(this.context, 'commonSetting', 'cellularDataUseRemind', 0)
                 if (cellularDataUseRemind === 0 ||
                   (cellularDataUseRemind === 1 && item.size > 200 * Math.pow(1024, 2))) {
                   const promptAction = this.UIContext.getPromptAction()
@@ -204,10 +209,13 @@ export default struct Filelist {
                   }
                 }
               }
+              const transferTaskDataPreferences = sendablePreferences.getPreferencesSync(this.context, {
+                name: 'transferTask'
+              })
               try {
                 const documentSaveOptions = new picker.DocumentSaveOptions()
                 const selectFileDownloadPath =
-                  this.commonSettingDataPreferences.getSync('selectFileDownloadPath', false)
+                  getFlushPreference(this.context, 'commonSetting', 'selectFileDownloadPath', false)
                 if (!selectFileDownloadPath) {
                   documentSaveOptions.pickerMode = picker.DocumentPickerMode.DOWNLOAD
                 }
@@ -251,7 +259,8 @@ export default struct Filelist {
                     scene: 'download',
                     sceneEvent: netBoost.SceneEvent.SCENE_EVENT_ENTER
                   })
-                  const accountInfo = await getAccountInfo()
+                  const accountInfo = await getAccountInfo(this.context)
+                  let lastUpdateTime = 0
                   const session = rcp.createSession({
                     requestConfiguration: {
                       transfer: {
@@ -265,8 +274,9 @@ export default struct Filelist {
                             await fileStream.write(incomingData)
                           },
                           onDownloadProgress: async (totalSize, transferredSize) => {
-                            this.transferredSize = transferredSize
-                            try {
+                            const currentTime = Date.now()
+                            if (currentTime - lastUpdateTime >= 50) {
+                              this.transferredSize = transferredSize
                               await notificationManager.publish({
                                 content: {
                                   notificationContentType: notificationManager.ContentType.NOTIFICATION_CONTENT_SYSTEM_LIVE_VIEW,
@@ -274,7 +284,7 @@ export default struct Filelist {
                                     typeCode: 8,
                                     title: '正在下载文件：' + item.name,
                                     text: '进度：' + Number((transferredSize / totalSize).toFixed(2)) * 100 + '% (' +
-                                    getSizeString(transferredSize) + '/' + getSizeString(totalSize) + ')'
+                                      getSizeString(transferredSize) + '/' + getSizeString(totalSize) + ')'
                                   }
                                 },
                                 id: continuousTaskNotificationInfo.notificationId,
@@ -289,8 +299,8 @@ export default struct Filelist {
                                   }
                                 }
                               })
-                            } catch {
                             }
+                            lastUpdateTime = currentTime
                           },
                           onDataEnd: async () => {
                             session.close()
@@ -305,9 +315,6 @@ export default struct Filelist {
                             this.context.eventHub.off('cancelDownload')
                             this.transferredSize = 0
                             this.totalSize = 0
-                            await promptAction.openToast({
-                              message: '下载完成'
-                            })
                           }
                         }
                       },
@@ -315,7 +322,8 @@ export default struct Filelist {
                         dnsRules: getDnsServer(this.context)
                       },
                       security: {
-                        remoteValidation: this.debugSettingDataPreferences.getSync('closeRemoteValidationWhenLinkWebdav',
+                        remoteValidation: getFlushPreference(this.context, 'debugSetting',
+                          'closeRemoteValidationWhenLinkWebdav',
                           'system') as 'system' | 'skip',
                         tlsRange: {
                           min: 'TlsV1.2'
@@ -323,7 +331,7 @@ export default struct Filelist {
                       }
                     },
                     headers: {
-                      Authorization: await getAccountAuthorization()
+                      Authorization: await getAccountAuthorization(this.context)
                     }
                   })
                   backgroundTaskManager.on('continuousTaskCancel', async () => {
@@ -331,6 +339,11 @@ export default struct Filelist {
                     await promptAction.openToast({
                       message: '下载失败'
                     })
+                    transferTaskDataPreferences.putSync(util.generateRandomUUID(), JSON.stringify({
+                      name: item.name,
+                      status: 'cancel',
+                      type: 'download'
+                    }))
                   })
                   this.totalSize = item.size
                   this.context.eventHub.on('cancelDownload', () => {
@@ -339,16 +352,37 @@ export default struct Filelist {
                   this.isShowProgressSheet = true
                   try {
                     const response = await session.get(accountInfo.path + '/' + item.path)
-                    if (response.statusCode !== 200) {
+                    if (response.statusCode >= 200 && response.statusCode < 300) {
+                      await promptAction.openToast({
+                        message: '下载完成'
+                      })
+                      transferTaskDataPreferences.putSync(util.generateRandomUUID(), JSON.stringify({
+                        name: item.name,
+                        status: 'success',
+                        type: 'download'
+                      }))
+                    } else {
                       await promptAction.openToast({
                         message: 'HTTP 请求失败，状态码：' + response.statusCode
                       })
+                      transferTaskDataPreferences.putSync(util.generateRandomUUID(), JSON.stringify({
+                        name: item.name,
+                        status: 'fail',
+                        errCode: response.statusCode,
+                        type: 'download'
+                      }))
                     }
                   } catch (err) {
                     if (err.code !== 1007900992) {
                       await promptAction.openToast({
                         message: '下载失败，错误码：' + err.code
                       })
+                      transferTaskDataPreferences.putSync(util.generateRandomUUID(), JSON.stringify({
+                        name: item.name,
+                        status: 'fail',
+                        errCode: err.code,
+                        type: 'download'
+                      }))
                     }
                   }
                 }
@@ -356,6 +390,12 @@ export default struct Filelist {
                 await promptAction.openToast({
                   message: '发生错误，错误码：' + err.code
                 })
+                transferTaskDataPreferences.putSync(util.generateRandomUUID(), JSON.stringify({
+                  name: item.name,
+                  status: 'fail',
+                  errCode: err.code,
+                  type: 'download'
+                }))
               }
             })
         }
@@ -405,13 +445,14 @@ export default struct Filelist {
               ]
             })
             if (data.index === 1) {
-              this.deleteDialogControllerProgress.open()
+              this.dialogControllerProgress.open()
               const res = await rm(this.context, item.path)
-              this.deleteDialogControllerProgress.close()
+              this.dialogControllerProgress.close()
               if (res !== 'fail') {
                 await promptAction.openToast({
                   message: '删除成功'
                 })
+                this.loading = true
               }
             }
           })
@@ -423,9 +464,109 @@ export default struct Filelist {
     Scroll() {
       Column() {
         if (!this.isLogin) {
-          Text('未登录账号')
-            .textAlign(TextAlign.Center)
-            .width('100%')
+          Refresh({
+            refreshing: $$this.loading
+          }) {
+            List() {
+              if (this.accountArray.length === 0) {
+                ListItem() {
+                  Text('无数据')
+                }
+                .width('100%')
+              }
+              ForEach(this.accountArray, (item: AccountInfo, index) => {
+                ListItem() {
+                  Column() {
+                    if (index !== 0) {
+                      Divider()
+                        .padding({
+                          left: 6,
+                          right: 6
+                        })
+                    }
+                    Row() {
+                      Image($r('app.media.me_tab'))
+                        .height(24)
+                        .margin({
+                          right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
+                        })
+                        .width(24)
+                      Column() {
+                        Text(item.name)
+                          .fontWeight(FontWeight.Medium)
+                          .width('85%')
+                        Text() {
+                          Span(item.path)
+                          if (item.bz) {
+                            Span('\n' + '备注：' + item.bz)
+                          }
+                        }
+                        .enableAutoSpacing(true)
+                        .fontColor($r('sys.color.font_secondary'))
+                        .fontSize($r('sys.float.ohos_id_text_size_body2'))
+                        .margin({
+                          top: $r('sys.float.ohos_id_text_margin_vertical')
+                        })
+                      }
+                      .alignItems(HorizontalAlign.Start)
+                      .layoutWeight(1)
+                      .margin({
+                        right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
+                      })
+
+                      Image($r('app.media.right'))
+                        .fillColor($r('sys.color.icon_fourth'))
+                        .height(12)
+                        .width(12)
+                    }
+                    .borderRadius(12)
+                    .padding({
+                      bottom: 12,
+                      left: 6,
+                      right: 5,
+                      top: 12
+                    })
+                    .stateStyles({
+                      normal: {
+                        .backgroundColor(this.hoverId === index ? $r('sys.color.interactive_hover') :
+                          $r('sys.color.background_secondary'))
+                      },
+                      pressed: {
+                        .backgroundColor($r('sys.color.comp_background_secondary'))
+                      }
+                    })
+                    .onHover((isHover) => {
+                      if (!isHover) {
+                        this.hoverId = -1
+                      }
+                      if (isHover) {
+                        this.hoverId = index
+                      }
+                    })
+                    .onClick(async () => {
+                      await setAccount(this.context, {
+                        path: item.path,
+                        name: item.name,
+                        password: item.password,
+                        bz: item.bz,
+                        isLogin: 'true'
+                      })
+                      this.loading = true
+                    })
+                  }
+                }
+              })
+              ListItem()
+                .margin({
+                  bottom: this.preferType === 0 ? 80 : 0
+                })
+            }
+          }
+          .height('100%')
+          .onRefreshing(async () => {
+            await this.get()
+            this.loading = false
+          })
         }
         if (this.isLogin) {
           if (this.multipleSelect) {
@@ -497,12 +638,12 @@ export default struct Filelist {
                   })
                   return
                 }
-                const transferTaskDataPreferences = preferences.getPreferencesSync(this.context, {
+                const transferTaskDataPreferences = sendablePreferences.getPreferencesSync(this.context, {
                   name: 'transferTask'
                 })
                 const array = this.multipleSelectArray.filter(item => !item.isdir)
-                const accountInfo = await getAccountInfo()
-                const authorization = await getAccountAuthorization()
+                const accountInfo = await getAccountInfo(this.context)
+                const authorization = await getAccountAuthorization(this.context)
                 array.forEach(item => {
                   const id = util.generateRandomUUID()
                   transferTaskDataPreferences.putSync(id, JSON.stringify({
@@ -692,7 +833,6 @@ export default struct Filelist {
             .margin({
               bottom: $r('sys.float.ohos_id_elements_margin_vertical_m')
             })
-            .width('100%')
           }
           Row() {
             if (this.dirnames.length > 0) {
@@ -722,7 +862,6 @@ export default struct Filelist {
               .width(40)
               .onClick(() => {
                 this.dirnames.pop()
-                this.backDataPreferences.putSync('filelist', this.dirnames.length === 0 ? false : true)
                 this.loading = true
               })
             }
@@ -766,25 +905,32 @@ export default struct Filelist {
           })
 
           Text() {
+            Span('/')
+            Span(' 账号列表 ')
+              .fontColor($r('sys.color.font_emphasize'))
+              .onClick(async () => {
+                if (this.multipleSelect || this.copyMovePath) {
+                  return
+                }
+                this.dirnames = []
+                await exitAccount(this.context)
+                this.loading = true
+              })
+            Span('/')
+            Span(' 当前账号 / ')
+              .fontColor($r('sys.color.font_emphasize'))
+              .onClick(() => {
+                this.dirnames = []
+                this.loading = true
+              })
             ForEach(this.dirnames, (item: string, index) => {
               if (index !== 0) {
                 Span('/ ')
-              }
-              if (index === 0) {
-                Span('根目录')
-                  .fontColor($r('sys.color.font_emphasize'))
-                  .onClick(() => {
-                    this.dirnames = []
-                    this.backDataPreferences.putSync('filelist', false)
-                    this.loading = true
-                  })
-                Span(' / ')
               }
               Span(item + ' ')
                 .fontColor($r('sys.color.font_emphasize'))
                 .onClick(() => {
                   this.dirnames = this.dirnames.slice(0, index + 1)
-                  this.backDataPreferences.putSync('filelist', this.dirnames.length === 0 ? false : true)
                   this.loading = true
                 })
             })
@@ -848,9 +994,6 @@ export default struct Filelist {
               }
               .borderRadius(20)
               .height(40)
-              .margin({
-                right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
-              })
               .padding(11)
               .stateStyles({
                 normal: {
@@ -871,11 +1014,11 @@ export default struct Filelist {
                 const documentViewPicker = new picker.DocumentViewPicker(this.context)
                 const uris = await documentViewPicker.select()
                 if (uris.length > 0) {
-                  const transferTaskDataPreferences = preferences.getPreferencesSync(this.context, {
+                  const transferTaskDataPreferences = sendablePreferences.getPreferencesSync(this.context, {
                     name: 'transferTask'
                   })
-                  const accountInfo = await getAccountInfo()
-                  const authorization = await getAccountAuthorization()
+                  const accountInfo = await getAccountInfo(this.context)
+                  const authorization = await getAccountAuthorization(this.context)
                   uris.forEach(item => {
                     const id = util.generateRandomUUID()
                     transferTaskDataPreferences.putSync(id, JSON.stringify({
@@ -958,20 +1101,15 @@ export default struct Filelist {
                 if (this.remove) {
                   text = '移动'
                 }
-                const dialogControllerProgress = new CustomDialogController({
-                  builder: LoadingDialog({
-                    content: text + '中...'
-                  })
-                })
                 let res = ''
-                dialogControllerProgress.open()
+                this.dialogControllerProgress.open()
                 if (!this.remove) {
                   res = await cp(this.context, this.copyMovePath, this.getPath())
                 }
                 if (this.remove) {
                   res = await mv(this.context, this.copyMovePath, this.getPath())
                 }
-                dialogControllerProgress.close()
+                this.dialogControllerProgress.close()
                 this.copyMovePath = ''
                 this.remove = false
                 if (res !== 'fail') {
@@ -984,7 +1122,7 @@ export default struct Filelist {
             }
             if (this.multipleSelect) {
               if (!this.fileArray.every(item => this.multipleSelectArray.find(selectItem => selectItem.path ===
-              item.path))) {
+                item.path))) {
                 Blank()
                 Column() {
                   Image($r('app.media.selectall'))
@@ -1016,7 +1154,7 @@ export default struct Filelist {
                 })
               }
               if (this.fileArray.every(item => this.multipleSelectArray.find(selectItem => selectItem.path ===
-              item.path))) {
+                item.path))) {
                 Blank()
                 Column() {
                   Image($r('app.media.cancelselectall'))
@@ -1052,7 +1190,7 @@ export default struct Filelist {
           }
           .margin({
             bottom: $r('sys.float.ohos_id_elements_margin_vertical_m'),
-            top: this.dirnames.length > 0 ? $r('sys.float.ohos_id_elements_margin_vertical_m') : 0
+            top: $r('sys.float.ohos_id_elements_margin_vertical_m')
           })
           .width('100%')
 
@@ -1089,7 +1227,7 @@ export default struct Filelist {
                             const exist = this.multipleSelectArray.find(selectItem => selectItem.path === item.path)
                             if (!isOn && exist) {
                               this.multipleSelectArray.splice(this.multipleSelectArray.findIndex(selectItem => selectItem.path ===
-                              item.path), 1)
+                                item.path), 1)
                             }
                             if (isOn && !exist) {
                               this.multipleSelectArray.push(item)
@@ -1098,7 +1236,6 @@ export default struct Filelist {
                       }
                       if (!item.isdir) {
                         Image(getFileTypeIcon(item.name))
-                          .fillColor($r('sys.color.icon_secondary'))
                           .height(24)
                           .margin({
                             right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
@@ -1119,7 +1256,7 @@ export default struct Filelist {
                           .fontWeight(FontWeight.Medium)
                           .width('85%')
                         Text() {
-                          Span(getTimeString(item.modifyTime))
+                          Span(getTimeStringFromTimeStamp(item.modifyTime))
                           if (item.size >= 0) {
                             Span(' - ' + getSizeString(item.size))
                           }
@@ -1157,7 +1294,6 @@ export default struct Filelist {
                         .backgroundColor($r('sys.color.comp_background_secondary'))
                       }
                     })
-                    .width('100%')
                     .onHover((isHover) => {
                       if (!isHover) {
                         this.hoverId = -1
@@ -1175,8 +1311,8 @@ export default struct Filelist {
                         }
                         const supportedformats = ['mp4', 'mkv', 'm4a', 'aac', 'mp3', 'ogg', 'wav', 'flac', 'amr', 'ape']
                         if (supportedformats.includes(houzhui) &&
-                        this.commonSettingDataPreferences.getSync('onlinePreviewMedia', true)) {
-                          const accountInfo = await getAccountInfo()
+                          getFlushPreference(this.context, 'commonSetting', 'onlinePreviewMedia', true)) {
+                          const accountInfo = await getAccountInfo(this.context)
                           this.src = accountInfo.path + '/' + item.path
                           this.srcName = item.name
                           this.isShowPlayerSheet = true
@@ -1190,7 +1326,7 @@ export default struct Filelist {
                         }
                         if (getCurrentNetworkBearerType() === 0) {
                           const cellularDataUseRemind =
-                            this.commonSettingDataPreferences.getSync('cellularDataUseRemind', 0)
+                            getFlushPreference(this.context, 'commonSetting', 'cellularDataUseRemind', 0)
                           if (cellularDataUseRemind === 0 ||
                             (cellularDataUseRemind === 1 && item.size > 200 * Math.pow(1024, 2))) {
                             const promptAction = this.UIContext.getPromptAction()
@@ -1241,7 +1377,8 @@ export default struct Filelist {
                             scene: 'download',
                             sceneEvent: netBoost.SceneEvent.SCENE_EVENT_ENTER
                           })
-                          const accountInfo = await getAccountInfo()
+                          const accountInfo = await getAccountInfo(this.context)
+                          let lastUpdateTime = 0
                           const session = rcp.createSession({
                             requestConfiguration: {
                               transfer: {
@@ -1255,8 +1392,9 @@ export default struct Filelist {
                                     await fileStream.write(incomingData)
                                   },
                                   onDownloadProgress: async (totalSize, transferredSize) => {
-                                    this.transferredSize = transferredSize
-                                    try {
+                                    const currentTime = Date.now()
+                                    if (currentTime - lastUpdateTime >= 50) {
+                                      this.transferredSize = transferredSize
                                       await notificationManager.publish({
                                         content: {
                                           notificationContentType: notificationManager.ContentType.NOTIFICATION_CONTENT_SYSTEM_LIVE_VIEW,
@@ -1265,7 +1403,7 @@ export default struct Filelist {
                                             title: '正在下载文件：' + item.name,
                                             text: '进度：' + Number((transferredSize / totalSize).toFixed(2)) * 100 +
                                               '% (' + getSizeString(transferredSize) + '/' +
-                                            getSizeString(totalSize) + ')'
+                                              getSizeString(totalSize) + ')'
                                           }
                                         },
                                         id: continuousTaskNotificationInfo.notificationId,
@@ -1280,8 +1418,8 @@ export default struct Filelist {
                                           }
                                         }
                                       })
-                                    } catch {
                                     }
+                                    lastUpdateTime = currentTime
                                   },
                                   onDataEnd: async () => {
                                     session.close()
@@ -1296,49 +1434,6 @@ export default struct Filelist {
                                     this.context.eventHub.off('cancelDownload')
                                     this.transferredSize = 0
                                     this.totalSize = 0
-                                    const uri = fileUri.getUriFromPath(filePath)
-                                    const filePreviewType =
-                                      this.commonSettingDataPreferences.getSync('filePreviewType', 0)
-                                    if (filePreviewType === 0) {
-                                      const supportedReaderFormats = ['.epub', '.mobi', '.azw', '.azw3']
-                                      if (!supportedReaderFormats.some(formatItem => item.name.endsWith(formatItem))) {
-                                        const canPreview = await filePreview.canPreview(this.context, uri)
-                                        if (!canPreview) {
-                                          await promptAction.openToast({
-                                            message: '此类型不支持预览'
-                                          })
-                                        }
-                                        if (canPreview) {
-                                          await filePreview.openPreview(this.context, {
-                                            title: item.name,
-                                            uri: uri,
-                                            mimeType: ''
-                                          })
-                                        }
-                                      }
-                                      if (supportedReaderFormats.some(formatItem => item.name.endsWith(formatItem))) {
-                                        const dir = this.context.tempDir + '/preview/reader/' + this.account + '/' +
-                                        sha256hash(item.name)
-                                        if (!fileIo.accessSync(dir)) {
-                                          await fileIo.mkdir(dir, true)
-                                        }
-                                        const newFilePath = dir + '/' + item.name
-                                        await fileIo.moveFile(filePath, newFilePath)
-                                        this.src = newFilePath
-                                        this.srcName = item.name
-                                        this.isShowReaderSheet = true
-                                      }
-                                    }
-                                    if (filePreviewType === 1) {
-                                      await this.context.startAbility({
-                                        action: 'ohos.want.action.viewData',
-                                        uri: uri,
-                                        parameters: {
-                                          'ohos.ability.params.showDefaultPicker': true
-                                        },
-                                        flags: wantConstant.Flags.FLAG_AUTH_READ_URI_PERMISSION
-                                      })
-                                    }
                                   }
                                 }
                               },
@@ -1346,7 +1441,8 @@ export default struct Filelist {
                                 dnsRules: getDnsServer(this.context)
                               },
                               security: {
-                                remoteValidation: this.debugSettingDataPreferences.getSync('closeRemoteValidationWhenLinkWebdav',
+                                remoteValidation: getFlushPreference(this.context, 'debugSetting',
+                                  'closeRemoteValidationWhenLinkWebdav',
                                   'system') as 'system' | 'skip',
                                 tlsRange: {
                                   min: 'TlsV1.2'
@@ -1354,7 +1450,7 @@ export default struct Filelist {
                               }
                             },
                             headers: {
-                              Authorization: await getAccountAuthorization()
+                              Authorization: await getAccountAuthorization(this.context)
                             }
                           })
                           backgroundTaskManager.on('continuousTaskCancel', async () => {
@@ -1370,7 +1466,51 @@ export default struct Filelist {
                           this.isShowProgressSheet = true
                           try {
                             const response = await session.get(accountInfo.path + '/' + item.path)
-                            if (response.statusCode !== 200) {
+                            if (response.statusCode >= 200 && response.statusCode < 300) {
+                              const uri = fileUri.getUriFromPath(filePath)
+                              const filePreviewType =
+                                getFlushPreference(this.context, 'commonSetting', 'filePreviewType', 0)
+                              if (filePreviewType === 0) {
+                                const supportedReaderFormats = ['.epub', '.mobi', '.azw', '.azw3']
+                                if (!supportedReaderFormats.some(formatItem => item.name.endsWith(formatItem))) {
+                                  const canPreview = await filePreview.canPreview(this.context, uri)
+                                  if (!canPreview) {
+                                    await promptAction.openToast({
+                                      message: '此类型不支持预览'
+                                    })
+                                  }
+                                  if (canPreview) {
+                                    await filePreview.openPreview(this.context, {
+                                      title: item.name,
+                                      uri: uri,
+                                      mimeType: ''
+                                    })
+                                  }
+                                }
+                                if (supportedReaderFormats.some(formatItem => item.name.endsWith(formatItem))) {
+                                  const dir = this.context.tempDir + '/preview/reader/' + this.account + '/' +
+                                    sha256hash(item.name)
+                                  if (!fileIo.accessSync(dir)) {
+                                    await fileIo.mkdir(dir, true)
+                                  }
+                                  const newFilePath = dir + '/' + item.name
+                                  await fileIo.moveFile(filePath, newFilePath)
+                                  this.src = newFilePath
+                                  this.srcName = item.name
+                                  this.isShowReaderSheet = true
+                                }
+                              }
+                              if (filePreviewType === 1) {
+                                await this.context.startAbility({
+                                  action: 'ohos.want.action.viewData',
+                                  uri: uri,
+                                  parameters: {
+                                    'ohos.ability.params.showDefaultPicker': true
+                                  },
+                                  flags: wantConstant.Flags.FLAG_AUTH_READ_URI_PERMISSION
+                                })
+                              }
+                            } else {
                               await fileIo.unlink(filePath)
                               await promptAction.openToast({
                                 message: 'HTTP 请求失败，状态码：' + response.statusCode
@@ -1392,7 +1532,6 @@ export default struct Filelist {
                       }
                       if (item.isdir) {
                         this.dirnames.push(item.name)
-                        this.backDataPreferences.putSync('filelist', true)
                         this.loading = true
                       }
                     })
@@ -1416,6 +1555,10 @@ export default struct Filelist {
                   .borderRadius($r('sys.float.ohos_id_corner_radius_default_l'))
                 }
               })
+              ListItem()
+                .margin({
+                  bottom: this.preferType === 0 ? 80 : 0
+                })
             }
           }
           .layoutWeight(1)
@@ -1434,25 +1577,31 @@ export default struct Filelist {
     })
     .onAppear(async () => {
       this.preferType = getPreferType(this.UIContext)
-      display.on('change', () => {
-        setTimeout(() => {
-          this.preferType = getPreferType(this.UIContext)
-        }, 200)
-      })
-      this.context.eventHub.on('backFilelist', () => {
-        this.dirnames.pop()
-        this.backDataPreferences.putSync('filelist', this.dirnames.length === 0 ? false : true)
+      this.context.eventHub.on('backFilelist', async () => {
+        if (this.dirnames.length > 0) {
+          this.dirnames.pop()
+        } else {
+          this.dirnames = []
+          await exitAccount(this.context)
+        }
         this.loading = true
       })
-      this.context.eventHub.on('refreshFilelist', async () => {
-        await this.get()
+      this.context.eventHub.on('refreshFilelist', () => {
+        this.loading = true
       })
-      await this.get()
+      const showAccountlistAfterAppLaunch =
+        getFlushPreference(this.context, 'commonSetting', 'showAccountlistAfterAppLaunch', false)
+      const isLogin = await getLoginStatus(this.context)
+      if (showAccountlistAfterAppLaunch) {
+        if (isLogin) {
+          await exitAccount(this.context)
+        }
+      }
+      this.loading = true
     })
     .onDisAppear(() => {
       this.context.eventHub.off('refreshFilelist')
       this.context.eventHub.off('backFilelist')
-      display.off('change')
     })
     .bindSheet(this.isShowRenamefileSheet!!, this.RenamefileSheetBuilder(), {
       height: SheetSize.FIT_CONTENT,

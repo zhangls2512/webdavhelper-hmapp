@@ -1,6 +1,6 @@
 import { LengthMetrics } from '@kit.ArkUI'
 import { deviceInfo } from '@kit.BasicServicesKit'
-import { HdsNavDestination } from '@kit.UIDesignKit'
+import { hdsMaterial, HdsNavDestination, HdsNavDestinationTitleMode, ScrollEffectType } from '@kit.UIDesignKit'
 
 @Builder
 export function DebuginfoBuilder() {
@@ -12,6 +12,10 @@ struct Debuginfo {
   build() {
     HdsNavDestination() {
       List() {
+        ListItem()
+          .margin({
+            top: 64
+          })
         ListItem() {
           Column() {
             Row() {
@@ -28,7 +32,6 @@ struct Debuginfo {
             }
             .borderRadius(12)
             .padding(12)
-            .width('100%')
 
             Divider()
               .padding({
@@ -49,7 +52,6 @@ struct Debuginfo {
             }
             .borderRadius(12)
             .padding(12)
-            .width('100%')
 
             Divider()
               .padding({
@@ -71,7 +73,6 @@ struct Debuginfo {
             }
             .borderRadius(12)
             .padding(12)
-            .width('100%')
 
             Divider()
               .padding({
@@ -80,7 +81,6 @@ struct Debuginfo {
               })
             Row() {
               Text('应用版本')
-                .enableAutoSpacing(true)
                 .fontWeight(FontWeight.Medium)
                 .margin({
                   right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
@@ -93,7 +93,6 @@ struct Debuginfo {
             }
             .borderRadius(12)
             .padding(12)
-            .width('100%')
           }
           .backgroundColor($r('sys.color.ohos_id_color_card_bg'))
           .borderRadius($r('sys.float.ohos_id_corner_radius_default_l'))
@@ -102,24 +101,58 @@ struct Debuginfo {
         .margin({
           top: $r('sys.float.ohos_id_elements_margin_vertical_m')
         })
+
+        ListItem()
+          .margin({
+            bottom: 28
+          })
       }
       .padding({
-        bottom: $r('sys.float.ohos_id_default_padding_bottom_fixed'),
         left: $r('sys.float.ohos_id_elements_margin_horizontal_l'),
         right: $r('sys.float.ohos_id_elements_margin_horizontal_l')
       })
     }
     .backgroundColor($r('app.color.sheet_background'))
+    .recoverable(true)
     .titleBar({
       padding: {
         end: LengthMetrics.vp(60)
+      },
+      style: {
+        scrollEffectOpts: {
+          scrollEffectType: ScrollEffectType.IMMERSIVE_GRADIENT_BLUR
+        },
+        originalStyle: {
+          contentStyle: {
+            titleStyle: {
+              mainTitleColor: $r('sys.color.font_primary')
+            },
+            backIconStyle: {
+              backgroundColor: $r('sys.color.comp_background_color_floating_smooth'),
+              iconColor: $r('sys.color.icon_primary')
+            }
+          }
+        },
+        scrollEffectStyle: {
+          contentStyle: {
+            backIconStyle: {
+              backgroundColor: $r('sys.color.comp_background_color_floating_smooth'),
+              iconColor: $r('sys.color.icon_primary')
+            }
+          }
+        },
+        thermoCtrl: true,
+        systemMaterialEffect: {
+          materialType: hdsMaterial.MaterialType.ADAPTIVE,
+          materialLevel: hdsMaterial.MaterialLevel.ADAPTIVE
+        }
       },
       content: {
         title: {
           mainTitle: '调试信息'
         }
-      },
-      enableComponentSafeArea: true
+      }
     })
+    .titleMode(HdsNavDestinationTitleMode.MODAL)
   }
 }
