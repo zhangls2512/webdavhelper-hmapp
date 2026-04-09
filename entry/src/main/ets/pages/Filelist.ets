@@ -277,28 +277,31 @@ export default struct Filelist {
                             const currentTime = Date.now()
                             if (currentTime - lastUpdateTime >= 50) {
                               this.transferredSize = transferredSize
-                              await notificationManager.publish({
-                                content: {
-                                  notificationContentType: notificationManager.ContentType.NOTIFICATION_CONTENT_SYSTEM_LIVE_VIEW,
-                                  systemLiveView: {
-                                    typeCode: 8,
-                                    title: '正在下载文件：' + item.name,
-                                    text: '进度：' + Number((transferredSize / totalSize).toFixed(2)) * 100 + '% (' +
-                                      getSizeString(transferredSize) + '/' + getSizeString(totalSize) + ')'
+                              try {
+                                await notificationManager.publish({
+                                  content: {
+                                    notificationContentType: notificationManager.ContentType.NOTIFICATION_CONTENT_SYSTEM_LIVE_VIEW,
+                                    systemLiveView: {
+                                      typeCode: 8,
+                                      title: '正在下载文件：' + item.name,
+                                      text: '进度：' + Number((transferredSize / totalSize).toFixed(2)) * 100 + '% (' +
+                                        getSizeString(transferredSize) + '/' + getSizeString(totalSize) + ')'
+                                    }
+                                  },
+                                  id: continuousTaskNotificationInfo.notificationId,
+                                  notificationSlotType: notificationManager.SlotType.LIVE_VIEW,
+                                  template: {
+                                    name: 'downloadTemplate',
+                                    data: {
+                                      title: '正在下载文件，进度：' +
+                                        Number((transferredSize / totalSize).toFixed(2)) * 100 + '%',
+                                      fileName: item.name,
+                                      progressValue: Number((transferredSize / totalSize).toFixed(2)) * 100
+                                    }
                                   }
-                                },
-                                id: continuousTaskNotificationInfo.notificationId,
-                                notificationSlotType: notificationManager.SlotType.LIVE_VIEW,
-                                template: {
-                                  name: 'downloadTemplate',
-                                  data: {
-                                    title: '正在下载文件，进度：' +
-                                      Number((transferredSize / totalSize).toFixed(2)) * 100 + '%',
-                                    fileName: item.name,
-                                    progressValue: Number((transferredSize / totalSize).toFixed(2)) * 100
-                                  }
-                                }
-                              })
+                                })
+                              } catch {
+                              }
                             }
                             lastUpdateTime = currentTime
                           },
@@ -1395,29 +1398,32 @@ export default struct Filelist {
                                     const currentTime = Date.now()
                                     if (currentTime - lastUpdateTime >= 50) {
                                       this.transferredSize = transferredSize
-                                      await notificationManager.publish({
-                                        content: {
-                                          notificationContentType: notificationManager.ContentType.NOTIFICATION_CONTENT_SYSTEM_LIVE_VIEW,
-                                          systemLiveView: {
-                                            typeCode: 8,
-                                            title: '正在下载文件：' + item.name,
-                                            text: '进度：' + Number((transferredSize / totalSize).toFixed(2)) * 100 +
-                                              '% (' + getSizeString(transferredSize) + '/' +
-                                              getSizeString(totalSize) + ')'
+                                      try {
+                                        await notificationManager.publish({
+                                          content: {
+                                            notificationContentType: notificationManager.ContentType.NOTIFICATION_CONTENT_SYSTEM_LIVE_VIEW,
+                                            systemLiveView: {
+                                              typeCode: 8,
+                                              title: '正在下载文件：' + item.name,
+                                              text: '进度：' + Number((transferredSize / totalSize).toFixed(2)) * 100 +
+                                                '% (' + getSizeString(transferredSize) + '/' +
+                                                getSizeString(totalSize) + ')'
+                                            }
+                                          },
+                                          id: continuousTaskNotificationInfo.notificationId,
+                                          notificationSlotType: notificationManager.SlotType.LIVE_VIEW,
+                                          template: {
+                                            name: 'downloadTemplate',
+                                            data: {
+                                              title: '正在下载文件，进度：' +
+                                                Number((transferredSize / totalSize).toFixed(2)) * 100 + '%',
+                                              fileName: item.name,
+                                              progressValue: Number((transferredSize / totalSize).toFixed(2)) * 100
+                                            }
                                           }
-                                        },
-                                        id: continuousTaskNotificationInfo.notificationId,
-                                        notificationSlotType: notificationManager.SlotType.LIVE_VIEW,
-                                        template: {
-                                          name: 'downloadTemplate',
-                                          data: {
-                                            title: '正在下载文件，进度：' +
-                                              Number((transferredSize / totalSize).toFixed(2)) * 100 + '%',
-                                            fileName: item.name,
-                                            progressValue: Number((transferredSize / totalSize).toFixed(2)) * 100
-                                          }
-                                        }
-                                      })
+                                        })
+                                      } catch {
+                                      }
                                     }
                                     lastUpdateTime = currentTime
                                   },
