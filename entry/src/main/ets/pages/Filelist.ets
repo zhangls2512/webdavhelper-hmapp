@@ -1586,11 +1586,12 @@ export default struct Filelist {
       this.context.eventHub.on('backFilelist', async () => {
         if (this.dirnames.length > 0) {
           this.dirnames.pop()
-        } else {
+          this.loading = true
+        } else if (!this.multipleSelect && !this.copyMovePath) {
           this.dirnames = []
           await exitAccount(this.context)
+          this.loading = true
         }
-        this.loading = true
       })
       this.context.eventHub.on('refreshFilelist', () => {
         this.loading = true
