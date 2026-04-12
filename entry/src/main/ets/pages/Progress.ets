@@ -46,7 +46,7 @@ export default struct Progresssheet {
               Text('进度：' + Number((this.transferredSize / this.totalSize).toFixed(2)) * 100 + '%')
                 .fontWeight(FontWeight.Medium)
               Text(getSizeString(this.transferredSize) + '/' + getSizeString(this.totalSize) + ' (' +
-              getSizeString(this.oneSecondTransferredSize) + '/s)')
+                getSizeString(this.oneSecondTransferredSize) + '/s)')
                 .fontColor($r('sys.color.font_secondary'))
                 .fontSize($r('sys.float.ohos_id_text_size_body2'))
                 .margin({
