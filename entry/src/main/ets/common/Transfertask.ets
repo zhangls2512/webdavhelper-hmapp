@@ -10,7 +10,7 @@ import { getDnsServer } from './Dnsserver'
 import { getPermission } from './Permission'
 import { getFlushPreference } from './Preference'
 import { getSizeString } from './Stringformat'
-import { encodePath } from './Webdav'
+import { encodeAccountPath, encodePath } from './Webdav'
 import { TransferTaskItem } from '../pages/Index'
 
 @Concurrent
@@ -132,7 +132,7 @@ export async function download(context: Context, id: string) {
       session.cancel()
     })
     try {
-      const response = await session.get(transferTask.accountInfo.path + '/' + transferTask.path)
+      const response = await session.get(encodeAccountPath(transferTask.accountInfo.path) + '/' + transferTask.path)
       if (response.statusCode >= 200 && response.statusCode < 300) {
         transferTask.status = 'success'
       } else {
@@ -258,7 +258,8 @@ export async function upload(context: Context, id: string) {
     })
     try {
       const response =
-        await session.put(transferTask.accountInfo.path + '/' + encodePath(transferTask.path + '/' + transferTask.name),
+        await session.put(encodeAccountPath(transferTask.accountInfo.path) + '/' +
+          encodePath(transferTask.path + '/' + transferTask.name),
           new rcp.UploadFromFile(fileUri.getUriFromPath(transferTask.srcFileUri)))
       if (response.statusCode >= 200 && response.statusCode < 300) {
         transferTask.status = 'success'

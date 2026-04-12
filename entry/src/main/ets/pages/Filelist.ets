@@ -26,7 +26,7 @@ import { getCurrentNetworkBearerType } from '../common/Network'
 import { getFlushPreference, setTempPreference } from '../common/Preference'
 import { getPreferType } from '../common/Prefertype'
 import { getSizeString, getTimeStringFromTimeStamp } from '../common/Stringformat'
-import { cp, FileItem, ls, mv, rm } from '../common/Webdav'
+import { cp, encodeAccountPath, FileItem, ls, mv, rm } from '../common/Webdav'
 import Newfolder from './Newfolder'
 import Player from './Player'
 import Progress from './Progress'
@@ -354,7 +354,7 @@ export default struct Filelist {
                   })
                   this.isShowProgressSheet = true
                   try {
-                    const response = await session.get(accountInfo.path + '/' + item.path)
+                    const response = await session.get(encodeAccountPath(accountInfo.path) + '/' + item.path)
                     if (response.statusCode >= 200 && response.statusCode < 300) {
                       await promptAction.openToast({
                         message: '下载完成'
@@ -1471,7 +1471,7 @@ export default struct Filelist {
                           })
                           this.isShowProgressSheet = true
                           try {
-                            const response = await session.get(accountInfo.path + '/' + item.path)
+                            const response = await session.get(encodeAccountPath(accountInfo.path) + '/' + item.path)
                             if (response.statusCode >= 200 && response.statusCode < 300) {
                               const uri = fileUri.getUriFromPath(filePath)
                               const filePreviewType =
