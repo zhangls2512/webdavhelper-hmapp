@@ -838,61 +838,69 @@ export default struct Filelist {
             })
           }
           Row() {
-            if (this.dirnames.length > 0) {
-              Column() {
-                Image($r('app.media.back'))
+            Column() {
+              Image($r('app.media.back'))
+            }
+            .borderRadius(20)
+            .height(40)
+            .margin({
+              right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
+            })
+            .padding(11)
+            .stateStyles({
+              normal: {
+                .backgroundColor($r('sys.color.interactive_hover'))
+              },
+              pressed: {
+                .backgroundColor($r('sys.color.interactive_pressed'))
               }
-              .borderRadius(20)
-              .height(40)
+            })
+            .visualEffect(new hdsEffect.HdsEffectBuilder()
+              .pointLight({
+                sourceType: hdsEffect.PointLightSourceType.SOFT,
+                illuminatedType: hdsEffect.PointLightIlluminatedType.BORDER_CONTENT
+              })
+              .buildEffect())
+            .width(40)
+            .onClick(async () => {
+              if (this.dirnames.length > 0) {
+                this.dirnames.pop()
+                this.loading = true
+              } else if (!this.multipleSelect && !this.copyMovePath) {
+                this.dirnames = []
+                await exitAccount(this.context)
+                this.loading = true
+              } else {
+                await promptAction.openToast({
+                  message: '多选、复制、移动模式下不支持返回账号列表'
+                })
+              }
+            })
+
+            Blank()
+            Select([
+              { value: '名称' },
+              { value: '大小' },
+              { value: '类型' },
+              { value: '修改时间' }
+            ])
               .margin({
                 right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
               })
-              .padding(11)
-              .stateStyles({
-                normal: {
-                  .backgroundColor($r('sys.color.interactive_hover'))
-                },
-                pressed: {
-                  .backgroundColor($r('sys.color.interactive_pressed'))
-                }
+              .selected(this.sortByIndex!!)
+              .value(this.sortByValue!!)
+              .onSelect(() => {
+                this.fileArray = this.sortFileArray(this.fileArray)
               })
-              .visualEffect(new hdsEffect.HdsEffectBuilder()
-                .pointLight({
-                  sourceType: hdsEffect.PointLightSourceType.SOFT,
-                  illuminatedType: hdsEffect.PointLightIlluminatedType.BORDER_CONTENT
-                })
-                .buildEffect())
-              .width(40)
-              .onClick(() => {
-                this.dirnames.pop()
-                this.loading = true
+            Select([
+              { value: '升序' },
+              { value: '降序' }
+            ])
+              .selected(this.sortDirectionIndex!!)
+              .value(this.sortDirectionValue!!)
+              .onSelect(() => {
+                this.fileArray = this.sortFileArray(this.fileArray)
               })
-            }
-            Row() {
-              Select([
-                { value: '名称' },
-                { value: '大小' },
-                { value: '类型' },
-                { value: '修改时间' }
-              ])
-                .margin({
-                  right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
-                })
-                .selected(this.sortByIndex!!)
-                .value(this.sortByValue!!)
-                .onSelect(() => {
-                  this.fileArray = this.sortFileArray(this.fileArray)
-                })
-              Select([
-                { value: '升序' },
-                { value: '降序' }
-              ])
-                .selected(this.sortDirectionIndex!!)
-                .value(this.sortDirectionValue!!)
-                .onSelect(() => {
-                  this.fileArray = this.sortFileArray(this.fileArray)
-                })
-            }
           }
           .justifyContent(FlexAlign.SpaceBetween)
           .width('100%')
@@ -913,6 +921,9 @@ export default struct Filelist {
               .fontColor($r('sys.color.font_emphasize'))
               .onClick(async () => {
                 if (this.multipleSelect || this.copyMovePath) {
+                  await promptAction.openToast({
+                    message: '多选、复制、移动模式下不支持返回账号列表'
+                  })
                   return
                 }
                 this.dirnames = []
@@ -1591,9 +1602,17 @@ export default struct Filelist {
           this.dirnames = []
           await exitAccount(this.context)
           this.loading = true
+        } else {
+          await promptAction.openToast({
+            message: '多选、复制、移动模式下不支持返回账号列表'
+          })
         }
       })
       this.context.eventHub.on('refreshFilelist', () => {
+        this.multipleSelect = false
+        this.multipleSelectArray = []
+        this.copyMovePath = ''
+        this.remove = false
         this.loading = true
       })
       const showAccountlistAfterAppLaunch =
