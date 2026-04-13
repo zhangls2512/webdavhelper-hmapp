@@ -3,6 +3,7 @@ import { rcp } from '@kit.RemoteCommunicationKit'
 import { getAccountInfo } from './Account'
 import { getDnsServer } from './Dnsserver'
 import { getFlushPreference } from './Preference'
+import { encodeAccountPath } from './Webdav'
 
 interface DeveloperErrorResponse {
   errCode: number,
@@ -31,7 +32,8 @@ export async function webdavRequest(context: Context, path: string, method: stri
     headers: headers
   })
   try {
-    const response = await session.fetch(new rcp.Request(accountInfo.path + '/' + path, method, headers))
+    const response =
+      await session.fetch(new rcp.Request(encodeAccountPath(accountInfo.path) + '/' + path, method, headers))
     session.close()
     if (response.statusCode >= 200 && response.statusCode < 300) {
       return String(response)

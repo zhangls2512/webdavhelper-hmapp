@@ -11,7 +11,11 @@ export interface FileItem {
 }
 
 export function encodePath(path: string) {
-  return decodeURIComponent(path).split('/').map(item => encodeURIComponent(item)).join('/')
+  return decodeURIComponent(path).split('/').map(item => encodeURIComponent(item)).join('/').replace(/^\/+/, '')
+}
+
+export function encodeAccountPath(accountPath: string) {
+  return accountPath.slice(0, accountPath.split('/').slice(0, 3).join('/').length)
 }
 
 export async function ls(context: Context, path: string) {
@@ -63,7 +67,8 @@ export async function cp(context: Context, srcPath: string, destPath: string) {
   const accountInfo = await getAccountInfo(context)
   return await webdavRequest(context, encodePath(srcPath), 'COPY', {
     Authorization: await getAccountAuthorization(context),
-    Destination: accountInfo.path + '/' + encodePath(destPath + '/' + srcPath.substring(srcPath.lastIndexOf('/'))),
+    Destination: encodeAccountPath(accountInfo.path) + '/' +
+      encodePath(destPath + '/' + srcPath.substring(srcPath.lastIndexOf('/') + 1)),
     Depth: 'infinity'
   })
 }
@@ -72,7 +77,8 @@ export async function mv(context: Context, srcPath: string, destPath: string) {
   const accountInfo = await getAccountInfo(context)
   return await webdavRequest(context, encodePath(srcPath), 'MOVE', {
     Authorization: await getAccountAuthorization(context),
-    Destination: accountInfo.path + '/' + encodePath(destPath + '/' + srcPath.substring(srcPath.lastIndexOf('/')))
+    Destination: encodeAccountPath(accountInfo.path) + '/' +
+      encodePath(destPath + '/' + srcPath.substring(srcPath.lastIndexOf('/') + 1))
   })
 }
 
@@ -80,7 +86,8 @@ export async function rn(context: Context, path: string, name: string) {
   const accountInfo = await getAccountInfo(context)
   return await webdavRequest(context, encodePath(path), 'MOVE', {
     Authorization: await getAccountAuthorization(context),
-    Destination: accountInfo.path + '/' + encodePath(path.substring(0, path.lastIndexOf('/')) + '/' + name)
+    Destination: encodeAccountPath(accountInfo.path) + '/' +
+      encodePath(path.substring(0, path.lastIndexOf('/') + 1) + '/' + name)
   })
 }
 
