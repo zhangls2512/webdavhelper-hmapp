@@ -13,7 +13,7 @@ export default struct Login {
   @Consumer() isShowLoginSheet: boolean = false
   @Local scheme: string = 'https'
   @Local host: string = ''
-  @Local port: string = '443'
+  @Local port: string = ''
   @Local name: string = ''
   @Local password: string = ''
   @Local bz: string = ''
@@ -102,7 +102,7 @@ export default struct Login {
                 right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
               })
             TextInput({
-              placeholder: '请输入端口',
+              placeholder: '请输入端口 (可选)',
               text: this.port!!
             })
               .enableAutoSpacing(true)
@@ -183,18 +183,14 @@ export default struct Login {
                 })
                 return
               }
-              if (!this.port) {
-                await promptAction.openToast({
-                  message: '请输入端口'
-                })
-                return
-              }
-              const port = Number(this.port)
-              if (!Number.isInteger(port) || port <= 0 || port > 65535) {
-                await promptAction.openToast({
-                  message: '请输入有效的端口'
-                })
-                return
+              if (this.port) {
+                const port = Number(this.port)
+                if (!Number.isInteger(port) || port <= 0 || port > 65535) {
+                  await promptAction.openToast({
+                    message: '请输入有效的端口'
+                  })
+                  return
+                }
               }
               if (!this.name && this.password) {
                 await promptAction.openToast({
@@ -216,7 +212,7 @@ export default struct Login {
                 host = this.host.substring(0, index)
                 route = '/' + this.host.substring(index + 1)
               }
-              path = this.scheme + '://' + host + ':' + this.port + route
+              path = this.scheme + '://' + host + (this.port ? (':' + this.port) : '') + route
               const session = rcp.createSession({
                 requestConfiguration: {
                   dns: {
