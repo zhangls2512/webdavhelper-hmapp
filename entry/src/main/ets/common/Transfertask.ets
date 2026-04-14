@@ -140,6 +140,13 @@ export async function download(context: Context, id: string) {
         transferTask.errCode = response.statusCode
       }
     } catch (err) {
+      session.close()
+      netBoost.setSceneDesc({
+        scene: 'download',
+        sceneEvent: netBoost.SceneEvent.SCENE_EVENT_LEAVE
+      })
+      fileStream.closeSync()
+      await backgroundTaskManager.stopBackgroundRunning(context, continuousTaskNotificationInfo.continuousTaskId)
       if (err.code !== 1007900992) {
         transferTask.status = 'fail'
         transferTask.errCode = err.code
@@ -268,6 +275,15 @@ export async function upload(context: Context, id: string) {
         transferTask.errCode = response.statusCode
       }
     } catch (err) {
+      session.close()
+      netBoost.setSceneDesc({
+        scene: 'upload',
+        sceneEvent: netBoost.SceneEvent.SCENE_EVENT_LEAVE
+      })
+      await backgroundTaskManager.stopBackgroundRunning(context, continuousTaskNotificationInfo.continuousTaskId)
+      if (transferTask.srcFileUri.endsWith('.mv.png')) {
+        await fileIo.unlink(new fileUri.FileUri(transferTask.srcFileUri).path)
+      }
       if (err.code !== 1007900992) {
         transferTask.status = 'fail'
         transferTask.errCode = err.code
