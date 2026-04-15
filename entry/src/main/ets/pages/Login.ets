@@ -145,7 +145,6 @@ export default struct Login {
               .contentType(ContentType.PASSWORD)
               .enableAutoSpacing(true)
               .layoutWeight(1)
-              .maxLength(30)
               .type(InputType.Password)
           }
           .margin({
