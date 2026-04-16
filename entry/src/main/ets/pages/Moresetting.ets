@@ -54,7 +54,7 @@ struct Moresetting {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .onHover((isHover) => {
+              .onHover(isHover => {
                 if (!isHover) {
                   this.hoverId = -1
                 }
@@ -99,7 +99,7 @@ struct Moresetting {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .onHover((isHover) => {
+              .onHover(isHover => {
                 if (!isHover) {
                   this.hoverId = -1
                 }
@@ -146,7 +146,7 @@ struct Moresetting {
                 .backgroundColor($r('sys.color.interactive_pressed'))
               }
             })
-            .onHover((isHover) => {
+            .onHover(isHover => {
               if (!isHover) {
                 this.hoverId = -1
               }

@@ -105,7 +105,7 @@ struct Autouploaderrorlogtype {
                   type: ToggleType.Switch,
                   isOn: this.autoUploadErrorLogType.includes(item.value)
                 })
-                  .onChange((isOn) => {
+                  .onChange(isOn => {
                     if (!isOn) {
                       this.autoUploadErrorLogType = this.autoUploadErrorLogType.filter(inItem => inItem !== item.value)
                     }

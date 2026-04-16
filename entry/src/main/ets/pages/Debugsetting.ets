@@ -124,7 +124,7 @@ struct Debugsetting {
                 ])
                   .selected(this.globalErrorShowTypeIndex!!)
                   .value(this.globalErrorShowTypeValue!!)
-                  .onSelect((index) => {
+                  .onSelect(index => {
                     setFlushPreference(this.context, 'debugSetting', 'globalErrorShowType', index)
                   })
               }
@@ -147,7 +147,7 @@ struct Debugsetting {
                   type: ToggleType.Switch,
                   isOn: this.saveErrorLog!!
                 })
-                  .onChange((isOn) => {
+                  .onChange(isOn => {
                     setFlushPreference(this.context, 'debugSetting', 'saveErrorLog', isOn)
                   })
               }
@@ -170,7 +170,7 @@ struct Debugsetting {
                   type: ToggleType.Switch,
                   isOn: this.deleteErrorLogBeforeUpdateTimeWhenAppLaunch!!
                 })
-                  .onChange((isOn) => {
+                  .onChange(isOn => {
                     setFlushPreference(this.context, 'debugSetting', 'deleteErrorLogBeforeUpdateTimeWhenAppLaunch',
                       isOn)
                   })
@@ -195,7 +195,7 @@ struct Debugsetting {
                   isOn: this.autoUploadErrorLog!!
                 })
                   .enabled(this.allService)
-                  .onChange((isOn) => {
+                  .onChange(isOn => {
                     setFlushPreference(this.context, 'debugSetting', 'autoUploadErrorLog', isOn)
                   })
               }
@@ -230,7 +230,7 @@ struct Debugsetting {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .onHover((isHover) => {
+              .onHover(isHover => {
                 if (!isHover) {
                   this.hoverId = -1
                 }
@@ -272,7 +272,7 @@ struct Debugsetting {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .onHover((isHover) => {
+              .onHover(isHover => {
                 if (!isHover) {
                   this.hoverId = -1
                 }
@@ -302,7 +302,7 @@ struct Debugsetting {
                   type: ToggleType.Switch,
                   isOn: this.showMemoryLevelChange!!
                 })
-                  .onChange((isOn) => {
+                  .onChange(isOn => {
                     setFlushPreference(this.context, 'debugSetting', 'showMemoryLevelChange', isOn)
                   })
               }
@@ -401,7 +401,7 @@ struct Debugsetting {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .onHover((isHover) => {
+              .onHover(isHover => {
                 if (!isHover) {
                   this.hoverId = -1
                 }
@@ -444,7 +444,7 @@ struct Debugsetting {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .onHover((isHover) => {
+              .onHover(isHover => {
                 if (!isHover) {
                   this.hoverId = -1
                 }
@@ -503,7 +503,7 @@ struct Debugsetting {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .onHover((isHover) => {
+              .onHover(isHover => {
                 if (!isHover) {
                   this.hoverId = -1
                 }
@@ -581,7 +581,7 @@ struct Debugsetting {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .onHover((isHover) => {
+              .onHover(isHover => {
                 if (!isHover) {
                   this.hoverId = -1
                 }
@@ -621,7 +621,7 @@ struct Debugsetting {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .onHover((isHover) => {
+              .onHover(isHover => {
                 if (!isHover) {
                   this.hoverId = -1
                 }
@@ -666,7 +666,7 @@ struct Debugsetting {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .onHover((isHover) => {
+              .onHover(isHover => {
                 if (!isHover) {
                   this.hoverId = -1
                 }
@@ -713,7 +713,7 @@ struct Debugsetting {
                   type: ToggleType.Switch,
                   isOn: this.showNetAvailableStatusChange!!
                 })
-                  .onChange((isOn) => {
+                  .onChange(isOn => {
                     setFlushPreference(this.context, 'debugSetting', 'showNetAvailableStatusChange', isOn)
                   })
               }
@@ -736,7 +736,7 @@ struct Debugsetting {
                   type: ToggleType.Switch,
                   isOn: this.showNetBlockStatusChange!!
                 })
-                  .onChange((isOn) => {
+                  .onChange(isOn => {
                     setFlushPreference(this.context, 'debugSetting', 'showNetBlockStatusChange', isOn)
                   })
               }
@@ -759,7 +759,7 @@ struct Debugsetting {
                   type: ToggleType.Switch,
                   isOn: this.showNetLost!!
                 })
-                  .onChange((isOn) => {
+                  .onChange(isOn => {
                     setFlushPreference(this.context, 'debugSetting', 'showNetLost', isOn)
                   })
               }
@@ -782,7 +782,7 @@ struct Debugsetting {
                   type: ToggleType.Switch,
                   isOn: this.showNetCapabilitiesChange!!
                 })
-                  .onChange((isOn) => {
+                  .onChange(isOn => {
                     setFlushPreference(this.context, 'debugSetting', 'showNetCapabilitiesChange', isOn)
                   })
               }
@@ -805,7 +805,7 @@ struct Debugsetting {
                   type: ToggleType.Switch,
                   isOn: this.showNetQosChange!!
                 })
-                  .onChange((isOn) => {
+                  .onChange(isOn => {
                     setFlushPreference(this.context, 'debugSetting', 'showNetQosChange', isOn)
                   })
               }
@@ -828,7 +828,7 @@ struct Debugsetting {
                   type: ToggleType.Switch,
                   isOn: this.showNetSceneChange!!
                 })
-                  .onChange((isOn) => {
+                  .onChange(isOn => {
                     setFlushPreference(this.context, 'debugSetting', 'showNetSceneChange', isOn)
                   })
               }
@@ -851,7 +851,7 @@ struct Debugsetting {
                   type: ToggleType.Switch,
                   isOn: this.autoReportHighLatency!!
                 })
-                  .onChange((isOn) => {
+                  .onChange(isOn => {
                     setFlushPreference(this.context, 'debugSetting', 'autoReportHighLatency', isOn)
                   })
               }
@@ -922,7 +922,7 @@ struct Debugsetting {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .onHover((isHover) => {
+              .onHover(isHover => {
                 if (!isHover) {
                   this.hoverId = -1
                 }
@@ -964,7 +964,7 @@ struct Debugsetting {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .onHover((isHover) => {
+              .onHover(isHover => {
                 if (!isHover) {
                   this.hoverId = -1
                 }
@@ -1007,7 +1007,7 @@ struct Debugsetting {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .onHover((isHover) => {
+              .onHover(isHover => {
                 if (!isHover) {
                   this.hoverId = -1
                 }
@@ -1038,7 +1038,7 @@ struct Debugsetting {
                   type: ToggleType.Switch,
                   isOn: this.closeRemoteValidationWhenLinkWebdav!!
                 })
-                  .onChange((isOn) => {
+                  .onChange(isOn => {
                     if (!isOn) {
                       setFlushPreference(this.context, 'debugSetting', 'closeRemoteValidationWhenLinkWebdav', 'system')
                     }
@@ -1084,7 +1084,7 @@ struct Debugsetting {
                   type: ToggleType.Switch,
                   isOn: this.optimizeParserBudget!!
                 })
-                  .onChange((isOn) => {
+                  .onChange(isOn => {
                     setFlushPreference(this.context, 'debugSetting', 'optimizeParserBudget', isOn)
                   })
               }
@@ -1109,7 +1109,7 @@ struct Debugsetting {
                 ])
                   .selected(this.destroyModeIndex!!)
                   .value(this.destroyModeValue!!)
-                  .onSelect((index) => {
+                  .onSelect(index => {
                     setFlushPreference(this.context, 'debugSetting', 'destroyMode', index)
                   })
               }
@@ -1161,7 +1161,7 @@ struct Debugsetting {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .onHover((isHover) => {
+              .onHover(isHover => {
                 if (!isHover) {
                   this.hoverId = -1
                 }
@@ -1203,7 +1203,7 @@ struct Debugsetting {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .onHover((isHover) => {
+              .onHover(isHover => {
                 if (!isHover) {
                   this.hoverId = -1
                 }
@@ -1306,7 +1306,7 @@ struct Debugsetting {
       }
     })
     .titleMode(HdsNavDestinationTitleMode.MODAL)
-    .onReady((context) => {
+    .onReady(context => {
       this.pageInfos = context.pathStack
       this.getSetting()
     })

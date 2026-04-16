@@ -58,7 +58,7 @@ struct ReportQoe {
                   ])
                     .selected(0)
                     .value('默认')
-                    .onSelect((index) => {
+                    .onSelect(index => {
                       if (index === 0) {
                         this.serviceType = 'default'
                       }
@@ -163,7 +163,7 @@ struct ReportQoe {
                 ])
                   .selected(0)
                   .value('良好')
-                  .onSelect((index) => {
+                  .onSelect(index => {
                     if (index === 0) {
                       this.qoeType = 'good'
                     }
@@ -261,7 +261,7 @@ struct ReportQoe {
       }
     })
     .titleMode(HdsNavDestinationTitleMode.MODAL)
-    .onReady((context) => {
+    .onReady(context => {
       this.pageInfos = context.pathStack
     })
   }

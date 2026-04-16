@@ -50,7 +50,7 @@ struct Feedback {
                 })
                 .selected(this.contactTypeIndex!!)
                 .value(this.contactType!!)
-                .onSelect((index) => {
+                .onSelect(index => {
                   if (index === 0) {
                     this.contactType = '邮箱'
                   }
@@ -178,7 +178,7 @@ struct Feedback {
       }
     })
     .titleMode(HdsNavDestinationTitleMode.MODAL)
-    .onReady((context) => {
+    .onReady(context => {
       this.pageInfos = context.pathStack
     })
   }

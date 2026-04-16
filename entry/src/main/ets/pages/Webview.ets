@@ -51,7 +51,7 @@ struct Webview {
             message: '发生错误，错误码：' + event.error.getErrorCode() + '，错误信息：' + event.error.getErrorInfo()
           })
         })
-        .onTitleReceive((event) => {
+        .onTitleReceive(event => {
           this.title = event.title
         })
     }
@@ -88,7 +88,7 @@ struct Webview {
       }
     })
     .titleMode(HdsNavDestinationTitleMode.MODAL)
-    .onReady((context) => {
+    .onReady(context => {
       this.url = context.pathInfo.param as string
       const colorMode = getFlushPreference(this.context, 'commonSetting', 'colorMode', 0)
       if (colorMode === 0) {

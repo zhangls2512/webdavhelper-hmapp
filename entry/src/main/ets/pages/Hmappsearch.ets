@@ -308,7 +308,7 @@ struct Hmappsearch {
                 ])
                   .selected(0)
                   .value('与')
-                  .onSelect((index) => {
+                  .onSelect(index => {
                     if (index === 0) {
                       this.logic = 'and'
                     }
@@ -577,7 +577,7 @@ struct Hmappsearch {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .onHover((isHover) => {
+              .onHover(isHover => {
                 if (!isHover) {
                   this.hoverId = -1
                 }

@@ -234,7 +234,7 @@ export default struct Player {
               value: this.time!!,
               max: this.duration
             })
-              .onChange((value) => {
+              .onChange(value => {
                 this.avPlayer?.seek(value * 1000)
               })
           }
@@ -255,7 +255,7 @@ export default struct Player {
                 max: 4,
                 step: 0.125
               })
-                .onChange((value) => {
+                .onChange(value => {
                   this.avPlayer?.setPlaybackRate(value)
                 })
             }
@@ -275,7 +275,7 @@ export default struct Player {
                 min: 0,
                 max: 100
               })
-                .onChange((value) => {
+                .onChange(value => {
                   this.avPlayer?.setVolume(value / 100)
                 })
             }
@@ -322,7 +322,7 @@ export default struct Player {
                 type: ToggleType.Switch,
                 isOn: this.loop!!
               })
-                .onChange((isOn) => {
+                .onChange(isOn => {
                   if (this.avPlayer) {
                     this.avPlayer.loop = isOn
                   }
@@ -348,7 +348,7 @@ export default struct Player {
                   type: ToggleType.Switch,
                   isOn: this.autoStartPipWindow!!
                 })
-                  .onChange((isOn) => {
+                  .onChange(isOn => {
                     this.pipWindow?.setAutoStartEnabled(isOn)
                   })
               }

@@ -66,7 +66,7 @@ export default struct Login {
                 group: 'scheme'
               })
                 .checked(this.scheme === 'https' ? true : false)
-                .onChange((isChecked) => {
+                .onChange(isChecked => {
                   if (isChecked) {
                     this.scheme = 'https'
                     if (!this.port || this.port === '80') {

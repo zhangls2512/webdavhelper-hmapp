@@ -142,7 +142,7 @@ struct Dnsserver {
       }
     })
     .titleMode(HdsNavDestinationTitleMode.MODAL)
-    .onReady((context) => {
+    .onReady(context => {
       this.pageInfos = context.pathStack
       this.ip = getFlushPreference(this.context, 'debugSetting', 'dnsserverip', '') as string
       if (this.ip === '') {
