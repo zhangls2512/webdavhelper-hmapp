@@ -41,7 +41,7 @@ export default struct Uploaderrorlog {
               })
               .selected(this.contactTypeIndex!!)
               .value(this.contactType!!)
-              .onSelect((index) => {
+              .onSelect(index => {
                 if (index === 0) {
                   this.contactType = '邮箱'
                 }

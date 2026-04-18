@@ -39,7 +39,7 @@ struct Recoverysetting {
                 ])
                   .selected(2)
                   .value('APP_FREEZE')
-                  .onSelect((index) => {
+                  .onSelect(index => {
                     if (index === 0) {
                       this.restart = appRecovery.RestartFlag.ALWAYS_RESTART
                     }
@@ -75,7 +75,7 @@ struct Recoverysetting {
                 ])
                   .selected(0)
                   .value('发生故障')
-                  .onSelect((index) => {
+                  .onSelect(index => {
                     if (index === 0) {
                       this.saveOccasion = appRecovery.SaveOccasionFlag.SAVE_WHEN_ERROR
                     }
@@ -105,7 +105,7 @@ struct Recoverysetting {
                   ])
                     .selected(0)
                     .value('写入到本地文件缓存')
-                    .onSelect((index) => {
+                    .onSelect(index => {
                       if (index === 0) {
                         this.saveMode = appRecovery.SaveModeFlag.SAVE_WITH_FILE
                       }
@@ -168,15 +168,6 @@ struct Recoverysetting {
               mainTitleColor: $r('sys.color.font_primary')
             },
             backIconStyle: {
-              backgroundColor: $r('sys.color.comp_background_color_floating_smooth'),
-              iconColor: $r('sys.color.icon_primary')
-            }
-          }
-        },
-        scrollEffectStyle: {
-          contentStyle: {
-            backIconStyle: {
-              backgroundColor: $r('sys.color.comp_background_color_floating_smooth'),
               iconColor: $r('sys.color.icon_primary')
             }
           }
@@ -194,7 +185,7 @@ struct Recoverysetting {
       }
     })
     .titleMode(HdsNavDestinationTitleMode.MODAL)
-    .onReady((context) => {
+    .onReady(context => {
       this.pageInfos = context.pathStack
     })
   }

@@ -33,14 +33,6 @@ export interface JsErrorObject {
   info: Error
 }
 
-interface MenuCodeEventData {
-  data: EventData
-}
-
-interface EventData {
-  menuCode: string
-}
-
 export default class EntryAbility extends UIAbility {
   async appInit(want: Want) {
     await notificationManager.setBadgeNumber(0)
@@ -349,14 +341,6 @@ export default class EntryAbility extends UIAbility {
     const allowRestore = getFlushPreference(this.context, 'commonSetting', 'allowRestore', true) as boolean
     this.context.setRestoreEnabled(allowRestore)
     if (deviceInfo.deviceType === '2in1') {
-      statusBarManager.on('statusBarIconClick', async () => {
-        await this.context.showAbility()
-      })
-      statusBarManager.on('rightMenuClick', (data) => {
-        const datastring = JSON.stringify(data)
-        const eventData = JSON.parse(datastring) as MenuCodeEventData
-        this.context.eventHub.emit(eventData.data.menuCode)
-      })
       const subscriber = commonEventManager.createSubscriberSync({
         events: ['BACKGROUNDABILITY_EVENT_PREPARETOTERMINATE']
       })
@@ -395,34 +379,19 @@ export default class EntryAbility extends UIAbility {
                 abilityName: 'EntryAbility'
               }
             }
-          ],
-          [
-            {
-              title: '文件',
-              menuAction: {
-                abilityName: 'EntryAbility',
-                notifyOnly: true,
-                menuCode: 'file'
-              }
-            },
-            {
-              title: '传输',
-              menuAction: {
-                abilityName: 'EntryAbility',
-                notifyOnly: true,
-                menuCode: 'transfer'
-              }
-            }
           ]
         ])
         setTimeout(async () => {
-          await this.context.startAbility({
-            bundleName: 'com.zhuzx.webdavhelper',
-            abilityName: 'BackGroundAbility'
-          }, {
-            processMode: contextConstant.ProcessMode.NEW_PROCESS_ATTACH_TO_STATUS_BAR_ITEM,
-            startupVisibility: contextConstant.StartupVisibility.STARTUP_HIDE
-          })
+          try {
+            await this.context.startAbility({
+              bundleName: 'com.zhuzx.webdavhelper',
+              abilityName: 'BackGroundAbility'
+            }, {
+              processMode: contextConstant.ProcessMode.NEW_PROCESS_ATTACH_TO_STATUS_BAR_ITEM,
+              startupVisibility: contextConstant.StartupVisibility.STARTUP_HIDE
+            })
+          } catch {
+          }
           setTempPreference(this.context, 'statusBar', 'exist', true)
         }, 200)
       }

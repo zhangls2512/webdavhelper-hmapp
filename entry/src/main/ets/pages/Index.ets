@@ -129,6 +129,7 @@ struct Index {
                 })
             }
             .hideBackButton(true)
+            .mode(NavigationMode.Stack)
             .padding({
               top: 36
             })
@@ -158,6 +159,7 @@ struct Index {
                 })
             }
             .hideBackButton(true)
+            .mode(NavigationMode.Stack)
             .padding({
               top: 36
             })
@@ -178,6 +180,7 @@ struct Index {
               Me()
             }
             .hideBackButton(true)
+            .mode(NavigationMode.Stack)
             .padding({
               top: 36
             })
@@ -207,7 +210,7 @@ struct Index {
         .barPosition(BarPosition.End)
         .barWidth(240)
         .scrollable(false)
-        .onChange((index) => {
+        .onChange(index => {
           this.index = index
         })
         .onAnimationStart((index, targetIndex) => {
@@ -413,6 +416,7 @@ struct Index {
       this.context.eventHub.off('uploadErrorLog')
       this.context.eventHub.off('dialog')
       this.context.eventHub.off('wantUri')
+      this.context.eventHub.off('transfer')
       this.context.eventHub.off('file')
       this.context.eventHub.off('notice')
       this.context.eventHub.off('clearData')

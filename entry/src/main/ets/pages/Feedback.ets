@@ -50,7 +50,7 @@ struct Feedback {
                 })
                 .selected(this.contactTypeIndex!!)
                 .value(this.contactType!!)
-                .onSelect((index) => {
+                .onSelect(index => {
                   if (index === 0) {
                     this.contactType = '邮箱'
                   }
@@ -161,15 +161,6 @@ struct Feedback {
               mainTitleColor: $r('sys.color.font_primary')
             },
             backIconStyle: {
-              backgroundColor: $r('sys.color.comp_background_color_floating_smooth'),
-              iconColor: $r('sys.color.icon_primary')
-            }
-          }
-        },
-        scrollEffectStyle: {
-          contentStyle: {
-            backIconStyle: {
-              backgroundColor: $r('sys.color.comp_background_color_floating_smooth'),
               iconColor: $r('sys.color.icon_primary')
             }
           }
@@ -187,7 +178,7 @@ struct Feedback {
       }
     })
     .titleMode(HdsNavDestinationTitleMode.MODAL)
-    .onReady((context) => {
+    .onReady(context => {
       this.pageInfos = context.pathStack
     })
   }

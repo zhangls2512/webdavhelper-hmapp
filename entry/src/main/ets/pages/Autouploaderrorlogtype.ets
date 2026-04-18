@@ -105,7 +105,7 @@ struct Autouploaderrorlogtype {
                   type: ToggleType.Switch,
                   isOn: this.autoUploadErrorLogType.includes(item.value)
                 })
-                  .onChange((isOn) => {
+                  .onChange(isOn => {
                     if (!isOn) {
                       this.autoUploadErrorLogType = this.autoUploadErrorLogType.filter(inItem => inItem !== item.value)
                     }
@@ -154,15 +154,6 @@ struct Autouploaderrorlogtype {
               mainTitleColor: $r('sys.color.font_primary')
             },
             backIconStyle: {
-              backgroundColor: $r('sys.color.comp_background_color_floating_smooth'),
-              iconColor: $r('sys.color.icon_primary')
-            }
-          }
-        },
-        scrollEffectStyle: {
-          contentStyle: {
-            backIconStyle: {
-              backgroundColor: $r('sys.color.comp_background_color_floating_smooth'),
               iconColor: $r('sys.color.icon_primary')
             }
           }
