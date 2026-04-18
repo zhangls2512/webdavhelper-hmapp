@@ -4,7 +4,7 @@ import { hdsMaterial, HdsNavDestination, HdsNavDestinationTitleMode, ScrollEffec
 import openLink from '../common/Openlink'
 
 interface Item {
-  property: string,
+  key: string,
   value: string
 }
 
@@ -17,11 +17,26 @@ export function LicenseBuilder() {
 struct License {
   context = this.getUIContext().getHostContext() as common.UIAbilityContext
   gabaInfoArray: Item[] = [
-    { property: '名称', value: 'WebDAV助手' },
-    { property: '主体类型', value: '个人' },
-    { property: '开办者名称', value: '张轩铭' },
-    { property: '注册地公安机关', value: '萨尔图区网安大队' },
-    { property: '注册时间', value: '2026-02-13' }
+    {
+      key: '名称',
+      value: 'WebDAV助手'
+    },
+    {
+      key: '主体类型',
+      value: '个人'
+    },
+    {
+      key: '开办者名称',
+      value: '张轩铭'
+    },
+    {
+      key: '注册地公安机关',
+      value: '萨尔图区网安大队'
+    },
+    {
+      key: '注册时间',
+      value: '2026-02-13'
+    }
   ]
 
   build() {
@@ -60,7 +75,7 @@ struct License {
             }) {
               ForEach(this.gabaInfoArray, (item: Item) => {
                 Column() {
-                  Text(item.property)
+                  Text(item.key)
                     .fontWeight(FontWeight.Medium)
                     .textAlign(TextAlign.Center)
                 }
@@ -134,15 +149,6 @@ struct License {
               mainTitleColor: $r('sys.color.font_primary')
             },
             backIconStyle: {
-              backgroundColor: $r('sys.color.comp_background_color_floating_smooth'),
-              iconColor: $r('sys.color.icon_primary')
-            }
-          }
-        },
-        scrollEffectStyle: {
-          contentStyle: {
-            backIconStyle: {
-              backgroundColor: $r('sys.color.comp_background_color_floating_smooth'),
               iconColor: $r('sys.color.icon_primary')
             }
           }

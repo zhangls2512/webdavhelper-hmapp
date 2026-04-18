@@ -556,7 +556,7 @@ export default struct Filelist {
                         .backgroundColor($r('sys.color.comp_background_secondary'))
                       }
                     })
-                    .onHover((isHover) => {
+                    .onHover(isHover => {
                       if (!isHover) {
                         this.hoverId = -1
                       }
@@ -1255,7 +1255,7 @@ export default struct Filelist {
                           .margin({
                             right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
                           })
-                          .onChange((isOn) => {
+                          .onChange(isOn => {
                             const exist = this.multipleSelectArray.find(selectItem => selectItem.path === item.path)
                             if (!isOn && exist) {
                               this.multipleSelectArray.splice(this.multipleSelectArray.findIndex(selectItem => selectItem.path ===
@@ -1326,7 +1326,7 @@ export default struct Filelist {
                         .backgroundColor($r('sys.color.comp_background_secondary'))
                       }
                     })
-                    .onHover((isHover) => {
+                    .onHover(isHover => {
                       if (!isHover) {
                         this.hoverId = -1
                       }
@@ -1587,16 +1587,6 @@ export default struct Filelist {
                     .bindContextMenu(this.MenuBuilder(item), ResponseType.RightClick, {
                       hapticFeedbackMode: HapticFeedbackMode.AUTO
                     })
-                    .bindSheet(this.isShowProgressSheet!!, this.ProgressSheetBuilder(), {
-                      height: SheetSize.FIT_CONTENT,
-                      preferType: this.preferType,
-                      showClose: false,
-                      onWillDismiss: () => {
-                      },
-                      onDisappear: () => {
-                        this.context.eventHub.emit('cancelDownload')
-                      }
-                    })
                   }
                   .borderRadius($r('sys.float.ohos_id_corner_radius_default_l'))
                 }
@@ -1604,6 +1594,16 @@ export default struct Filelist {
               ListItem()
                 .margin({
                   bottom: this.preferType === 0 ? 80 : 0
+                })
+                .bindSheet(this.isShowProgressSheet!!, this.ProgressSheetBuilder(), {
+                  height: SheetSize.FIT_CONTENT,
+                  preferType: this.preferType,
+                  showClose: false,
+                  onWillDismiss: () => {
+                  },
+                  onDisappear: () => {
+                    this.context.eventHub.emit('cancelDownload')
+                  }
                 })
             }
           }

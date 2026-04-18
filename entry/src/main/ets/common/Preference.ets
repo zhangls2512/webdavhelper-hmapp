@@ -54,7 +54,7 @@ export function deleteFlushPreferenceKey(context: Context, preference: string, k
 export async function getFlushPreferences(context: Context) {
   const filenames = await fileIo.listFile(context.preferencesDir)
   const names: string[] = []
-  filenames.forEach((item) => {
+  filenames.forEach(item => {
     if (item.endsWith('.db')) {
       names.push(item.replace('.db', ''))
     }

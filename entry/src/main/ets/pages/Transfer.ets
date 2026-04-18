@@ -102,7 +102,7 @@ export default struct Transfer {
                     .width('100%')
                   })
               }
-              .backgroundColor($r('sys.color.ohos_id_color_card_bg'))
+              .backgroundColor($r('sys.color.comp_background_primary'))
               .borderRadius($r('sys.float.ohos_id_corner_radius_default_l'))
               .padding($r('sys.float.ohos_id_corner_radius_mark'))
             }
@@ -184,7 +184,7 @@ export default struct Transfer {
                     .width('100%')
                   })
               }
-              .backgroundColor($r('sys.color.ohos_id_color_card_bg'))
+              .backgroundColor($r('sys.color.comp_background_primary'))
               .borderRadius($r('sys.float.ohos_id_corner_radius_default_l'))
               .padding($r('sys.float.ohos_id_corner_radius_mark'))
             }

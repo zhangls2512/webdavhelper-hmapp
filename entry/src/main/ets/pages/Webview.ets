@@ -51,7 +51,7 @@ struct Webview {
             message: '发生错误，错误码：' + event.error.getErrorCode() + '，错误信息：' + event.error.getErrorInfo()
           })
         })
-        .onTitleReceive((event) => {
+        .onTitleReceive(event => {
           this.title = event.title
         })
     }
@@ -71,15 +71,6 @@ struct Webview {
               mainTitleColor: $r('sys.color.font_primary')
             },
             backIconStyle: {
-              backgroundColor: $r('sys.color.comp_background_color_floating_smooth'),
-              iconColor: $r('sys.color.icon_primary')
-            }
-          }
-        },
-        scrollEffectStyle: {
-          contentStyle: {
-            backIconStyle: {
-              backgroundColor: $r('sys.color.comp_background_color_floating_smooth'),
               iconColor: $r('sys.color.icon_primary')
             }
           }
@@ -97,7 +88,7 @@ struct Webview {
       }
     })
     .titleMode(HdsNavDestinationTitleMode.MODAL)
-    .onReady((context) => {
+    .onReady(context => {
       this.url = context.pathInfo.param as string
       const colorMode = getFlushPreference(this.context, 'commonSetting', 'colorMode', 0)
       if (colorMode === 0) {
