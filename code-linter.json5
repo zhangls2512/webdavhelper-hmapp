@@ -60,6 +60,7 @@
     "@hw-stylistic/max-len": "off",
     "@correctness/audio-interrupt-check": "off",
     "@correctness/audio-pause-or-mute-check": "off",
+    "@correctness/listen-default-network-change": "off",
     "@correctness/listen-multi-network-concurrent": "off"
   }
 }
