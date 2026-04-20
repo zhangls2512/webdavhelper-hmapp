@@ -1,7 +1,6 @@
 import { LengthMetrics, LoadingDialog, promptAction } from '@kit.ArkUI'
 import { rcp } from '@kit.RemoteCommunicationKit'
 import { hdsMaterial, HdsNavDestination, HdsNavDestinationTitleMode, ScrollEffectType } from '@kit.UIDesignKit'
-import { getDnsServer } from '../common/Dnsserver'
 
 interface Response {
   errCode: number,
@@ -45,9 +44,6 @@ struct Networktest {
                 dialogControllerProgress.open()
                 const session = rcp.createSession({
                   requestConfiguration: {
-                    dns: {
-                      dnsRules: getDnsServer(this.context)
-                    },
                     security: {
                       tlsRange: {
                         min: 'TlsV1.2'

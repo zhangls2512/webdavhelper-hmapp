@@ -58,9 +58,6 @@ export async function developerRequest(context: Context, path: string, body: rcp
   }
   const session = rcp.createSession({
     requestConfiguration: {
-      dns: {
-        dnsRules: getDnsServer(context)
-      },
       security: {
         tlsRange: {
           min: 'TlsV1.2'
