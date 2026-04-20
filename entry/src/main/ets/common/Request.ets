@@ -13,9 +13,6 @@ interface DeveloperErrorResponse {
 
 export async function webdavRequest(context: Context, path: string, method: string, headers: rcp.RequestHeaders) {
   const accountInfo = await getAccountInfo(context)
-  if (!accountInfo.path) {
-    return 'fail'
-  }
   const session = rcp.createSession({
     requestConfiguration: {
       dns: {
