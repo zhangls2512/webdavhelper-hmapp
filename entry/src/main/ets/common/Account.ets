@@ -134,19 +134,15 @@ export async function getAccountList(context: Context, bestPath?: boolean): Prom
   const appAccounts: AccountInfo[] = []
   const promises = appAccountIds.map(async (item) => {
     const id = item.name
-    try {
-      appAccounts.push({
-        id: id,
-        path: bestPath ? getBestAddress(context, appAccountManager.getCustomDataSync(id, 'path')) :
-          appAccountManager.getCustomDataSync(id, 'path'),
-        name: appAccountManager.getCustomDataSync(id, 'name'),
-        password: await appAccountManager.getCredential(id, 'password'),
-        bz: appAccountManager.getCustomDataSync(item.name, 'bz'),
-        isLogin: appAccountManager.getCustomDataSync(item.name, 'isLogin')
-      })
-    } catch {
-      await removeAccount(context, id, true)
-    }
+    appAccounts.push({
+      id: id,
+      path: bestPath ? getBestAddress(context, appAccountManager.getCustomDataSync(id, 'path')) :
+        appAccountManager.getCustomDataSync(id, 'path'),
+      name: appAccountManager.getCustomDataSync(id, 'name'),
+      password: await appAccountManager.getCredential(id, 'password'),
+      bz: appAccountManager.getCustomDataSync(item.name, 'bz'),
+      isLogin: appAccountManager.getCustomDataSync(item.name, 'isLogin')
+    })
   })
   await Promise.all(promises)
   return appAccounts
