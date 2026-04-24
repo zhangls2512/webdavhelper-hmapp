@@ -2,7 +2,7 @@ import { common } from '@kit.AbilityKit'
 import { privacyManager } from '@kit.AppGalleryKit'
 import { uniformTypeDescriptor } from '@kit.ArkData'
 import { LengthMetrics, promptAction } from '@kit.ArkUI'
-import { appAccount, deviceInfo } from '@kit.BasicServicesKit'
+import { appAccount } from '@kit.BasicServicesKit'
 import { fileIo, fileUri, picker } from '@kit.CoreFileKit'
 import { formProvider } from '@kit.FormKit'
 import { harmonyShare, systemShare } from '@kit.ShareKit'
@@ -204,77 +204,76 @@ export default struct Setting {
                 }
               })
 
-              if (deviceInfo.deviceType !== 'tablet') {
-                Divider()
-                  .padding({
-                    left: 12,
-                    right: 12
-                  })
-                Row() {
-                  Text('碰一碰/隔空传送同步到邻近设备')
-                    .fontWeight(FontWeight.Medium)
-                    .layoutWeight(1)
-                    .margin({
-                      right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
-                    })
-                  Image($r('app.media.right'))
-                    .fillColor($r('sys.color.icon_fourth'))
-                    .height(12)
-                    .width(12)
-                }
-                .borderRadius(12)
-                .padding(12)
-                .stateStyles({
-                  normal: {
-                    .backgroundColor(this.hoverId === 2 ? $r('sys.color.interactive_hover') :
-                      $r('sys.color.ohos_id_color_card_bg'))
-                  },
-                  pressed: {
-                    .backgroundColor($r('sys.color.interactive_pressed'))
-                  }
+              Divider()
+                .padding({
+                  left: 12,
+                  right: 12
                 })
-                .onHover(isHover => {
-                  if (!isHover) {
-                    this.hoverId = -1
-                  }
-                  if (isHover) {
-                    this.hoverId = 2
-                  }
-                })
-                .onClick(async () => {
-                  const array = await getAccountList(this.context)
-                  const filePath = this.context.tempDir + '/webdavhelperaccounts.txt'
-                  await write(filePath, JSON.stringify(array))
-                  const shareData = new systemShare.SharedData({
-                    utd: uniformTypeDescriptor.UniformDataType.PLAIN_TEXT,
-                    title: 'webdavhelperaccounts.txt',
-                    description: getSizeString(fileIo.statSync(filePath).size),
-                    uri: fileUri.getUriFromPath(filePath)
+              Row() {
+                Text('碰一碰/隔空传送同步到邻近设备')
+                  .fontWeight(FontWeight.Medium)
+                  .layoutWeight(1)
+                  .margin({
+                    right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
                   })
-                  harmonyShare.on('knockShare', async (sharableTarget) => {
-                    await sharableTarget.share(shareData)
-                  })
-                  harmonyShare.on('gesturesShare', async (sharableTarget) => {
-                    await sharableTarget.share(shareData)
-                  })
-                  const promptAction = this.UIContext.getPromptAction()
-                  await promptAction.showDialog({
-                    title: '提示',
-                    message: '碰一碰/隔空传送邻近设备即可同步，关闭此弹窗后停止同步',
-                    buttons: [
-                      {
-                        text: '关闭',
-                        color: $r('sys.color.warning')
-                      }
-                    ],
-                    onDidDisappear: async () => {
-                      await fileIo.unlink(filePath)
-                      harmonyShare.off('knockShare')
-                      harmonyShare.off('gesturesShare')
-                    }
-                  })
-                })
+                Image($r('app.media.right'))
+                  .fillColor($r('sys.color.icon_fourth'))
+                  .height(12)
+                  .width(12)
               }
+              .borderRadius(12)
+              .padding(12)
+              .stateStyles({
+                normal: {
+                  .backgroundColor(this.hoverId === 2 ? $r('sys.color.interactive_hover') :
+                    $r('sys.color.ohos_id_color_card_bg'))
+                },
+                pressed: {
+                  .backgroundColor($r('sys.color.interactive_pressed'))
+                }
+              })
+              .onHover(isHover => {
+                if (!isHover) {
+                  this.hoverId = -1
+                }
+                if (isHover) {
+                  this.hoverId = 2
+                }
+              })
+              .onClick(async () => {
+                const array = await getAccountList(this.context)
+                const filePath = this.context.tempDir + '/webdavhelperaccounts.txt'
+                await write(filePath, JSON.stringify(array))
+                const shareData = new systemShare.SharedData({
+                  utd: uniformTypeDescriptor.UniformDataType.PLAIN_TEXT,
+                  title: 'webdavhelperaccounts.txt',
+                  description: getSizeString(fileIo.statSync(filePath).size),
+                  uri: fileUri.getUriFromPath(filePath)
+                })
+                harmonyShare.on('knockShare', async (sharableTarget) => {
+                  await sharableTarget.share(shareData)
+                })
+                harmonyShare.on('gesturesShare', async (sharableTarget) => {
+                  await sharableTarget.share(shareData)
+                })
+                const promptAction = this.UIContext.getPromptAction()
+                await promptAction.showDialog({
+                  title: '提示',
+                  message: '碰一碰/隔空传送邻近设备即可同步，关闭此弹窗后停止同步',
+                  buttons: [
+                    {
+                      text: '关闭',
+                      color: $r('sys.color.warning')
+                    }
+                  ],
+                  onDidDisappear: async () => {
+                    await fileIo.unlink(filePath)
+                    harmonyShare.off('knockShare')
+                    harmonyShare.off('gesturesShare')
+                  }
+                })
+              })
+
               Divider()
                 .padding({
                   left: 12,
