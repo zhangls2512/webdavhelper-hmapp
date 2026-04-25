@@ -337,7 +337,7 @@ export default struct Filelist {
                       Authorization: await getAccountAuthorization(this.context)
                     }
                   })
-                  backgroundTaskManager.on('continuousTaskCancel', async () => {
+                  backgroundTaskManager.on('continuousTaskCancel', () => {
                     session.cancel()
                   })
                   this.totalSize = item.size
@@ -1481,7 +1481,7 @@ export default struct Filelist {
                               Authorization: await getAccountAuthorization(this.context)
                             }
                           })
-                          backgroundTaskManager.on('continuousTaskCancel', async () => {
+                          backgroundTaskManager.on('continuousTaskCancel', () => {
                             session.cancel()
                           })
                           this.totalSize = item.size
