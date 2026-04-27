@@ -94,9 +94,6 @@ export async function getDirectorySize(path: string) {
 }
 
 export function getFileTypeIcon(name: string) {
-  if (name.endsWith('.mv.png')) {
-    return fileManagerService.getFileIconSync('.aaa')
-  }
   let houzhui = ''
   const lastDotIndex = name.lastIndexOf('.')
   if (lastDotIndex !== -1) {
