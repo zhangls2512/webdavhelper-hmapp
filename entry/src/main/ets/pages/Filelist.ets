@@ -1,11 +1,9 @@
-import { common, wantAgent, wantConstant } from '@kit.AbilityKit'
+import { common, wantConstant } from '@kit.AbilityKit'
 import { sendablePreferences } from '@kit.ArkData'
 import { util } from '@kit.ArkTS'
 import { LoadingDialog, promptAction } from '@kit.ArkUI'
-import { backgroundTaskManager } from '@kit.BackgroundTasksKit'
 import { fileIo, fileUri, picker } from '@kit.CoreFileKit'
 import { netBoost } from '@kit.NetworkBoostKit'
-import { notificationManager } from '@kit.NotificationKit'
 import { filePreview } from '@kit.PreviewKit'
 import { rcp } from '@kit.RemoteCommunicationKit'
 import { hdsEffect } from '@kit.UIDesignKit'
@@ -241,19 +239,6 @@ export default struct Filelist {
                   if (selectFileDownloadPath) {
                     filePath = uris[0]
                   }
-                  const wandAgent = await wantAgent.getWantAgent({
-                    wants: [
-                      {
-                        bundleName: 'com.zhuzx.webdavhelper',
-                        abilityName: 'EntryAbility'
-                      }
-                    ],
-                    actionType: wantAgent.OperationType.START_ABILITY,
-                    requestCode: 0,
-                    wantAgentFlags: [wantAgent.WantAgentFlags.UPDATE_PRESENT_FLAG]
-                  })
-                  const continuousTaskNotificationInfo =
-                    await backgroundTaskManager.startBackgroundRunning(this.context, ['dataTransfer'], wandAgent)
                   const file = fileIo.openSync(filePath, fileIo.OpenMode.CREATE | fileIo.OpenMode.WRITE_ONLY)
                   const fileStream = fileIo.fdopenStreamSync(file.fd, 'w+')
                   netBoost.setSceneDesc({
@@ -261,7 +246,6 @@ export default struct Filelist {
                     sceneEvent: netBoost.SceneEvent.SCENE_EVENT_ENTER
                   })
                   const accountInfo = await getAccountInfo(this.context)
-                  let lastUpdateTime = 0
                   const session = rcp.createSession({
                     requestConfiguration: {
                       transfer: {
@@ -274,43 +258,11 @@ export default struct Filelist {
                           onDataReceive: async (incomingData) => {
                             await fileStream.write(incomingData)
                           },
-                          onDownloadProgress: async (totalSize, transferredSize) => {
-                            const continuousTasks = await backgroundTaskManager.getAllContinuousTasks(this.context)
-                            if (continuousTasks.length === 0) {
-                              session.cancel()
-                            }
-                            const currentTime = Date.now()
-                            if (currentTime - lastUpdateTime >= 50) {
-                              this.transferredSize = transferredSize
-                              try {
-                                await notificationManager.publish({
-                                  content: {
-                                    notificationContentType: notificationManager.ContentType.NOTIFICATION_CONTENT_SYSTEM_LIVE_VIEW,
-                                    systemLiveView: {
-                                      typeCode: 8,
-                                      title: '正在下载文件：' + item.name,
-                                      text: '进度：' + Number((transferredSize / totalSize).toFixed(2)) * 100 + '% (' +
-                                        getSizeString(transferredSize) + '/' + getSizeString(totalSize) + ')'
-                                    }
-                                  },
-                                  id: continuousTaskNotificationInfo.notificationId,
-                                  notificationSlotType: notificationManager.SlotType.LIVE_VIEW,
-                                  template: {
-                                    name: 'downloadTemplate',
-                                    data: {
-                                      title: '正在下载文件，进度：' +
-                                        Number((transferredSize / totalSize).toFixed(2)) * 100 + '%',
-                                      fileName: item.name,
-                                      progressValue: Number((transferredSize / totalSize).toFixed(2)) * 100
-                                    }
-                                  }
-                                })
-                              } catch {
-                              }
-                            }
-                            lastUpdateTime = currentTime
+                          onDownloadProgress: (totalSize, transferredSize) => {
+                            this.transferredSize = transferredSize
+                            this.totalSize = totalSize
                           },
-                          onDataEnd: async () => {
+                          onDataEnd: () => {
                             this.isShowProgressSheet = false
                             session.close()
                             netBoost.setSceneDesc({
@@ -318,8 +270,6 @@ export default struct Filelist {
                               sceneEvent: netBoost.SceneEvent.SCENE_EVENT_LEAVE
                             })
                             fileStream.closeSync()
-                            await backgroundTaskManager.stopBackgroundRunning(this.context,
-                              continuousTaskNotificationInfo.continuousTaskId)
                             this.context.eventHub.off('cancelDownload')
                             this.transferredSize = 0
                             this.totalSize = 0
@@ -342,12 +292,9 @@ export default struct Filelist {
                       Authorization: await getAccountAuthorization(this.context)
                     }
                   })
-                  backgroundTaskManager.on('continuousTaskCancel', () => {
-                    session.cancel()
-                  })
                   this.totalSize = item.size
-                  this.context.eventHub.on('cancelDownload', async () => {
-                    await backgroundTaskManager.stopBackgroundRunning(this.context)
+                  this.context.eventHub.on('cancelDownload', () => {
+                    session.cancel()
                   })
                   this.isShowProgressSheet = true
                   try {
@@ -386,8 +333,6 @@ export default struct Filelist {
                     this.transferredSize = 0
                     this.totalSize = 0
                     if (err.code !== 1007900992) {
-                      await backgroundTaskManager.stopBackgroundRunning(this.context,
-                        continuousTaskNotificationInfo.continuousTaskId)
                       await promptAction.openToast({
                         message: '下载失败，错误码：' + err.code
                       })
@@ -1403,20 +1348,6 @@ export default struct Filelist {
                             await fileIo.mkdir(previewDir, true)
                           }
                           const filePath = previewDir + '/' + item.name
-                          const wandAgent = await wantAgent.getWantAgent({
-                            wants: [
-                              {
-                                bundleName: 'com.zhuzx.webdavhelper',
-                                abilityName: 'EntryAbility'
-                              }
-                            ],
-                            actionType: wantAgent.OperationType.START_ABILITY,
-                            requestCode: 0,
-                            wantAgentFlags: [wantAgent.WantAgentFlags.UPDATE_PRESENT_FLAG]
-                          })
-                          const continuousTaskNotificationInfo =
-                            await backgroundTaskManager.startBackgroundRunning(this.context, ['dataTransfer'],
-                              wandAgent)
                           const file = fileIo.openSync(filePath, fileIo.OpenMode.CREATE | fileIo.OpenMode.WRITE_ONLY)
                           const fileStream = fileIo.fdopenStreamSync(file.fd, 'w+')
                           netBoost.setSceneDesc({
@@ -1424,7 +1355,6 @@ export default struct Filelist {
                             sceneEvent: netBoost.SceneEvent.SCENE_EVENT_ENTER
                           })
                           const accountInfo = await getAccountInfo(this.context)
-                          let lastUpdateTime = 0
                           const session = rcp.createSession({
                             requestConfiguration: {
                               transfer: {
@@ -1437,45 +1367,11 @@ export default struct Filelist {
                                   onDataReceive: async (incomingData) => {
                                     await fileStream.write(incomingData)
                                   },
-                                  onDownloadProgress: async (totalSize, transferredSize) => {
-                                    const continuousTasks =
-                                      await backgroundTaskManager.getAllContinuousTasks(this.context)
-                                    if (continuousTasks.length === 0) {
-                                      session.cancel()
-                                    }
-                                    const currentTime = Date.now()
-                                    if (currentTime - lastUpdateTime >= 50) {
-                                      this.transferredSize = transferredSize
-                                      try {
-                                        await notificationManager.publish({
-                                          content: {
-                                            notificationContentType: notificationManager.ContentType.NOTIFICATION_CONTENT_SYSTEM_LIVE_VIEW,
-                                            systemLiveView: {
-                                              typeCode: 8,
-                                              title: '正在下载文件：' + item.name,
-                                              text: '进度：' + Number((transferredSize / totalSize).toFixed(2)) * 100 +
-                                                '% (' + getSizeString(transferredSize) + '/' +
-                                                getSizeString(totalSize) + ')'
-                                            }
-                                          },
-                                          id: continuousTaskNotificationInfo.notificationId,
-                                          notificationSlotType: notificationManager.SlotType.LIVE_VIEW,
-                                          template: {
-                                            name: 'downloadTemplate',
-                                            data: {
-                                              title: '正在下载文件，进度：' +
-                                                Number((transferredSize / totalSize).toFixed(2)) * 100 + '%',
-                                              fileName: item.name,
-                                              progressValue: Number((transferredSize / totalSize).toFixed(2)) * 100
-                                            }
-                                          }
-                                        })
-                                      } catch {
-                                      }
-                                    }
-                                    lastUpdateTime = currentTime
+                                  onDownloadProgress: (totalSize, transferredSize) => {
+                                    this.transferredSize = transferredSize
+                                    this.totalSize = totalSize
                                   },
-                                  onDataEnd: async () => {
+                                  onDataEnd: () => {
                                     this.isShowProgressSheet = false
                                     session.close()
                                     netBoost.setSceneDesc({
@@ -1483,8 +1379,6 @@ export default struct Filelist {
                                       sceneEvent: netBoost.SceneEvent.SCENE_EVENT_LEAVE
                                     })
                                     fileStream.closeSync()
-                                    await backgroundTaskManager.stopBackgroundRunning(this.context,
-                                      continuousTaskNotificationInfo.continuousTaskId)
                                     this.context.eventHub.off('cancelDownload')
                                     this.transferredSize = 0
                                     this.totalSize = 0
@@ -1507,12 +1401,9 @@ export default struct Filelist {
                               Authorization: await getAccountAuthorization(this.context)
                             }
                           })
-                          backgroundTaskManager.on('continuousTaskCancel', () => {
-                            session.cancel()
-                          })
                           this.totalSize = item.size
-                          this.context.eventHub.on('cancelDownload', async () => {
-                            await backgroundTaskManager.stopBackgroundRunning(this.context)
+                          this.context.eventHub.on('cancelDownload', () => {
+                            session.cancel()
                           })
                           this.isShowProgressSheet = true
                           try {
@@ -1580,8 +1471,6 @@ export default struct Filelist {
                             this.totalSize = 0
                             await fileIo.unlink(filePath)
                             if (err.code !== 1007900992) {
-                              await backgroundTaskManager.stopBackgroundRunning(this.context,
-                                continuousTaskNotificationInfo.continuousTaskId)
                               await promptAction.openToast({
                                 message: '下载失败，错误码：' + err.code
                               })
