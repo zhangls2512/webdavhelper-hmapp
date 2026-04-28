@@ -725,7 +725,7 @@ export default struct Filelist {
                   const item = this.multipleSelectArray[i]
                   const dialogControllerProgress = new CustomDialogController({
                     builder: LoadingDialog({
-                      content: '正在复制文件，进度：' + i + '/' + this.multipleSelectArray.length
+                      content: '正在复制文件，进度：' + (i + 1) + '/' + this.multipleSelectArray.length
                     })
                   })
                   dialogControllerProgress.open()
@@ -775,7 +775,7 @@ export default struct Filelist {
                   const item = this.multipleSelectArray[i]
                   const dialogControllerProgress = new CustomDialogController({
                     builder: LoadingDialog({
-                      content: '正在移动文件，进度：' + i + '/' + this.multipleSelectArray.length
+                      content: '正在移动文件，进度：' + (i + 1) + '/' + this.multipleSelectArray.length
                     })
                   })
                   dialogControllerProgress.open()
@@ -838,7 +838,7 @@ export default struct Filelist {
                     const item = this.multipleSelectArray[i]
                     const dialogControllerProgress = new CustomDialogController({
                       builder: LoadingDialog({
-                        content: '正在删除文件，进度：' + i + '/' + this.multipleSelectArray.length
+                        content: '正在删除文件，进度：' + (i + 1) + '/' + this.multipleSelectArray.length
                       })
                     })
                     dialogControllerProgress.open()
