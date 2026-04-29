@@ -1,11 +1,9 @@
-import { common, wantAgent, wantConstant } from '@kit.AbilityKit'
+import { common, wantConstant } from '@kit.AbilityKit'
 import { sendablePreferences } from '@kit.ArkData'
 import { util } from '@kit.ArkTS'
 import { LoadingDialog, promptAction } from '@kit.ArkUI'
-import { backgroundTaskManager } from '@kit.BackgroundTasksKit'
 import { fileIo, fileUri, picker } from '@kit.CoreFileKit'
 import { netBoost } from '@kit.NetworkBoostKit'
-import { notificationManager } from '@kit.NotificationKit'
 import { filePreview } from '@kit.PreviewKit'
 import { rcp } from '@kit.RemoteCommunicationKit'
 import { hdsEffect } from '@kit.UIDesignKit'
@@ -184,12 +182,12 @@ export default struct Filelist {
             content: '下载'
           })
             .onClick(async () => {
+              const promptAction = this.UIContext.getPromptAction()
               if (getCurrentNetworkBearerType() === 0) {
                 const cellularDataUseRemind =
                   getFlushPreference(this.context, 'commonSetting', 'cellularDataUseRemind', 0)
                 if (cellularDataUseRemind === 0 ||
                   (cellularDataUseRemind === 1 && item.size > 200 * Math.pow(1024, 2))) {
-                  const promptAction = this.UIContext.getPromptAction()
                   const data = await promptAction.showDialog({
                     title: '流量使用提醒',
                     message: '当前正在使用流量上网，下载此文件将消耗约 ' + getSizeString(item.size) + ' 流量，确定下载？',
@@ -212,6 +210,7 @@ export default struct Filelist {
               const transferTaskDataPreferences = sendablePreferences.getPreferencesSync(this.context, {
                 name: 'transferTask'
               })
+              const transferTaskId = util.generateRandomUUID()
               try {
                 const documentSaveOptions = new picker.DocumentSaveOptions()
                 const selectFileDownloadPath =
@@ -240,19 +239,6 @@ export default struct Filelist {
                   if (selectFileDownloadPath) {
                     filePath = uris[0]
                   }
-                  const wandAgent = await wantAgent.getWantAgent({
-                    wants: [
-                      {
-                        bundleName: 'com.zhuzx.webdavhelper',
-                        abilityName: 'EntryAbility'
-                      }
-                    ],
-                    actionType: wantAgent.OperationType.START_ABILITY,
-                    requestCode: 0,
-                    wantAgentFlags: [wantAgent.WantAgentFlags.UPDATE_PRESENT_FLAG]
-                  })
-                  const continuousTaskNotificationInfo =
-                    await backgroundTaskManager.startBackgroundRunning(this.context, ['dataTransfer'], wandAgent)
                   const file = fileIo.openSync(filePath, fileIo.OpenMode.CREATE | fileIo.OpenMode.WRITE_ONLY)
                   const fileStream = fileIo.fdopenStreamSync(file.fd, 'w+')
                   netBoost.setSceneDesc({
@@ -260,7 +246,6 @@ export default struct Filelist {
                     sceneEvent: netBoost.SceneEvent.SCENE_EVENT_ENTER
                   })
                   const accountInfo = await getAccountInfo(this.context)
-                  let lastUpdateTime = 0
                   const session = rcp.createSession({
                     requestConfiguration: {
                       transfer: {
@@ -273,39 +258,11 @@ export default struct Filelist {
                           onDataReceive: async (incomingData) => {
                             await fileStream.write(incomingData)
                           },
-                          onDownloadProgress: async (totalSize, transferredSize) => {
-                            const currentTime = Date.now()
-                            if (currentTime - lastUpdateTime >= 50) {
-                              this.transferredSize = transferredSize
-                              try {
-                                await notificationManager.publish({
-                                  content: {
-                                    notificationContentType: notificationManager.ContentType.NOTIFICATION_CONTENT_SYSTEM_LIVE_VIEW,
-                                    systemLiveView: {
-                                      typeCode: 8,
-                                      title: '正在下载文件：' + item.name,
-                                      text: '进度：' + Number((transferredSize / totalSize).toFixed(2)) * 100 + '% (' +
-                                        getSizeString(transferredSize) + '/' + getSizeString(totalSize) + ')'
-                                    }
-                                  },
-                                  id: continuousTaskNotificationInfo.notificationId,
-                                  notificationSlotType: notificationManager.SlotType.LIVE_VIEW,
-                                  template: {
-                                    name: 'downloadTemplate',
-                                    data: {
-                                      title: '正在下载文件，进度：' +
-                                        Number((transferredSize / totalSize).toFixed(2)) * 100 + '%',
-                                      fileName: item.name,
-                                      progressValue: Number((transferredSize / totalSize).toFixed(2)) * 100
-                                    }
-                                  }
-                                })
-                              } catch {
-                              }
-                            }
-                            lastUpdateTime = currentTime
+                          onDownloadProgress: (totalSize, transferredSize) => {
+                            this.transferredSize = transferredSize
+                            this.totalSize = totalSize
                           },
-                          onDataEnd: async () => {
+                          onDataEnd: () => {
                             this.isShowProgressSheet = false
                             session.close()
                             netBoost.setSceneDesc({
@@ -313,8 +270,6 @@ export default struct Filelist {
                               sceneEvent: netBoost.SceneEvent.SCENE_EVENT_LEAVE
                             })
                             fileStream.closeSync()
-                            await backgroundTaskManager.stopBackgroundRunning(this.context,
-                              continuousTaskNotificationInfo.continuousTaskId)
                             this.context.eventHub.off('cancelDownload')
                             this.transferredSize = 0
                             this.totalSize = 0
@@ -337,17 +292,6 @@ export default struct Filelist {
                       Authorization: await getAccountAuthorization(this.context)
                     }
                   })
-                  backgroundTaskManager.on('continuousTaskCancel', async () => {
-                    session.cancel()
-                    await promptAction.openToast({
-                      message: '下载失败'
-                    })
-                    transferTaskDataPreferences.putSync(util.generateRandomUUID(), JSON.stringify({
-                      name: item.name,
-                      status: 'cancel',
-                      type: 'download'
-                    }))
-                  })
                   this.totalSize = item.size
                   this.context.eventHub.on('cancelDownload', () => {
                     session.cancel()
@@ -359,7 +303,8 @@ export default struct Filelist {
                       await promptAction.openToast({
                         message: '下载完成'
                       })
-                      transferTaskDataPreferences.putSync(util.generateRandomUUID(), JSON.stringify({
+                      transferTaskDataPreferences.putSync(transferTaskId, JSON.stringify({
+                        id: transferTaskId,
                         name: item.name,
                         status: 'success',
                         type: 'download'
@@ -368,7 +313,8 @@ export default struct Filelist {
                       await promptAction.openToast({
                         message: 'HTTP 请求失败，状态码：' + response.statusCode
                       })
-                      transferTaskDataPreferences.putSync(util.generateRandomUUID(), JSON.stringify({
+                      transferTaskDataPreferences.putSync(transferTaskId, JSON.stringify({
+                        id: transferTaskId,
                         name: item.name,
                         status: 'fail',
                         errCode: response.statusCode,
@@ -376,14 +322,13 @@ export default struct Filelist {
                       }))
                     }
                   } catch (err) {
+                    this.isShowProgressSheet = false
                     session.close()
                     netBoost.setSceneDesc({
                       scene: 'download',
                       sceneEvent: netBoost.SceneEvent.SCENE_EVENT_LEAVE
                     })
                     fileStream.closeSync()
-                    await backgroundTaskManager.stopBackgroundRunning(this.context,
-                      continuousTaskNotificationInfo.continuousTaskId)
                     this.context.eventHub.off('cancelDownload')
                     this.transferredSize = 0
                     this.totalSize = 0
@@ -391,7 +336,8 @@ export default struct Filelist {
                       await promptAction.openToast({
                         message: '下载失败，错误码：' + err.code
                       })
-                      transferTaskDataPreferences.putSync(util.generateRandomUUID(), JSON.stringify({
+                      transferTaskDataPreferences.putSync(transferTaskId, JSON.stringify({
+                        id: transferTaskId,
                         name: item.name,
                         status: 'fail',
                         errCode: err.code,
@@ -399,7 +345,8 @@ export default struct Filelist {
                       }))
                     }
                     if (err.code === 1007900992) {
-                      transferTaskDataPreferences.putSync(util.generateRandomUUID(), JSON.stringify({
+                      transferTaskDataPreferences.putSync(transferTaskId, JSON.stringify({
+                        id: transferTaskId,
                         name: item.name,
                         status: 'cancel',
                         type: 'download'
@@ -411,7 +358,8 @@ export default struct Filelist {
                 await promptAction.openToast({
                   message: '发生错误，错误码：' + err.code
                 })
-                transferTaskDataPreferences.putSync(util.generateRandomUUID(), JSON.stringify({
+                transferTaskDataPreferences.putSync(transferTaskId, JSON.stringify({
+                  id: transferTaskId,
                   name: item.name,
                   status: 'fail',
                   errCode: err.code,
@@ -722,7 +670,7 @@ export default struct Filelist {
                   const item = this.multipleSelectArray[i]
                   const dialogControllerProgress = new CustomDialogController({
                     builder: LoadingDialog({
-                      content: '正在复制文件，进度：' + i + '/' + this.multipleSelectArray.length
+                      content: '正在复制文件，进度：' + (i + 1) + '/' + this.multipleSelectArray.length
                     })
                   })
                   dialogControllerProgress.open()
@@ -772,7 +720,7 @@ export default struct Filelist {
                   const item = this.multipleSelectArray[i]
                   const dialogControllerProgress = new CustomDialogController({
                     builder: LoadingDialog({
-                      content: '正在移动文件，进度：' + i + '/' + this.multipleSelectArray.length
+                      content: '正在移动文件，进度：' + (i + 1) + '/' + this.multipleSelectArray.length
                     })
                   })
                   dialogControllerProgress.open()
@@ -835,7 +783,7 @@ export default struct Filelist {
                     const item = this.multipleSelectArray[i]
                     const dialogControllerProgress = new CustomDialogController({
                       builder: LoadingDialog({
-                        content: '正在删除文件，进度：' + i + '/' + this.multipleSelectArray.length
+                        content: '正在删除文件，进度：' + (i + 1) + '/' + this.multipleSelectArray.length
                       })
                     })
                     dialogControllerProgress.open()
@@ -1336,6 +1284,17 @@ export default struct Filelist {
                     })
                     .onClick(async () => {
                       if (!item.isdir) {
+                        if (this.multipleSelect) {
+                          const exist = this.multipleSelectArray.find(selectItem => selectItem.path === item.path)
+                          if (exist) {
+                            this.multipleSelectArray.splice(this.multipleSelectArray.findIndex(selectItem => selectItem.path ===
+                              item.path), 1)
+                          }
+                          if (!exist) {
+                            this.multipleSelectArray.push(item)
+                          }
+                          return
+                        }
                         let houzhui = ''
                         const lastDotIndex = item.name.lastIndexOf('.')
                         if (lastDotIndex !== -1) {
@@ -1350,6 +1309,7 @@ export default struct Filelist {
                           this.isShowPlayerSheet = true
                           return
                         }
+                        const promptAction = this.UIContext.getPromptAction()
                         if (item.size > Math.pow(1024, 3)) {
                           await promptAction.openToast({
                             message: '大小大于 1GB，请长按将其下载到本地后预览'
@@ -1361,7 +1321,6 @@ export default struct Filelist {
                             getFlushPreference(this.context, 'commonSetting', 'cellularDataUseRemind', 0)
                           if (cellularDataUseRemind === 0 ||
                             (cellularDataUseRemind === 1 && item.size > 200 * Math.pow(1024, 2))) {
-                            const promptAction = this.UIContext.getPromptAction()
                             const data = await promptAction.showDialog({
                               title: '流量使用提醒',
                               message: '当前正在使用流量上网，下载此文件将消耗约 ' + getSizeString(item.size) +
@@ -1389,20 +1348,6 @@ export default struct Filelist {
                             await fileIo.mkdir(previewDir, true)
                           }
                           const filePath = previewDir + '/' + item.name
-                          const wandAgent = await wantAgent.getWantAgent({
-                            wants: [
-                              {
-                                bundleName: 'com.zhuzx.webdavhelper',
-                                abilityName: 'EntryAbility'
-                              }
-                            ],
-                            actionType: wantAgent.OperationType.START_ABILITY,
-                            requestCode: 0,
-                            wantAgentFlags: [wantAgent.WantAgentFlags.UPDATE_PRESENT_FLAG]
-                          })
-                          const continuousTaskNotificationInfo =
-                            await backgroundTaskManager.startBackgroundRunning(this.context, ['dataTransfer'],
-                              wandAgent)
                           const file = fileIo.openSync(filePath, fileIo.OpenMode.CREATE | fileIo.OpenMode.WRITE_ONLY)
                           const fileStream = fileIo.fdopenStreamSync(file.fd, 'w+')
                           netBoost.setSceneDesc({
@@ -1410,7 +1355,6 @@ export default struct Filelist {
                             sceneEvent: netBoost.SceneEvent.SCENE_EVENT_ENTER
                           })
                           const accountInfo = await getAccountInfo(this.context)
-                          let lastUpdateTime = 0
                           const session = rcp.createSession({
                             requestConfiguration: {
                               transfer: {
@@ -1423,40 +1367,11 @@ export default struct Filelist {
                                   onDataReceive: async (incomingData) => {
                                     await fileStream.write(incomingData)
                                   },
-                                  onDownloadProgress: async (totalSize, transferredSize) => {
-                                    const currentTime = Date.now()
-                                    if (currentTime - lastUpdateTime >= 50) {
-                                      this.transferredSize = transferredSize
-                                      try {
-                                        await notificationManager.publish({
-                                          content: {
-                                            notificationContentType: notificationManager.ContentType.NOTIFICATION_CONTENT_SYSTEM_LIVE_VIEW,
-                                            systemLiveView: {
-                                              typeCode: 8,
-                                              title: '正在下载文件：' + item.name,
-                                              text: '进度：' + Number((transferredSize / totalSize).toFixed(2)) * 100 +
-                                                '% (' + getSizeString(transferredSize) + '/' +
-                                                getSizeString(totalSize) + ')'
-                                            }
-                                          },
-                                          id: continuousTaskNotificationInfo.notificationId,
-                                          notificationSlotType: notificationManager.SlotType.LIVE_VIEW,
-                                          template: {
-                                            name: 'downloadTemplate',
-                                            data: {
-                                              title: '正在下载文件，进度：' +
-                                                Number((transferredSize / totalSize).toFixed(2)) * 100 + '%',
-                                              fileName: item.name,
-                                              progressValue: Number((transferredSize / totalSize).toFixed(2)) * 100
-                                            }
-                                          }
-                                        })
-                                      } catch {
-                                      }
-                                    }
-                                    lastUpdateTime = currentTime
+                                  onDownloadProgress: (totalSize, transferredSize) => {
+                                    this.transferredSize = transferredSize
+                                    this.totalSize = totalSize
                                   },
-                                  onDataEnd: async () => {
+                                  onDataEnd: () => {
                                     this.isShowProgressSheet = false
                                     session.close()
                                     netBoost.setSceneDesc({
@@ -1464,8 +1379,6 @@ export default struct Filelist {
                                       sceneEvent: netBoost.SceneEvent.SCENE_EVENT_LEAVE
                                     })
                                     fileStream.closeSync()
-                                    await backgroundTaskManager.stopBackgroundRunning(this.context,
-                                      continuousTaskNotificationInfo.continuousTaskId)
                                     this.context.eventHub.off('cancelDownload')
                                     this.transferredSize = 0
                                     this.totalSize = 0
@@ -1487,12 +1400,6 @@ export default struct Filelist {
                             headers: {
                               Authorization: await getAccountAuthorization(this.context)
                             }
-                          })
-                          backgroundTaskManager.on('continuousTaskCancel', async () => {
-                            session.cancel()
-                            await promptAction.openToast({
-                              message: '下载失败'
-                            })
                           })
                           this.totalSize = item.size
                           this.context.eventHub.on('cancelDownload', () => {
@@ -1552,14 +1459,13 @@ export default struct Filelist {
                               })
                             }
                           } catch (err) {
+                            this.isShowProgressSheet = false
                             session.close()
                             netBoost.setSceneDesc({
                               scene: 'download',
                               sceneEvent: netBoost.SceneEvent.SCENE_EVENT_LEAVE
                             })
                             fileStream.closeSync()
-                            await backgroundTaskManager.stopBackgroundRunning(this.context,
-                              continuousTaskNotificationInfo.continuousTaskId)
                             this.context.eventHub.off('cancelDownload')
                             this.transferredSize = 0
                             this.totalSize = 0

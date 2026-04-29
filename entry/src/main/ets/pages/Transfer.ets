@@ -1,6 +1,7 @@
 import { common } from '@kit.AbilityKit'
 import { sendablePreferences } from '@kit.ArkData'
 import { SegmentButtonV2Items, TabSegmentButtonV2 } from '@kit.ArkUI'
+import { backgroundTaskManager } from '@kit.BackgroundTasksKit'
 import { getPreferType } from '../common/Prefertype'
 import { getSizeString } from '../common/Stringformat'
 import { TransferTaskItem } from './Index'
@@ -49,57 +50,81 @@ export default struct Transfer {
                           right: 12
                         })
                     }
-                    Column() {
-                      Text(item.name)
-                        .enableAutoSpacing(true)
-                        .fontWeight(FontWeight.Medium)
-                        .width('85%')
-                      if (item.status === 'pending') {
-                        Text('等待中')
-                          .fontColor($r('sys.color.font_secondary'))
-                          .fontSize($r('sys.float.ohos_id_text_size_body2'))
-                          .margin({
-                            top: $r('sys.float.ohos_id_text_margin_vertical')
-                          })
+                    Row() {
+                      Column() {
+                        Text(item.name)
+                          .enableAutoSpacing(true)
+                          .fontWeight(FontWeight.Medium)
+                          .width('85%')
+                        if (item.status === 'pending') {
+                          Text('等待中')
+                            .fontColor($r('sys.color.font_secondary'))
+                            .fontSize($r('sys.float.ohos_id_text_size_body2'))
+                            .margin({
+                              top: $r('sys.float.ohos_id_text_margin_vertical')
+                            })
+                        }
+                        if (item.status === 'processing') {
+                          Text(Number((item.transferredSize / item.totalSize).toFixed(2)) * 100 + '%(' +
+                            getSizeString(item.transferredSize) + '/' + getSizeString(item.totalSize) + ')')
+                            .fontColor($r('sys.color.font_secondary'))
+                            .fontSize($r('sys.float.ohos_id_text_size_body2'))
+                            .margin({
+                              top: $r('sys.float.ohos_id_text_margin_vertical')
+                            })
+                        }
+                        if (item.status === 'success') {
+                          Text('完成')
+                            .fontColor(Color.Green)
+                            .fontSize($r('sys.float.ohos_id_text_size_body2'))
+                            .margin({
+                              top: $r('sys.float.ohos_id_text_margin_vertical')
+                            })
+                        }
+                        if (item.status === 'fail') {
+                          Text('失败，错误码：' + item.errCode)
+                            .fontColor($r('sys.color.warning'))
+                            .fontSize($r('sys.float.ohos_id_text_size_body2'))
+                            .margin({
+                              top: $r('sys.float.ohos_id_text_margin_vertical')
+                            })
+                        }
+                        if (item.status === 'cancel') {
+                          Text('取消')
+                            .fontColor($r('sys.color.warning'))
+                            .fontSize($r('sys.float.ohos_id_text_size_body2'))
+                            .margin({
+                              top: $r('sys.float.ohos_id_text_margin_vertical')
+                            })
+                        }
                       }
+                      .alignItems(HorizontalAlign.Start)
+                      .layoutWeight(1)
+                      .margin({
+                        right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
+                      })
+
                       if (item.status === 'processing') {
-                        Text(Number((item.transferredSize / item.totalSize).toFixed(2)) * 100 + '%(' +
-                          getSizeString(item.transferredSize) + '/' + getSizeString(item.totalSize) + ')')
-                          .fontColor($r('sys.color.font_secondary'))
-                          .fontSize($r('sys.float.ohos_id_text_size_body2'))
+                        Image($r('app.media.close'))
+                          .height(24)
                           .margin({
-                            top: $r('sys.float.ohos_id_text_margin_vertical')
+                            right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
+                          })
+                          .onClick(async () => {
+                            await backgroundTaskManager.stopBackgroundRunning(this.context)
                           })
                       }
-                      if (item.status === 'success') {
-                        Text('完成')
-                          .fontColor(Color.Green)
-                          .fontSize($r('sys.float.ohos_id_text_size_body2'))
-                          .margin({
-                            top: $r('sys.float.ohos_id_text_margin_vertical')
+                      Image($r('app.media.delete'))
+                        .height(24)
+                        .onClick(() => {
+                          const transferTaskDataPreferences = sendablePreferences.getPreferencesSync(this.context, {
+                            name: 'transferTask'
                           })
-                      }
-                      if (item.status === 'fail') {
-                        Text('失败，错误码：' + item.errCode)
-                          .fontColor($r('sys.color.warning'))
-                          .fontSize($r('sys.float.ohos_id_text_size_body2'))
-                          .margin({
-                            top: $r('sys.float.ohos_id_text_margin_vertical')
-                          })
-                      }
-                      if (item.status === 'cancel') {
-                        Text('取消')
-                          .fontColor($r('sys.color.warning'))
-                          .fontSize($r('sys.float.ohos_id_text_size_body2'))
-                          .margin({
-                            top: $r('sys.float.ohos_id_text_margin_vertical')
-                          })
-                      }
+                          transferTaskDataPreferences.deleteSync(item.id)
+                        })
                     }
-                    .alignItems(HorizontalAlign.Start)
                     .borderRadius(12)
                     .padding(12)
-                    .width('100%')
                   })
               }
               .backgroundColor($r('sys.color.comp_background_primary'))
@@ -131,57 +156,81 @@ export default struct Transfer {
                           right: 12
                         })
                     }
-                    Column() {
-                      Text(item.name)
-                        .enableAutoSpacing(true)
-                        .fontWeight(FontWeight.Medium)
-                        .width('85%')
-                      if (item.status === 'pending') {
-                        Text('等待中')
-                          .fontColor($r('sys.color.font_secondary'))
-                          .fontSize($r('sys.float.ohos_id_text_size_body2'))
-                          .margin({
-                            top: $r('sys.float.ohos_id_text_margin_vertical')
-                          })
+                    Row() {
+                      Column() {
+                        Text(item.name)
+                          .enableAutoSpacing(true)
+                          .fontWeight(FontWeight.Medium)
+                          .width('85%')
+                        if (item.status === 'pending') {
+                          Text('等待中')
+                            .fontColor($r('sys.color.font_secondary'))
+                            .fontSize($r('sys.float.ohos_id_text_size_body2'))
+                            .margin({
+                              top: $r('sys.float.ohos_id_text_margin_vertical')
+                            })
+                        }
+                        if (item.status === 'processing') {
+                          Text(Number((item.transferredSize / item.totalSize).toFixed(2)) * 100 + '%(' +
+                            getSizeString(item.transferredSize) + '/' + getSizeString(item.totalSize) + ')')
+                            .fontColor($r('sys.color.font_secondary'))
+                            .fontSize($r('sys.float.ohos_id_text_size_body2'))
+                            .margin({
+                              top: $r('sys.float.ohos_id_text_margin_vertical')
+                            })
+                        }
+                        if (item.status === 'success') {
+                          Text('完成')
+                            .fontColor(Color.Green)
+                            .fontSize($r('sys.float.ohos_id_text_size_body2'))
+                            .margin({
+                              top: $r('sys.float.ohos_id_text_margin_vertical')
+                            })
+                        }
+                        if (item.status === 'fail') {
+                          Text('失败，错误码：' + item.errCode)
+                            .fontColor($r('sys.color.warning'))
+                            .fontSize($r('sys.float.ohos_id_text_size_body2'))
+                            .margin({
+                              top: $r('sys.float.ohos_id_text_margin_vertical')
+                            })
+                        }
+                        if (item.status === 'cancel') {
+                          Text('取消')
+                            .fontColor($r('sys.color.warning'))
+                            .fontSize($r('sys.float.ohos_id_text_size_body2'))
+                            .margin({
+                              top: $r('sys.float.ohos_id_text_margin_vertical')
+                            })
+                        }
                       }
+                      .alignItems(HorizontalAlign.Start)
+                      .layoutWeight(1)
+                      .margin({
+                        right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
+                      })
+
                       if (item.status === 'processing') {
-                        Text(Number((item.transferredSize / item.totalSize).toFixed(2)) * 100 + '%(' +
-                          getSizeString(item.transferredSize) + '/' + getSizeString(item.totalSize) + ')')
-                          .fontColor($r('sys.color.font_secondary'))
-                          .fontSize($r('sys.float.ohos_id_text_size_body2'))
+                        Image($r('app.media.close'))
+                          .height(24)
                           .margin({
-                            top: $r('sys.float.ohos_id_text_margin_vertical')
+                            right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
+                          })
+                          .onClick(async () => {
+                            await backgroundTaskManager.stopBackgroundRunning(this.context)
                           })
                       }
-                      if (item.status === 'success') {
-                        Text('完成')
-                          .fontColor(Color.Green)
-                          .fontSize($r('sys.float.ohos_id_text_size_body2'))
-                          .margin({
-                            top: $r('sys.float.ohos_id_text_margin_vertical')
+                      Image($r('app.media.delete'))
+                        .height(24)
+                        .onClick(() => {
+                          const transferTaskDataPreferences = sendablePreferences.getPreferencesSync(this.context, {
+                            name: 'transferTask'
                           })
-                      }
-                      if (item.status === 'fail') {
-                        Text('失败，错误码：' + item.errCode)
-                          .fontColor($r('sys.color.warning'))
-                          .fontSize($r('sys.float.ohos_id_text_size_body2'))
-                          .margin({
-                            top: $r('sys.float.ohos_id_text_margin_vertical')
-                          })
-                      }
-                      if (item.status === 'cancel') {
-                        Text('取消')
-                          .fontColor($r('sys.color.warning'))
-                          .fontSize($r('sys.float.ohos_id_text_size_body2'))
-                          .margin({
-                            top: $r('sys.float.ohos_id_text_margin_vertical')
-                          })
-                      }
+                          transferTaskDataPreferences.deleteSync(item.id)
+                        })
                     }
-                    .alignItems(HorizontalAlign.Start)
                     .borderRadius(12)
                     .padding(12)
-                    .width('100%')
                   })
               }
               .backgroundColor($r('sys.color.comp_background_primary'))
@@ -219,7 +268,7 @@ export default struct Transfer {
           transferTaskArray.push(transferTask)
         })
         this.transferTaskArray = transferTaskArray
-      }, 1000)
+      }, 200)
     })
     .onDisAppear(() => {
       if (this.intervalId !== -1) {
