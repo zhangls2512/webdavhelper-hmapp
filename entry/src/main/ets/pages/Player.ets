@@ -38,8 +38,8 @@ export default struct Player {
     if (hour !== 0) {
       array.push(String(hour))
     }
-    array.push(minute.toString().padStart(2, '0'))
-    array.push(second.toString().padStart(2, '0'))
+    array.push(String(minute).padStart(2, '0'))
+    array.push(String(second).padStart(2, '0'))
     return array.join(':')
   }
 
