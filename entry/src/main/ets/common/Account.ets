@@ -128,7 +128,7 @@ export function getAccountHash(accountInfo: AccountInfo, context?: Context, path
   }
 }
 
-export async function getAccountList(context: Context, bestPath?: boolean): Promise<AccountInfo[]> {
+export async function getAccountList(context: Context, bestPath = false): Promise<AccountInfo[]> {
   const appAccountManager = appAccount.createAppAccountManager()
   const appAccountIds = await appAccountManager.getAccountsByOwner('com.zhuzx.webdavhelper')
   const appAccounts: AccountInfo[] = []
@@ -157,16 +157,14 @@ export async function exitAccount(context: Context) {
   }
 }
 
-export async function removeAccount(context: Context, id: string, hideToast?: boolean) {
+export async function removeAccount(context: Context, id: string) {
   const accounts = await getAccountList(context)
   if (accounts.find(item => item.id === id)) {
     const appAccountManager = appAccount.createAppAccountManager()
     await appAccountManager.removeAccount(id)
-    if (!hideToast) {
-      await promptAction.openToast({
-        message: '删除成功'
-      })
-    }
+    await promptAction.openToast({
+      message: '删除成功'
+    })
   }
 }
 
