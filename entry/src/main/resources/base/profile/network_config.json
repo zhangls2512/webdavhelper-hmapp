@@ -8,6 +8,9 @@
         "domains": [
           {
             "name": "api.zhangls2512.cn"
+          },
+          {
+            "name": "letsencrypt.org"
           }
         ],
         "cleartextTrafficPermitted": false
