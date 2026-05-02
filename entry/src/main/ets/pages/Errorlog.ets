@@ -1,20 +1,17 @@
 import { common } from '@kit.AbilityKit'
-import { uniformTypeDescriptor } from '@kit.ArkData'
 import { LengthMetrics } from '@kit.ArkUI'
-import { fileIo, fileUri } from '@kit.CoreFileKit'
+import { fileIo } from '@kit.CoreFileKit'
 import { hiAppEvent } from '@kit.PerformanceAnalysisKit'
-import { systemShare } from '@kit.ShareKit'
 import { hdsMaterial, HdsNavDestination, HdsNavDestinationTitleMode, ScrollEffectType } from '@kit.UIDesignKit'
 import { read } from '../common/File'
 import copy from '../common/Pasteboard'
-import { getSizeString, getTimeStringFromTimeStamp } from '../common/Stringformat'
+import { getTimeStringFromTimeStamp } from '../common/Stringformat'
 import { Type } from './Autouploaderrorlogtype'
 
 interface ErrorLogItem {
   type: string,
   content: string,
-  time: string,
-  externalLog: string[]
+  time: string
 }
 
 @Builder
@@ -101,18 +98,10 @@ struct Errorlog {
         const filestring = await read(item)
         try {
           const errorLog = JSON.parse(filestring) as hiAppEvent.AppEventGroup
-          let externalLog: string[] = []
-          if (errorLog.appEventInfos) {
-            errorLog.appEventInfos.forEach(item => {
-              const external_log = item.params['external_log'] as string[]
-              externalLog = externalLog.concat(external_log)
-            })
-          }
           this.errorLogArray.push({
             type: errorLog.name,
             content: filestring,
-            time: getTimeStringFromTimeStamp(Number(item.replace(errorLogDir, '').replace('.txt', ''))),
-            externalLog: externalLog
+            time: getTimeStringFromTimeStamp(Number(item.replace(errorLogDir, '').replace('.txt', '')))
           })
         } catch {
         }
@@ -131,19 +120,11 @@ struct Errorlog {
         const filestring = await read(item)
         try {
           const errorLog = JSON.parse(filestring) as hiAppEvent.AppEventGroup
-          let externalLog: string[] = []
-          if (errorLog.appEventInfos) {
-            errorLog.appEventInfos.forEach(item => {
-              const external_log = item.params['external_log'] as string[]
-              externalLog = externalLog.concat(external_log)
-            })
-          }
           if (errorLog.name === type) {
             this.errorLogArray.push({
               type: errorLog.name,
               content: filestring,
-              time: getTimeStringFromTimeStamp(Number(item.replace(errorLogDir, '').replace('.txt', ''))),
-              externalLog: externalLog
+              time: getTimeStringFromTimeStamp(Number(item.replace(errorLogDir, '').replace('.txt', '')))
             })
           }
         } catch {
@@ -263,55 +244,6 @@ struct Errorlog {
                   }
                   .borderRadius(12)
                   .padding(12)
-
-                  ForEach(errorLogItem.externalLog, (externalLogItem: string, externalLogIndex) => {
-                    Divider()
-                      .padding({
-                        left: 12,
-                        right: 12
-                      })
-                    Row() {
-                      Text(externalLogItem)
-                        .fontWeight(FontWeight.Medium)
-                        .layoutWeight(1)
-                        .margin({
-                          right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
-                        })
-                      Image($r('app.media.right'))
-                        .fillColor($r('sys.color.icon_fourth'))
-                        .height(12)
-                        .width(12)
-                    }
-                    .borderRadius(12)
-                    .padding(12)
-                    .stateStyles({
-                      normal: {
-                        .backgroundColor(this.hoverId === errorLogIndex + ',' + externalLogIndex ?
-                          $r('sys.color.interactive_hover') : $r('sys.color.ohos_id_color_card_bg'))
-                      },
-                      pressed: {
-                        .backgroundColor($r('sys.color.interactive_pressed'))
-                      }
-                    })
-                    .onHover(isHover => {
-                      if (!isHover) {
-                        this.hoverId = -1
-                      }
-                      if (isHover) {
-                        this.hoverId = errorLogIndex + ',' + externalLogIndex
-                      }
-                    })
-                    .onClick(async () => {
-                      const shareData = new systemShare.SharedData({
-                        utd: uniformTypeDescriptor.UniformDataType.FILE,
-                        title: externalLogItem.substring(externalLogItem.lastIndexOf('/') + 1),
-                        description: getSizeString(fileIo.statSync(externalLogItem).size),
-                        uri: fileUri.getUriFromPath(externalLogItem)
-                      })
-                      const shareController = new systemShare.ShareController(shareData)
-                      await shareController.show(this.context, {})
-                    })
-                  })
                 }
                 .backgroundColor($r('sys.color.ohos_id_color_card_bg'))
                 .borderRadius($r('sys.float.ohos_id_corner_radius_default_l'))
