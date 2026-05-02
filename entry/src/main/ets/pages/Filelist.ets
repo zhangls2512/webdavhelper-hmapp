@@ -86,6 +86,7 @@ export default struct Filelist {
         this.dirnames = []
       }
       this.account = account
+      this.fileArray = []
       const fileArray = await ls(this.context, this.getPath())
       this.fileArray = this.sortFileArray(fileArray)
     }
@@ -1547,7 +1548,6 @@ export default struct Filelist {
         this.multipleSelect = false
         this.multipleSelectArray = []
         this.copyMovePath = ''
-        this.remove = false
         this.loading = true
       })
       const showAccountlistAfterAppLaunch =
