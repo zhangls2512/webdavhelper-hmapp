@@ -22,7 +22,7 @@ export function ErrorlogBuilder() {
 @ComponentV2
 struct Errorlog {
   @Local errorLogArray: ErrorLogItem[] = []
-  @Local hoverId: number | string = -1
+  @Local hoverId: number = -1
   UIContext = this.getUIContext()
   context = this.UIContext.getHostContext() as common.UIAbilityContext
   typeArray: Type[] = [
