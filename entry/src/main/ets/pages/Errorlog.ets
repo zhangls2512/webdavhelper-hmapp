@@ -167,7 +167,7 @@ struct Errorlog {
               })
               .width('100%')
             }
-            ForEach(this.errorLogArray, (errorLogItem: ErrorLogItem, errorLogIndex) => {
+            ForEach(this.errorLogArray, (item: ErrorLogItem, index) => {
               ListItem() {
                 Column() {
                   Row() {
@@ -176,7 +176,7 @@ struct Errorlog {
                       .margin({
                         right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
                       })
-                    Text(errorLogItem.type)
+                    Text(item.type)
                       .fontColor($r('sys.color.font_secondary'))
                       .fontSize($r('sys.float.ohos_id_text_size_body2'))
                       .layoutWeight(1)
@@ -196,7 +196,7 @@ struct Errorlog {
                       .margin({
                         right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
                       })
-                    Text(errorLogItem.content)
+                    Text(item.content)
                       .fontColor($r('sys.color.font_secondary'))
                       .fontSize($r('sys.float.ohos_id_text_size_body2'))
                       .layoutWeight(1)
@@ -206,7 +206,7 @@ struct Errorlog {
                   .padding(12)
                   .stateStyles({
                     normal: {
-                      .backgroundColor(this.hoverId === errorLogIndex ? $r('sys.color.interactive_hover') :
+                      .backgroundColor(this.hoverId === index ? $r('sys.color.interactive_hover') :
                         $r('sys.color.ohos_id_color_card_bg'))
                     },
                     pressed: {
@@ -218,11 +218,11 @@ struct Errorlog {
                       this.hoverId = -1
                     }
                     if (isHover) {
-                      this.hoverId = errorLogIndex
+                      this.hoverId = index
                     }
                   })
                   .onClick(async () => {
-                    await copy(this.context, this.UIContext, errorLogItem.content)
+                    await copy(this.context, this.UIContext, item.content)
                   })
 
                   Divider()
@@ -236,7 +236,7 @@ struct Errorlog {
                       .margin({
                         right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
                       })
-                    Text(errorLogItem.time)
+                    Text(item.time)
                       .fontColor($r('sys.color.font_secondary'))
                       .fontSize($r('sys.float.ohos_id_text_size_body2'))
                       .layoutWeight(1)
