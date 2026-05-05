@@ -65,7 +65,7 @@ export default class EntryAbility extends UIAbility {
     try {
       const sharedData = await systemShare.getSharedData(want)
       const sharedRecords = sharedData.getRecords()
-      if (sharedRecords.length !== 0) {
+      if (sharedRecords.length > 0) {
         this.context.eventHub.emit('wantUri', sharedRecords[0].uri)
       }
     } catch {

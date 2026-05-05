@@ -395,7 +395,7 @@ struct Hmappsearch {
             .padding($r('sys.float.ohos_id_corner_radius_mark'))
 
             Button('添加筛选条件')
-              .enabled(this.value.length !== 0)
+              .enabled(this.value.length > 0)
               .margin({
                 top: $r('sys.float.ohos_id_elements_margin_vertical_m')
               })
