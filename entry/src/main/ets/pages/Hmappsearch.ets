@@ -461,7 +461,7 @@ struct Hmappsearch {
                 const session = rcp.createSession()
                 try {
                   const response =
-                    await session.post('http://shenjack.top:10003/api/v0/apps/query?' + new url.URLParams({
+                    await session.post('https://shenjack.top:10003/api/v0/apps/query?' + new url.URLParams({
                       page: String(this.page),
                       page_size: String(this.pageSize),
                       sort: 'download_count',
@@ -601,10 +601,10 @@ struct Hmappsearch {
           Text() {
             Span('数据来源：')
               .fontColor($r('sys.color.font_secondary'))
-            Span('http://shenjack.top:10003')
+            Span('https://shenjack.top:10003')
               .fontColor($r('sys.color.font_emphasize'))
               .onClick(async () => {
-                await openLink(this.context, 'http://shenjack.top:10003')
+                await openLink(this.context, 'https://shenjack.top:10003')
               })
           }
           .fontSize($r('sys.float.ohos_id_text_size_body3'))
