@@ -12,6 +12,7 @@
       ],
       "defaultDimension": "1*2",
       "updateEnabled": false,
+      "enableBlurBackground": true,
       "renderingMode": "autoColor"
     }
   ]
