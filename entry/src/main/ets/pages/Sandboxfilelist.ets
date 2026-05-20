@@ -39,20 +39,19 @@ struct Sandboxfilelist {
         if (item === 'proc') {
           path += '/proc/self'
         }
-        if (item === 'bundle') {
+        if (item === 'bundlecode') {
           path += this.context.bundleCodeDir
         }
-        if (item === 'base') {
-          path += this.context.tempDir.slice(0, -5)
+        if (item === 'data') {
+          path += this.context.tempDir.split('/')
+            .slice(0, -3)
+            .join('/')
         }
         if (item === 'database') {
           path += this.context.databaseDir
         }
         if (item === 'distributedfiles') {
           path += this.context.distributedFilesDir
-        }
-        if (item === 'preferences') {
-          path += this.context.preferencesDir
         }
       }
     })
@@ -72,14 +71,16 @@ struct Sandboxfilelist {
         },
         {
           path: this.context.bundleCodeDir,
-          name: 'bundle',
+          name: 'bundlecode',
           isdir: true,
           size: -1,
           mtime: -1
         },
         {
-          path: this.context.tempDir.slice(0, -5),
-          name: 'base',
+          path: this.context.tempDir.split('/')
+            .slice(0, -3)
+            .join('/'),
+          name: 'data',
           isdir: true,
           size: -1,
           mtime: -1
@@ -97,13 +98,6 @@ struct Sandboxfilelist {
           isdir: true,
           size: -1,
           mtime: -1
-        },
-        {
-          path: this.context.preferencesDir,
-          name: 'preferences',
-          isdir: true,
-          size: -1,
-          mtime: -1
         }
       ]
     }
@@ -111,11 +105,12 @@ struct Sandboxfilelist {
       this.fileArray = []
       try {
         const files = await fileIo.listFile(path)
+        const fileArray: FileItem[] = []
         const promises = files.map(item => {
           const itemPath = path + '/' + item
           const isDir = fileIo.statSync(itemPath).isDirectory()
           if (!isDir) {
-            this.fileArray.push({
+            fileArray.push({
               path: itemPath,
               name: item,
               isdir: false,
@@ -124,7 +119,7 @@ struct Sandboxfilelist {
             })
           }
           if (isDir) {
-            this.fileArray.push({
+            fileArray.push({
               path: itemPath,
               name: item,
               isdir: true,
@@ -134,6 +129,7 @@ struct Sandboxfilelist {
           }
         })
         await Promise.all(promises)
+        this.fileArray = fileArray.sort((a, b) => a.name.localeCompare(b.name))
       } catch (err) {
         if (err.code !== 13900012) {
           await promptAction.openToast({

@@ -1,5 +1,5 @@
 import { common, wantConstant } from '@kit.AbilityKit'
-import { sendablePreferences } from '@kit.ArkData'
+import { sendablePreferences, unifiedDataChannel, uniformTypeDescriptor } from '@kit.ArkData'
 import { util } from '@kit.ArkTS'
 import { LoadingDialog, promptAction } from '@kit.ArkUI'
 import { fileIo, fileUri, picker } from '@kit.CoreFileKit'
@@ -1497,8 +1497,80 @@ export default struct Filelist {
                       hapticFeedbackMode: HapticFeedbackMode.AUTO
                     })
                   }
-                  .borderRadius($r('sys.float.ohos_id_corner_radius_default_l'))
                 }
+                .borderRadius($r('sys.float.ohos_id_corner_radius_default_l'))
+                .selected(this.multipleSelectArray.some(selectItem => selectItem.path === item.path))
+                .onDragStart(event => {
+                  event.dragBehavior = DragBehavior.MOVE
+                  const data = new unifiedDataChannel.PlainText()
+                  if (!this.multipleSelect) {
+                    data.textContent = JSON.stringify([item.path])
+                  }
+                  if (this.multipleSelect) {
+                    data.textContent = JSON.stringify(this.multipleSelectArray.map(item => item.path))
+                  }
+                  event.setData(new unifiedDataChannel.UnifiedData(data))
+                })
+                .onDrop(event => {
+                  event.dragBehavior = DragBehavior.MOVE
+                  if (event.isRemote() || event.getDragSource() !== 'com.zhuzx.webdavhelper') {
+                    event.setResult(DragResult.DROP_DISABLED)
+                    return
+                  }
+                  if (!item.isdir) {
+                    event.setResult(DragResult.DROP_DISABLED)
+                    return
+                  }
+                  event.setResult(DragResult.DRAG_SUCCESSFUL)
+                  event.getData().getRecords().forEach(async (recordItem) => {
+                    if (recordItem.getType() === uniformTypeDescriptor.UniformDataType.PLAIN_TEXT) {
+                      const data = recordItem as unifiedDataChannel.PlainText
+                      const paths = JSON.parse(data.textContent) as string[]
+                      if (paths.length === 1) {
+                        this.dialogControllerProgress.open()
+                        const res = await mv(this.context, paths[0], item.path)
+                        this.dialogControllerProgress.close()
+                        if (res !== 'fail') {
+                          await promptAction.openToast({
+                            message: '移动成功'
+                          })
+                          this.loading = true
+                        }
+                      }
+                      if (paths.length > 1) {
+                        for (let i = 0; i < paths.length; i++) {
+                          const path = paths[i]
+                          const dialogControllerProgress = new CustomDialogController({
+                            builder: LoadingDialog({
+                              content: '正在移动文件，进度：' + (i + 1) + '/' + paths.length
+                            })
+                          })
+                          dialogControllerProgress.open()
+                          await mv(this.context, path, item.path)
+                          dialogControllerProgress.close()
+                        }
+                        this.multipleSelect = false
+                        this.multipleSelectArray = []
+                        await promptAction.openToast({
+                          message: '移动成功'
+                        })
+                        this.loading = true
+                      }
+                    }
+                  })
+                })
+                .onSelect(isSelected => {
+                  if (!isSelected) {
+                    this.multipleSelectArray =
+                      this.multipleSelectArray.filter(selectItem => selectItem.path !== item.path)
+                  }
+                  if (isSelected) {
+                    this.multipleSelect = true
+                    if (!this.multipleSelectArray.find(selectItem => selectItem.path === item.path)) {
+                      this.multipleSelectArray.push(item)
+                    }
+                  }
+                })
               })
               ListItem()
                 .margin({
@@ -1515,6 +1587,7 @@ export default struct Filelist {
                   }
                 })
             }
+            .multiSelectable(true)
           }
           .layoutWeight(1)
           .onRefreshing(async () => {
