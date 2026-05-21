@@ -20,6 +20,7 @@ export default struct Newfolder {
             .defaultFocus(true)
             .enableAutoSpacing(true)
           Button('新建')
+            .keyboardShortcut('S', [ModifierKey.CTRL])
             .margin({
               top: $r('sys.float.ohos_id_elements_margin_vertical_l')
             })

@@ -20,6 +20,7 @@ import { netQuality } from '@kit.NetworkBoostKit'
 import { connection } from '@kit.NetworkKit'
 import { notificationManager } from '@kit.NotificationKit'
 import { hiAppEvent } from '@kit.PerformanceAnalysisKit'
+import { sensor } from '@kit.SensorServiceKit'
 import { harmonyShare, systemShare } from '@kit.ShareKit'
 import { generateBestAddress } from '../common/Account'
 import { clearNouseData } from '../common/Clearnousedata'
@@ -424,6 +425,45 @@ export default class EntryAbility extends UIAbility {
 
   async onWindowStageRestore(windowStage: window.WindowStage) {
     await this.windowInit(windowStage)
+  }
+
+  async onForeground() {
+    const applicationContext = this.context.getApplicationContext()
+    const colorMode = getFlushPreference(this.context, 'commonSetting', 'colorMode', 0)
+    if (colorMode === 3) {
+      try {
+        await sensor.getSingleSensor(sensor.SensorId.AMBIENT_LIGHT)
+        let lastUpdateTime = 0
+        sensor.on(sensor.SensorId.AMBIENT_LIGHT, (event) => {
+          const currentTime = Date.now()
+          if (currentTime - lastUpdateTime >= 3000) {
+            const currentColorMode = getFlushPreference(this.context, 'commonSetting', 'colorMode', 0)
+            if (currentColorMode === 3) {
+              lastUpdateTime = currentTime
+              if (event.intensity > 50) {
+                applicationContext.setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_LIGHT)
+              } else {
+                applicationContext.setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_DARK)
+              }
+            } else {
+              sensor.off(sensor.SensorId.AMBIENT_LIGHT)
+            }
+          }
+        })
+      } catch {
+      }
+    }
+  }
+
+  async onBackground() {
+    const colorMode = getFlushPreference(this.context, 'commonSetting', 'colorMode', 0)
+    if (colorMode === 3) {
+      try {
+        await sensor.getSingleSensor(sensor.SensorId.AMBIENT_LIGHT)
+        sensor.off(sensor.SensorId.AMBIENT_LIGHT)
+      } catch {
+      }
+    }
   }
 
   async onPrepareToTerminateAsync(): Promise<boolean> {
