@@ -440,9 +440,12 @@ export default class EntryAbility extends UIAbility {
             const currentColorMode = getFlushPreference(this.context, 'commonSetting', 'colorMode', 0)
             if (currentColorMode === 3) {
               lastUpdateTime = currentTime
-              if (event.intensity > 50) {
+              if (event.intensity >= 30 &&
+                this.context.config.colorMode === ConfigurationConstant.ColorMode.COLOR_MODE_DARK) {
                 applicationContext.setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_LIGHT)
-              } else {
+              }
+              if (event.intensity <= 20 &&
+                this.context.config.colorMode === ConfigurationConstant.ColorMode.COLOR_MODE_LIGHT) {
                 applicationContext.setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_DARK)
               }
             } else {

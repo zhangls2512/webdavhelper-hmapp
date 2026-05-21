@@ -193,6 +193,7 @@ export async function importAccounts(context: Context, uri: string) {
     await promptAction.openToast({
       message: '导入成功'
     })
+    context.eventHub.emit('refreshSetting')
   } catch {
     await promptAction.openToast({
       message: '导入失败'
