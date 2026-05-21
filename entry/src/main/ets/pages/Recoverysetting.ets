@@ -125,6 +125,7 @@ struct Recoverysetting {
             .padding($r('sys.float.ohos_id_corner_radius_mark'))
 
             Button('保存')
+              .keyboardShortcut('S', [ModifierKey.CTRL])
               .margin({
                 top: $r('sys.float.ohos_id_elements_margin_vertical_l')
               })

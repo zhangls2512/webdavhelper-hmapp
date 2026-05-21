@@ -11,6 +11,12 @@ export default struct Reader {
     ReadPageComponent({
       controller: this.readerComponentController
     })
+      .keyboardShortcut(FunctionKey.DPAD_UP, [], () => {
+        this.readerComponentController.flipPage(false)
+      })
+      .keyboardShortcut(FunctionKey.DPAD_DOWN, [], () => {
+        this.readerComponentController.flipPage(true)
+      })
       .margin({
         top: $r('sys.float.ohos_id_elements_margin_vertical_m')
       })

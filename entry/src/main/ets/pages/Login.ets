@@ -183,6 +183,12 @@ export default struct Login {
                 })
                 return
               }
+              if (this.host.endsWith('/')) {
+                await promptAction.openToast({
+                  message: '系统自动添加路径分隔符，无需手动在主机末尾添加'
+                })
+                return
+              }
               if (this.port) {
                 const port = Number(this.port)
                 if (!Number.isInteger(port) || port <= 0 || port > 65535) {
