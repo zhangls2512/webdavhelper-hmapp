@@ -8,6 +8,12 @@
         "domains": [
           {
             "name": "api.zhangls2512.cn"
+          },
+          {
+            "name": "shenjack.top"
+          },
+          {
+            "name": "letsencrypt.org"
           }
         ],
         "cleartextTrafficPermitted": false

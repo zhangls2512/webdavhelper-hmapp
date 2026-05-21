@@ -14,10 +14,6 @@ export function encodePath(path: string) {
   return decodeURIComponent(path).split('/').map(item => encodeURIComponent(item)).join('/').replace(/^\/+/, '')
 }
 
-export function encodeAccountPath(accountPath: string) {
-  return accountPath.slice(0, accountPath.split('/').slice(0, 3).join('/').length)
-}
-
 export async function ls(context: Context, path: string) {
   const res = await webdavRequest(context, encodePath(path), 'PROPFIND', {
     Authorization: await getAccountAuthorization(context),
@@ -40,10 +36,11 @@ export async function ls(context: Context, path: string) {
           }
           const modifyTimeMatch = item.match(/<[^:]+:getlastmodified[^>]*>(.*?)<\/[^:]+:getlastmodified>/)
           if (modifyTimeMatch) {
-            const name = hrefMatch[1].replace(/^\/+|\/+$/g, '')
+            const hrefPath = hrefMatch[1].replace(/^\/+|\/+$/g, '')
+            const name = decodeURIComponent(hrefPath.substring(hrefPath.lastIndexOf('/') + 1))
             files.push({
-              path: name,
-              name: decodeURIComponent(name.substring(name.lastIndexOf('/') + 1)),
+              path: path + '/' + name,
+              name: name,
               isdir: isdir,
               size: size,
               modifyTime: Date.parse(modifyTimeMatch[1]),
@@ -67,8 +64,7 @@ export async function cp(context: Context, srcPath: string, destPath: string) {
   const accountInfo = await getAccountInfo(context)
   return await webdavRequest(context, encodePath(srcPath), 'COPY', {
     Authorization: await getAccountAuthorization(context),
-    Destination: encodeAccountPath(accountInfo.path) + '/' +
-      encodePath(destPath + '/' + srcPath.substring(srcPath.lastIndexOf('/') + 1)),
+    Destination: accountInfo.path + '/' + encodePath(destPath + '/' + srcPath.substring(srcPath.lastIndexOf('/') + 1)),
     Depth: 'infinity',
     Overwrite: 'T'
   })
@@ -78,8 +74,7 @@ export async function mv(context: Context, srcPath: string, destPath: string) {
   const accountInfo = await getAccountInfo(context)
   return await webdavRequest(context, encodePath(srcPath), 'MOVE', {
     Authorization: await getAccountAuthorization(context),
-    Destination: encodeAccountPath(accountInfo.path) + '/' +
-      encodePath(destPath + '/' + srcPath.substring(srcPath.lastIndexOf('/') + 1)),
+    Destination: accountInfo.path + '/' + encodePath(destPath + '/' + srcPath.substring(srcPath.lastIndexOf('/') + 1)),
     Overwrite: 'T'
   })
 }
@@ -88,8 +83,7 @@ export async function rn(context: Context, path: string, name: string) {
   const accountInfo = await getAccountInfo(context)
   return await webdavRequest(context, encodePath(path), 'MOVE', {
     Authorization: await getAccountAuthorization(context),
-    Destination: encodeAccountPath(accountInfo.path) + '/' +
-      encodePath(path.substring(0, path.lastIndexOf('/') + 1) + '/' + name),
+    Destination: accountInfo.path + '/' + encodePath(path.substring(0, path.lastIndexOf('/') + 1) + '/' + name),
     Overwrite: 'T'
   })
 }

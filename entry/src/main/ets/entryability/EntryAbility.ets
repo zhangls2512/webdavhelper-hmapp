@@ -20,6 +20,7 @@ import { netQuality } from '@kit.NetworkBoostKit'
 import { connection } from '@kit.NetworkKit'
 import { notificationManager } from '@kit.NotificationKit'
 import { hiAppEvent } from '@kit.PerformanceAnalysisKit'
+import { sensor } from '@kit.SensorServiceKit'
 import { harmonyShare, systemShare } from '@kit.ShareKit'
 import { generateBestAddress } from '../common/Account'
 import { clearNouseData } from '../common/Clearnousedata'
@@ -65,7 +66,7 @@ export default class EntryAbility extends UIAbility {
     try {
       const sharedData = await systemShare.getSharedData(want)
       const sharedRecords = sharedData.getRecords()
-      if (sharedRecords.length !== 0) {
+      if (sharedRecords.length > 0) {
         this.context.eventHub.emit('wantUri', sharedRecords[0].uri)
       }
     } catch {
@@ -426,6 +427,48 @@ export default class EntryAbility extends UIAbility {
     await this.windowInit(windowStage)
   }
 
+  async onForeground() {
+    const applicationContext = this.context.getApplicationContext()
+    const colorMode = getFlushPreference(this.context, 'commonSetting', 'colorMode', 0)
+    if (colorMode === 3) {
+      try {
+        await sensor.getSingleSensor(sensor.SensorId.AMBIENT_LIGHT)
+        let lastUpdateTime = 0
+        sensor.on(sensor.SensorId.AMBIENT_LIGHT, (event) => {
+          const currentTime = Date.now()
+          if (currentTime - lastUpdateTime >= 3000) {
+            const currentColorMode = getFlushPreference(this.context, 'commonSetting', 'colorMode', 0)
+            if (currentColorMode === 3) {
+              lastUpdateTime = currentTime
+              if (event.intensity >= 30 &&
+                this.context.config.colorMode === ConfigurationConstant.ColorMode.COLOR_MODE_DARK) {
+                applicationContext.setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_LIGHT)
+              }
+              if (event.intensity <= 20 &&
+                this.context.config.colorMode === ConfigurationConstant.ColorMode.COLOR_MODE_LIGHT) {
+                applicationContext.setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_DARK)
+              }
+            } else {
+              sensor.off(sensor.SensorId.AMBIENT_LIGHT)
+            }
+          }
+        })
+      } catch {
+      }
+    }
+  }
+
+  async onBackground() {
+    const colorMode = getFlushPreference(this.context, 'commonSetting', 'colorMode', 0)
+    if (colorMode === 3) {
+      try {
+        await sensor.getSingleSensor(sensor.SensorId.AMBIENT_LIGHT)
+        sensor.off(sensor.SensorId.AMBIENT_LIGHT)
+      } catch {
+      }
+    }
+  }
+
   async onPrepareToTerminateAsync(): Promise<boolean> {
     const statusBarExist = getTempPreference(this.context, 'statusBar', 'exist', false) as boolean
     if (statusBarExist) {
@@ -444,7 +487,7 @@ export default class EntryAbility extends UIAbility {
   }
 
   async onContinue(wantParam: Record<string, Object>) {
-    if (wantParam.version !== 9) {
+    if (wantParam.version !== 10) {
       await promptAction.openToast({
         message: '接续失败，原因：目标端应用版本号与发起端不匹配'
       })

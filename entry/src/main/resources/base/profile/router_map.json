@@ -6,6 +6,11 @@
       "buildFunction": "AddressgroupBuilder"
     },
     {
+      "name": "Dumpjsrawheapdata",
+      "pageSourceFile": "src/main/ets/pages/Dumpjsrawheapdata.ets",
+      "buildFunction": "DumpjsrawheapdataBuilder"
+    },
+    {
       "name": "Hmappsearch",
       "pageSourceFile": "src/main/ets/pages/Hmappsearch.ets",
       "buildFunction": "HmappsearchBuilder"

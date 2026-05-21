@@ -1,5 +1,5 @@
 import { common, wantConstant } from '@kit.AbilityKit'
-import { sendablePreferences } from '@kit.ArkData'
+import { sendablePreferences, unifiedDataChannel, uniformTypeDescriptor } from '@kit.ArkData'
 import { util } from '@kit.ArkTS'
 import { LoadingDialog, promptAction } from '@kit.ArkUI'
 import { fileIo, fileUri, picker } from '@kit.CoreFileKit'
@@ -24,7 +24,7 @@ import { getCurrentNetworkBearerType } from '../common/Network'
 import { getFlushPreference, setTempPreference } from '../common/Preference'
 import { getPreferType } from '../common/Prefertype'
 import { getSizeString, getTimeStringFromTimeStamp } from '../common/Stringformat'
-import { cp, encodeAccountPath, FileItem, ls, mv, rm } from '../common/Webdav'
+import { cp, FileItem, ls, mv, rm } from '../common/Webdav'
 import Newfolder from './Newfolder'
 import Player from './Player'
 import Progress from './Progress'
@@ -50,14 +50,15 @@ export default struct Filelist {
   @Local sortByValue: string = '类型'
   @Local sortDirectionIndex: number = 0
   @Local sortDirectionValue: string = '升序'
+  @Local searchKeyword: string = ''
   @Local multipleSelect: boolean = false
   @Local multipleSelectArray: FileItem[] = []
   @Local copyMovePath: string = ''
+  @Local remove: boolean | undefined = undefined
   @Local hoverId: number = -1
   UIContext = this.getUIContext()
   context = this.UIContext.getHostContext() as common.UIAbilityContext
   account = ''
-  remove = false
   src = ''
   srcName = ''
   editPath = ''
@@ -86,6 +87,7 @@ export default struct Filelist {
         this.dirnames = []
       }
       this.account = account
+      this.fileArray = []
       const fileArray = await ls(this.context, this.getPath())
       this.fileArray = this.sortFileArray(fileArray)
     }
@@ -118,6 +120,12 @@ export default struct Filelist {
       array = fileArray.sort((a, b) => b.modifyTime - a.modifyTime)
     }
     return array.filter(item => item.isdir).concat(array.filter(item => !item.isdir))
+  }
+
+  exitMultipleSelect() {
+    this.multipleSelect = false
+    this.multipleSelectArray = []
+    this.remove = undefined
   }
 
   @Builder
@@ -163,8 +171,7 @@ export default struct Filelist {
           content: '取消多选'
         })
           .onClick(() => {
-            this.multipleSelect = false
-            this.multipleSelectArray = []
+            this.exitMultipleSelect()
           })
       }
       if (!this.multipleSelect) {
@@ -298,7 +305,7 @@ export default struct Filelist {
                   })
                   this.isShowProgressSheet = true
                   try {
-                    const response = await session.get(encodeAccountPath(accountInfo.path) + '/' + item.path)
+                    const response = await session.get(accountInfo.path + '/' + item.path)
                     if (response.statusCode >= 200 && response.statusCode < 300) {
                       await promptAction.openToast({
                         message: '下载完成'
@@ -545,6 +552,7 @@ export default struct Filelist {
               }
               .borderRadius(20)
               .height(40)
+              .keyboardShortcut(FunctionKey.ESC, [])
               .margin({
                 right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
               })
@@ -565,8 +573,7 @@ export default struct Filelist {
                 .buildEffect())
               .width(40)
               .onClick(() => {
-                this.multipleSelect = false
-                this.multipleSelectArray = []
+                this.exitMultipleSelect()
               })
 
               Text('已选择 ' + this.multipleSelectArray.length + ' 项')
@@ -631,115 +638,183 @@ export default struct Filelist {
                 await promptAction.openToast({
                   message: array.length + ' 项传输任务已添加'
                 })
-                this.multipleSelect = false
-                this.multipleSelectArray = []
+                this.exitMultipleSelect()
               })
 
-              Column() {
-                Image($r('app.media.copy'))
-              }
-              .borderRadius(20)
-              .height(40)
-              .margin({
-                right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
-              })
-              .padding(11)
-              .stateStyles({
-                normal: {
-                  .backgroundColor($r('sys.color.interactive_hover'))
-                },
-                pressed: {
-                  .backgroundColor($r('sys.color.interactive_pressed'))
+              if (this.remove !== undefined) {
+                Column() {
+                  Image($r('app.media.confirm'))
                 }
-              })
-              .visualEffect(new hdsEffect.HdsEffectBuilder()
-                .pointLight({
-                  sourceType: hdsEffect.PointLightSourceType.SOFT,
-                  illuminatedType: hdsEffect.PointLightIlluminatedType.BORDER_CONTENT
+                .borderRadius(20)
+                .height(40)
+                .keyboardShortcut('V', [ModifierKey.CTRL])
+                .margin({
+                  right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
                 })
-                .buildEffect())
-              .width(40)
-              .onClick(async () => {
-                if (this.multipleSelectArray.length === 0) {
-                  await promptAction.openToast({
-                    message: '未选择'
+                .padding(11)
+                .stateStyles({
+                  normal: {
+                    .backgroundColor($r('sys.color.interactive_hover'))
+                  },
+                  pressed: {
+                    .backgroundColor($r('sys.color.interactive_pressed'))
+                  }
+                })
+                .visualEffect(new hdsEffect.HdsEffectBuilder()
+                  .pointLight({
+                    sourceType: hdsEffect.PointLightSourceType.SOFT,
+                    illuminatedType: hdsEffect.PointLightIlluminatedType.BORDER_CONTENT
                   })
-                  return
-                }
-                for (let i = 0; i < this.multipleSelectArray.length; i++) {
-                  const item = this.multipleSelectArray[i]
-                  const dialogControllerProgress = new CustomDialogController({
-                    builder: LoadingDialog({
-                      content: '正在复制文件，进度：' + (i + 1) + '/' + this.multipleSelectArray.length
+                  .buildEffect())
+                .width(40)
+                .onClick(async () => {
+                  let text = ''
+                  if (!this.remove) {
+                    text = '复制'
+                  }
+                  if (this.remove) {
+                    text = '移动'
+                  }
+                  if (this.multipleSelectArray.length === 0) {
+                    await promptAction.openToast({
+                      message: '未选择'
                     })
-                  })
-                  dialogControllerProgress.open()
-                  await cp(this.context, item.path, this.getPath())
-                  dialogControllerProgress.close()
-                }
-                this.multipleSelect = false
-                this.multipleSelectArray = []
-                await promptAction.openToast({
-                  message: '复制成功'
-                })
-                this.loading = true
-              })
-
-              Column() {
-                Image($r('app.media.move'))
-              }
-              .borderRadius(20)
-              .height(40)
-              .margin({
-                right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
-              })
-              .padding(11)
-              .stateStyles({
-                normal: {
-                  .backgroundColor($r('sys.color.interactive_hover'))
-                },
-                pressed: {
-                  .backgroundColor($r('sys.color.interactive_pressed'))
-                }
-              })
-              .visualEffect(new hdsEffect.HdsEffectBuilder()
-                .pointLight({
-                  sourceType: hdsEffect.PointLightSourceType.SOFT,
-                  illuminatedType: hdsEffect.PointLightIlluminatedType.BORDER_CONTENT
-                })
-                .buildEffect())
-              .width(40)
-              .onClick(async () => {
-                if (this.multipleSelectArray.length === 0) {
-                  await promptAction.openToast({
-                    message: '未选择'
-                  })
-                  return
-                }
-                for (let i = 0; i < this.multipleSelectArray.length; i++) {
-                  const item = this.multipleSelectArray[i]
-                  const dialogControllerProgress = new CustomDialogController({
-                    builder: LoadingDialog({
-                      content: '正在移动文件，进度：' + (i + 1) + '/' + this.multipleSelectArray.length
+                    return
+                  }
+                  for (let i = 0; i < this.multipleSelectArray.length; i++) {
+                    const item = this.multipleSelectArray[i]
+                    const dialogControllerProgress = new CustomDialogController({
+                      builder: LoadingDialog({
+                        content: '正在' + text + '文件，进度：' + (i + 1) + '/' + this.multipleSelectArray.length
+                      })
                     })
+                    dialogControllerProgress.open()
+                    if (!this.remove) {
+                      await cp(this.context, item.path, this.getPath())
+                    }
+                    if (this.remove) {
+                      await mv(this.context, item.path, this.getPath())
+                    }
+                    dialogControllerProgress.close()
+                  }
+                  this.exitMultipleSelect()
+                  await promptAction.openToast({
+                    message: text + '成功'
                   })
-                  dialogControllerProgress.open()
-                  await mv(this.context, item.path, this.getPath())
-                  dialogControllerProgress.close()
-                }
-                this.multipleSelect = false
-                this.multipleSelectArray = []
-                await promptAction.openToast({
-                  message: '移动成功'
+                  this.loading = true
                 })
-                this.loading = true
-              })
+              }
+              if (this.remove === undefined) {
+                Column() {
+                  Image($r('app.media.copy'))
+                }
+                .borderRadius(20)
+                .height(40)
+                .keyboardShortcut('C', [ModifierKey.CTRL], () => {
+                  this.remove = false
+                })
+                .margin({
+                  right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
+                })
+                .padding(11)
+                .stateStyles({
+                  normal: {
+                    .backgroundColor($r('sys.color.interactive_hover'))
+                  },
+                  pressed: {
+                    .backgroundColor($r('sys.color.interactive_pressed'))
+                  }
+                })
+                .visualEffect(new hdsEffect.HdsEffectBuilder()
+                  .pointLight({
+                    sourceType: hdsEffect.PointLightSourceType.SOFT,
+                    illuminatedType: hdsEffect.PointLightIlluminatedType.BORDER_CONTENT
+                  })
+                  .buildEffect())
+                .width(40)
+                .onClick(async () => {
+                  if (this.multipleSelectArray.length === 0) {
+                    await promptAction.openToast({
+                      message: '未选择'
+                    })
+                    return
+                  }
+                  for (let i = 0; i < this.multipleSelectArray.length; i++) {
+                    const item = this.multipleSelectArray[i]
+                    const dialogControllerProgress = new CustomDialogController({
+                      builder: LoadingDialog({
+                        content: '正在复制文件，进度：' + (i + 1) + '/' + this.multipleSelectArray.length
+                      })
+                    })
+                    dialogControllerProgress.open()
+                    await cp(this.context, item.path, this.getPath())
+                    dialogControllerProgress.close()
+                  }
+                  this.exitMultipleSelect()
+                  await promptAction.openToast({
+                    message: '复制成功'
+                  })
+                  this.loading = true
+                })
 
+                Column() {
+                  Image($r('app.media.move'))
+                }
+                .borderRadius(20)
+                .height(40)
+                .keyboardShortcut('X', [ModifierKey.CTRL], () => {
+                  this.remove = true
+                })
+                .margin({
+                  right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
+                })
+                .padding(11)
+                .stateStyles({
+                  normal: {
+                    .backgroundColor($r('sys.color.interactive_hover'))
+                  },
+                  pressed: {
+                    .backgroundColor($r('sys.color.interactive_pressed'))
+                  }
+                })
+                .visualEffect(new hdsEffect.HdsEffectBuilder()
+                  .pointLight({
+                    sourceType: hdsEffect.PointLightSourceType.SOFT,
+                    illuminatedType: hdsEffect.PointLightIlluminatedType.BORDER_CONTENT
+                  })
+                  .buildEffect())
+                .width(40)
+                .onClick(async () => {
+                  if (this.multipleSelectArray.length === 0) {
+                    await promptAction.openToast({
+                      message: '未选择'
+                    })
+                    return
+                  }
+                  for (let i = 0; i < this.multipleSelectArray.length; i++) {
+                    const item = this.multipleSelectArray[i]
+                    const dialogControllerProgress = new CustomDialogController({
+                      builder: LoadingDialog({
+                        content: '正在移动文件，进度：' + (i + 1) + '/' + this.multipleSelectArray.length
+                      })
+                    })
+                    dialogControllerProgress.open()
+                    await mv(this.context, item.path, this.getPath())
+                    dialogControllerProgress.close()
+                  }
+                  this.exitMultipleSelect()
+                  await promptAction.openToast({
+                    message: '移动成功'
+                  })
+                  this.loading = true
+                })
+              }
               Column() {
                 Image($r('app.media.delete'))
               }
               .borderRadius(20)
               .height(40)
+              .keyboardShortcut('D', [ModifierKey.CTRL])
               .padding(11)
               .stateStyles({
                 normal: {
@@ -790,8 +865,7 @@ export default struct Filelist {
                     await rm(this.context, item.path)
                     dialogControllerProgress.close()
                   }
-                  this.multipleSelect = false
-                  this.multipleSelectArray = []
+                  this.exitMultipleSelect()
                   await promptAction.openToast({
                     message: '删除成功'
                   })
@@ -930,12 +1004,24 @@ export default struct Filelist {
             }
           })
 
+          Search({
+            placeholder: '请输入搜索关键词',
+            value: this.searchKeyword!!
+          })
+            .searchButton('搜索')
+            .onSubmit(async (value) => {
+              this.dialogControllerProgress.open()
+              await this.get()
+              this.dialogControllerProgress.close()
+              this.fileArray = this.sortFileArray(this.fileArray.filter(item => item.name.includes(value)))
+            })
           Row() {
             Column() {
               Image($r('app.media.newfolder'))
             }
             .borderRadius(20)
             .height(40)
+            .keyboardShortcut('N', [ModifierKey.CTRL, ModifierKey.SHIFT])
             .padding(11)
             .stateStyles({
               normal: {
@@ -1028,6 +1114,7 @@ export default struct Filelist {
               }
               .borderRadius(20)
               .height(40)
+              .keyboardShortcut(FunctionKey.ESC, [])
               .margin({
                 right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
               })
@@ -1049,7 +1136,7 @@ export default struct Filelist {
               .width(40)
               .onClick(() => {
                 this.copyMovePath = ''
-                this.remove = false
+                this.remove = undefined
               })
 
               Column() {
@@ -1109,6 +1196,7 @@ export default struct Filelist {
                 }
                 .borderRadius(20)
                 .height(40)
+                .keyboardShortcut('A', [ModifierKey.CTRL])
                 .padding(11)
                 .stateStyles({
                   normal: {
@@ -1206,8 +1294,9 @@ export default struct Filelist {
                           .onChange(isOn => {
                             const exist = this.multipleSelectArray.find(selectItem => selectItem.path === item.path)
                             if (!isOn && exist) {
-                              this.multipleSelectArray.splice(this.multipleSelectArray.findIndex(selectItem => selectItem.path ===
-                                item.path), 1)
+                              this.multipleSelectArray.splice(
+                                this.multipleSelectArray.findIndex(selectItem => selectItem.path ===
+                                  item.path), 1)
                             }
                             if (isOn && !exist) {
                               this.multipleSelectArray.push(item)
@@ -1258,6 +1347,7 @@ export default struct Filelist {
                         .height(12)
                         .width(12)
                     }
+                    .allowDrop([uniformTypeDescriptor.UniformDataType.PLAIN_TEXT])
                     .borderRadius(12)
                     .padding({
                       bottom: 12,
@@ -1267,8 +1357,7 @@ export default struct Filelist {
                     })
                     .stateStyles({
                       normal: {
-                        .backgroundColor(this.hoverId === index ? $r('sys.color.interactive_hover') :
-                          $r('sys.color.background_secondary'))
+                        .backgroundColor(this.hoverId === index ? $r('sys.color.interactive_hover') : '')
                       },
                       pressed: {
                         .backgroundColor($r('sys.color.comp_background_secondary'))
@@ -1287,8 +1376,9 @@ export default struct Filelist {
                         if (this.multipleSelect) {
                           const exist = this.multipleSelectArray.find(selectItem => selectItem.path === item.path)
                           if (exist) {
-                            this.multipleSelectArray.splice(this.multipleSelectArray.findIndex(selectItem => selectItem.path ===
-                              item.path), 1)
+                            this.multipleSelectArray.splice(
+                              this.multipleSelectArray.findIndex(selectItem => selectItem.path ===
+                                item.path), 1)
                           }
                           if (!exist) {
                             this.multipleSelectArray.push(item)
@@ -1407,7 +1497,7 @@ export default struct Filelist {
                           })
                           this.isShowProgressSheet = true
                           try {
-                            const response = await session.get(encodeAccountPath(accountInfo.path) + '/' + item.path)
+                            const response = await session.get(accountInfo.path + '/' + item.path)
                             if (response.statusCode >= 200 && response.statusCode < 300) {
                               const uri = fileUri.getUriFromPath(filePath)
                               const filePreviewType =
@@ -1494,8 +1584,79 @@ export default struct Filelist {
                       hapticFeedbackMode: HapticFeedbackMode.AUTO
                     })
                   }
-                  .borderRadius($r('sys.float.ohos_id_corner_radius_default_l'))
                 }
+                .borderRadius($r('sys.float.ohos_id_corner_radius_default_l'))
+                .selected(this.multipleSelectArray.some(selectItem => selectItem.path === item.path))
+                .onDragStart(event => {
+                  event.dragBehavior = DragBehavior.MOVE
+                  const data = new unifiedDataChannel.PlainText()
+                  if (!this.multipleSelect) {
+                    data.textContent = JSON.stringify([item.path])
+                  }
+                  if (this.multipleSelect) {
+                    data.textContent = JSON.stringify(this.multipleSelectArray.map(item => item.path))
+                  }
+                  event.setData(new unifiedDataChannel.UnifiedData(data))
+                })
+                .onDrop(event => {
+                  event.dragBehavior = DragBehavior.MOVE
+                  if (event.isRemote() || event.getDragSource() !== 'com.zhuzx.webdavhelper') {
+                    event.setResult(DragResult.DROP_DISABLED)
+                    return
+                  }
+                  if (!item.isdir) {
+                    event.setResult(DragResult.DROP_DISABLED)
+                    return
+                  }
+                  event.setResult(DragResult.DRAG_SUCCESSFUL)
+                  event.getData().getRecords().forEach(async (recordItem) => {
+                    if (recordItem.getType() === uniformTypeDescriptor.UniformDataType.PLAIN_TEXT) {
+                      const data = recordItem as unifiedDataChannel.PlainText
+                      const paths = JSON.parse(data.textContent) as string[]
+                      if (paths.length === 1) {
+                        this.dialogControllerProgress.open()
+                        const res = await mv(this.context, paths[0], item.path)
+                        this.dialogControllerProgress.close()
+                        if (res !== 'fail') {
+                          await promptAction.openToast({
+                            message: '移动成功'
+                          })
+                          this.loading = true
+                        }
+                      }
+                      if (paths.length > 1) {
+                        for (let i = 0; i < paths.length; i++) {
+                          const path = paths[i]
+                          const dialogControllerProgress = new CustomDialogController({
+                            builder: LoadingDialog({
+                              content: '正在移动文件，进度：' + (i + 1) + '/' + paths.length
+                            })
+                          })
+                          dialogControllerProgress.open()
+                          await mv(this.context, path, item.path)
+                          dialogControllerProgress.close()
+                        }
+                        this.exitMultipleSelect()
+                        await promptAction.openToast({
+                          message: '移动成功'
+                        })
+                        this.loading = true
+                      }
+                    }
+                  })
+                })
+                .onSelect(isSelected => {
+                  if (!isSelected) {
+                    this.multipleSelectArray =
+                      this.multipleSelectArray.filter(selectItem => selectItem.path !== item.path)
+                  }
+                  if (isSelected) {
+                    this.multipleSelect = true
+                    if (!this.multipleSelectArray.find(selectItem => selectItem.path === item.path)) {
+                      this.multipleSelectArray.push(item)
+                    }
+                  }
+                })
               })
               ListItem()
                 .margin({
@@ -1512,7 +1673,12 @@ export default struct Filelist {
                   }
                 })
             }
+            .height('100%')
+            .multiSelectable(true)
           }
+          .keyboardShortcut('R', [ModifierKey.CTRL], () => {
+            this.loading = true
+          })
           .layoutWeight(1)
           .onRefreshing(async () => {
             await this.get()
@@ -1544,10 +1710,8 @@ export default struct Filelist {
         }
       })
       this.context.eventHub.on('refreshFilelist', () => {
-        this.multipleSelect = false
-        this.multipleSelectArray = []
+        this.exitMultipleSelect()
         this.copyMovePath = ''
-        this.remove = false
         this.loading = true
       })
       const showAccountlistAfterAppLaunch =
