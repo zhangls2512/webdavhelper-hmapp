@@ -288,8 +288,7 @@ export default struct Filelist {
                       },
                       security: {
                         remoteValidation: getFlushPreference(this.context, 'debugSetting',
-                          'closeRemoteValidationWhenLinkWebdav',
-                          'system') as 'system' | 'skip',
+                          'closeRemoteValidationWhenLinkWebdav', 'system') as 'system' | 'skip',
                         tlsRange: {
                           min: 'TlsV1.2'
                         }
@@ -697,6 +696,7 @@ export default struct Filelist {
                     }
                     dialogControllerProgress.close()
                   }
+                  this.remove = undefined
                   this.exitMultipleSelect()
                   await promptAction.openToast({
                     message: text + '成功'
@@ -1480,8 +1480,7 @@ export default struct Filelist {
                               },
                               security: {
                                 remoteValidation: getFlushPreference(this.context, 'debugSetting',
-                                  'closeRemoteValidationWhenLinkWebdav',
-                                  'system') as 'system' | 'skip',
+                                  'closeRemoteValidationWhenLinkWebdav', 'system') as 'system' | 'skip',
                                 tlsRange: {
                                   min: 'TlsV1.2'
                                 }
@@ -1636,6 +1635,7 @@ export default struct Filelist {
                           await mv(this.context, path, item.path)
                           dialogControllerProgress.close()
                         }
+                        this.remove = undefined
                         this.exitMultipleSelect()
                         await promptAction.openToast({
                           message: '移动成功'
@@ -1712,6 +1712,7 @@ export default struct Filelist {
       this.context.eventHub.on('refreshFilelist', () => {
         this.exitMultipleSelect()
         this.copyMovePath = ''
+        this.remove = undefined
         this.loading = true
       })
       const showAccountlistAfterAppLaunch =

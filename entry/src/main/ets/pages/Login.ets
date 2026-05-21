@@ -230,8 +230,7 @@ export default struct Login {
                   },
                   security: {
                     remoteValidation: getFlushPreference(this.context, 'debugSetting',
-                      'closeRemoteValidationWhenLinkWebdav',
-                      'system') as 'system' | 'skip',
+                      'closeRemoteValidationWhenLinkWebdav', 'system') as 'system' | 'skip',
                     tlsRange: {
                       min: 'TlsV1.2'
                     }
