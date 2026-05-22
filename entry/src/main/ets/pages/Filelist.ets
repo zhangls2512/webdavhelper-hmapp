@@ -696,8 +696,8 @@ export default struct Filelist {
                     }
                     dialogControllerProgress.close()
                   }
-                  this.remove = undefined
                   this.exitMultipleSelect()
+                  this.remove = undefined
                   await promptAction.openToast({
                     message: text + '成功'
                   })
@@ -1635,8 +1635,8 @@ export default struct Filelist {
                           await mv(this.context, path, item.path)
                           dialogControllerProgress.close()
                         }
-                        this.remove = undefined
                         this.exitMultipleSelect()
+                        this.remove = undefined
                         await promptAction.openToast({
                           message: '移动成功'
                         })
@@ -1710,6 +1710,7 @@ export default struct Filelist {
         }
       })
       this.context.eventHub.on('refreshFilelist', () => {
+        this.searchKeyword = ''
         this.exitMultipleSelect()
         this.copyMovePath = ''
         this.remove = undefined
