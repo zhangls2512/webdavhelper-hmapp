@@ -1347,7 +1347,6 @@ export default struct Filelist {
                         .height(12)
                         .width(12)
                     }
-                    .allowDrop([uniformTypeDescriptor.UniformDataType.PLAIN_TEXT])
                     .borderRadius(12)
                     .padding({
                       bottom: 12,
@@ -1584,6 +1583,7 @@ export default struct Filelist {
                     })
                   }
                 }
+                .allowDrop([uniformTypeDescriptor.UniformDataType.PLAIN_TEXT])
                 .borderRadius($r('sys.float.ohos_id_corner_radius_default_l'))
                 .selected(this.multipleSelectArray.some(selectItem => selectItem.path === item.path))
                 .onDragStart(event => {
