@@ -9,6 +9,7 @@ import { hdsMaterial, HdsNavDestination, HdsNavDestinationTitleMode, ScrollEffec
 import { generateBestAddress } from '../common/Account'
 import { checkPermission, getPermission } from '../common/Permission'
 import { getFlushPreference, setFlushPreference } from '../common/Preference'
+import { restartApp } from '../common/Restartapp'
 
 @Builder
 export function CommonsettingBuilder() {
@@ -105,11 +106,7 @@ struct Commonsetting {
                       ]
                     })
                     if (data.index === 1) {
-                      const applicationContext = this.context.getApplicationContext()
-                      applicationContext.restartApp({
-                        bundleName: 'com.zhuzx.webdavhelper',
-                        abilityName: 'EntryAbility'
-                      })
+                      await restartApp(this.context, this.UIContext)
                     }
                   })
               }
@@ -173,11 +170,7 @@ struct Commonsetting {
                       ]
                     })
                     if (data.index === 1) {
-                      const applicationContext = this.context.getApplicationContext()
-                      applicationContext.restartApp({
-                        bundleName: 'com.zhuzx.webdavhelper',
-                        abilityName: 'EntryAbility'
-                      })
+                      await restartApp(this.context, this.UIContext)
                     }
                   })
               }
@@ -265,11 +258,7 @@ struct Commonsetting {
                         ]
                       })
                       if (data.index === 1) {
-                        const applicationContext = this.context.getApplicationContext()
-                        applicationContext.restartApp({
-                          bundleName: 'com.zhuzx.webdavhelper',
-                          abilityName: 'EntryAbility'
-                        })
+                        await restartApp(this.context, this.UIContext)
                       }
                     })
                 }
@@ -348,11 +337,7 @@ struct Commonsetting {
                         ]
                       })
                       if (data.index === 1) {
-                        const applicationContext = this.context.getApplicationContext()
-                        applicationContext.restartApp({
-                          bundleName: 'com.zhuzx.webdavhelper',
-                          abilityName: 'EntryAbility'
-                        })
+                        await restartApp(this.context, this.UIContext)
                       }
                     }
                   })
@@ -395,11 +380,7 @@ struct Commonsetting {
                         ]
                       })
                       if (data.index === 1) {
-                        const applicationContext = this.context.getApplicationContext()
-                        applicationContext.restartApp({
-                          bundleName: 'com.zhuzx.webdavhelper',
-                          abilityName: 'EntryAbility'
-                        })
+                        await restartApp(this.context, this.UIContext)
                       }
                     })
                 }

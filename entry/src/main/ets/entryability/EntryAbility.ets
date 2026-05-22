@@ -110,7 +110,7 @@ export default class EntryAbility extends UIAbility {
     const errorLogDir = this.context.filesDir + '/log/error/'
     errorManager.on('error', {
       async onUnhandledException(errMsg) {
-        if (getFlushPreference(this.context, 'debugSetting', 'globalErrorShowType', 0) === 0) {
+        if (getFlushPreference(context, 'debugSetting', 'globalErrorShowType', 0) === 0) {
           await promptAction.openToast({
             message: 'js 运行异常：' + errMsg
           })
@@ -125,21 +125,16 @@ export default class EntryAbility extends UIAbility {
             stack: err.stack
           }
         }
-        if (getFlushPreference(this.context, 'debugSetting', 'saveErrorLog', true)) {
+        if (getFlushPreference(context, 'debugSetting', 'saveErrorLog', true)) {
           await write(errorLogDir + Date.now() + '.txt', JSON.stringify(object))
         }
-        if (getFlushPreference(this.context, 'debugSetting', 'globalErrorShowType', 0) === 0) {
-          await promptAction.openToast({
-            message: 'js 运行异常，错误名称：' + err.name + '，错误信息：' + err.message
-          })
-        }
-        if (getFlushPreference(this.context, 'debugSetting', 'globalErrorShowType', 0) === 1) {
+        if (getFlushPreference(context, 'debugSetting', 'globalErrorShowType', 0) === 1) {
           context.eventHub.emit('dialog', 'js 运行异常', '名称：' + err.name + '\n信息：' + err.message)
         }
-        if (getFlushPreference(this.context, 'debugSetting', 'autoUploadErrorLog', true) &&
-          getFlushPreference(this.context, 'commonSetting', 'allService', true)) {
-          if ((getFlushPreference(this.context, 'debugSetting', 'autoUploadErrorLogType',
-            ['JS_ERROR', 'APP_CRASH']) as string[]).includes('JS_ERROR')) {
+        if (getFlushPreference(context, 'debugSetting', 'autoUploadErrorLog', true) &&
+          getFlushPreference(context, 'commonSetting', 'allService', true)) {
+          if ((getFlushPreference(context, 'debugSetting', 'autoUploadErrorLogType', ['JS_ERROR', 'APP_CRASH']) as
+            string[]).includes('JS_ERROR')) {
             context.eventHub.emit('uploadErrorLog', object.name, JSON.stringify(object))
           }
         }

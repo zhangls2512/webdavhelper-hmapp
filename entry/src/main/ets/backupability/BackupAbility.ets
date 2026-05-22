@@ -1,6 +1,6 @@
 import { BackupExtensionAbility } from '@kit.CoreFileKit'
 
-export default class BackupExtension extends BackupExtensionAbility {
+export default class BackupAbility extends BackupExtensionAbility {
   onBackup() {
   }
 
