@@ -128,7 +128,7 @@ export function getAccountHash(accountInfo: AccountInfo, context?: Context, path
   }
 }
 
-export async function getAccountList(context: Context, bestPath = false): Promise<AccountInfo[]> {
+export async function getAccountList(context: Context, bestPath = false) {
   const appAccountManager = appAccount.createAppAccountManager()
   const appAccountIds = await appAccountManager.getAccountsByOwner('com.zhuzx.webdavhelper')
   const appAccounts: AccountInfo[] = []

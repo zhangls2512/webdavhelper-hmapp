@@ -1660,7 +1660,7 @@ export default struct Filelist {
               })
               ListItem()
                 .margin({
-                  bottom: this.preferType === 0 ? 80 : 0
+                  bottom: 80
                 })
                 .bindSheet(this.isShowProgressSheet!!, this.ProgressSheetBuilder(), {
                   height: SheetSize.FIT_CONTENT,

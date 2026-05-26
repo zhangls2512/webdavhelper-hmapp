@@ -3,5 +3,4 @@
 -enable-export-obfuscation
 -enable-filename-obfuscation
 -compact
--remove-comments
 -remove-log
