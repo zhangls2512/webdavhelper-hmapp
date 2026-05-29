@@ -53,7 +53,8 @@
             "useNormalizedOHMUrl": true,
             "caseSensitiveCheck": true,
             "harLocalDependencyCheck": true,
-            "enableStrictCheckOHModule": true
+            "enableStrictCheckOHModule": true,
+            "strictCheckerOnly": true
           },
           "preloadSystemSo": true
         },

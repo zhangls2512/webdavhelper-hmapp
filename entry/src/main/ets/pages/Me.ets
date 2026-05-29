@@ -221,7 +221,7 @@ export default struct Me {
             .role(ButtonRole.ERROR)
             .width('100%')
             .onClick(async () => {
-              await exitAccount(this.context)
+              await exitAccount()
               await promptAction.openToast({
                 message: '退出成功'
               })

@@ -1,9 +1,9 @@
 import { common } from '@kit.AbilityKit'
 import { url } from '@kit.ArkTS'
 import { LengthMetrics, LoadingDialog, promptAction } from '@kit.ArkUI'
-import { rcp } from '@kit.RemoteCommunicationKit'
 import { hdsMaterial, HdsNavDestination, HdsNavDestinationTitleMode, ScrollEffectType } from '@kit.UIDesignKit'
 import openLink from '../common/Openlink'
+import { defaultGlobalSession } from '../common/Request'
 import { Type } from './Autouploaderrorlogtype'
 
 interface Body {
@@ -458,16 +458,14 @@ struct Hmappsearch {
                   })
                 })
                 dialogControllerProgress.open()
-                const session = rcp.createSession()
                 try {
-                  const response =
-                    await session.post('https://shenjack.top:10003/api/v0/apps/query?' + new url.URLParams({
+                  const response = await defaultGlobalSession.post(
+                    'https://shenjack.top:10003/api/v0/apps/query?' + new url.URLParams({
                       page: String(this.page),
                       page_size: String(this.pageSize),
                       sort: 'download_count',
                       desc: String(true)
                     }).toString(), body)
-                  session.close()
                   dialogControllerProgress.close()
                   if (response.statusCode >= 200 && response.statusCode < 300) {
                     const res = JSON.parse(String(response)) as Response
@@ -486,7 +484,6 @@ struct Hmappsearch {
                     })
                   }
                 } catch (err) {
-                  session.close()
                   dialogControllerProgress.close()
                   await promptAction.openToast({
                     message: '发生错误，错误码：' + err.code

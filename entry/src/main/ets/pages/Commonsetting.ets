@@ -44,8 +44,12 @@ struct Commonsetting {
   @Local downloadDirectoryValue: string = '应用'
   @Local filePreviewTypeIndex: number = 0
   @Local filePreviewTypeValue: string = '系统预览'
-  @Local onlinePreviewMedia: boolean = false
   @Local selectFileDownloadPath: boolean = false
+  @Local operationWhenDownloadConflictIndex: number = 0
+  @Local operationWhenDownloadConflictValue: string = '重命名'
+  @Local onlinePreviewMedia: boolean = false
+  @Local operationWhenCopyMoveConflictIndex: number = 0
+  @Local operationWhenCopyMoveConflictValue: string = '跳过'
   @Local showAccountlistAfterAppLaunch: boolean = false
   @Local cellularDataUseRemindIndex: number = 0
   @Local cellularDataUseRemindValue: string = '始终'
@@ -573,36 +577,26 @@ struct Commonsetting {
           top: $r('sys.float.ohos_id_elements_margin_vertical_l')
         })
 
-        if (deviceInfo.deviceType !== 'phone') {
-          ListItem() {
+        ListItem() {
+          Column() {
+            Text('传输')
+              .fontColor($r('sys.color.font_secondary'))
+              .fontSize($r('sys.float.ohos_id_text_size_body2'))
+              .fontWeight(FontWeight.Medium)
+              .margin({
+                bottom: 6,
+                left: 12,
+                right: 12
+              })
             Column() {
-              Text('传输')
-                .fontColor($r('sys.color.font_secondary'))
-                .fontSize($r('sys.float.ohos_id_text_size_body2'))
-                .fontWeight(FontWeight.Medium)
-                .margin({
-                  bottom: 6,
-                  left: 12,
-                  right: 12
-                })
-              Column() {
+              if (deviceInfo.deviceType !== 'phone') {
                 Row() {
-                  Column() {
-                    Text('下载目录')
-                      .fontWeight(FontWeight.Medium)
-                    Text('新下载的文件会覆盖下载前下载目录中已有的同名文件')
-                      .fontColor($r('sys.color.font_secondary'))
-                      .fontSize($r('sys.float.ohos_id_text_size_body2'))
-                      .margin({
-                        top: $r('sys.float.ohos_id_text_margin_vertical')
-                      })
-                  }
-                  .alignItems(HorizontalAlign.Start)
-                  .layoutWeight(1)
-                  .margin({
-                    right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
-                  })
-
+                  Text('下载目录')
+                    .fontWeight(FontWeight.Medium)
+                    .layoutWeight(1)
+                    .margin({
+                      right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
+                    })
                   Select([
                     { value: '应用' },
                     { value: '系统' }
@@ -624,17 +618,66 @@ struct Commonsetting {
                 }
                 .borderRadius(12)
                 .padding(12)
+
+                Divider()
+                  .padding({
+                    left: 12,
+                    right: 12
+                  })
               }
-              .backgroundColor($r('sys.color.ohos_id_color_card_bg'))
-              .borderRadius($r('sys.float.ohos_id_corner_radius_default_l'))
-              .padding($r('sys.float.ohos_id_corner_radius_mark'))
+              Row() {
+                Text('自定义下载位置')
+                  .fontWeight(FontWeight.Medium)
+                  .layoutWeight(1)
+                  .margin({
+                    right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
+                  })
+                Toggle({
+                  type: ToggleType.Switch,
+                  isOn: this.selectFileDownloadPath!!
+                })
+                  .onChange(isOn => {
+                    setFlushPreference(this.context, 'commonSetting', 'selectFileDownloadPath', isOn)
+                  })
+              }
+              .borderRadius(12)
+              .padding(12)
+
+              Divider()
+                .padding({
+                  left: 12,
+                  right: 12
+                })
+              Row() {
+                Text('下载冲突时操作')
+                  .fontWeight(FontWeight.Medium)
+                  .layoutWeight(1)
+                  .margin({
+                    right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
+                  })
+                Select([
+                  { value: '重命名' },
+                  { value: '覆盖' }
+                ])
+                  .selected(this.operationWhenDownloadConflictIndex!!)
+                  .value(this.operationWhenDownloadConflictValue!!)
+                  .onSelect(index => {
+                    setFlushPreference(this.context, 'commonSetting', 'operationWhenDownloadConflict', index)
+                  })
+              }
+              .borderRadius(12)
+              .padding(12)
             }
-            .alignItems(HorizontalAlign.Start)
+            .backgroundColor($r('sys.color.ohos_id_color_card_bg'))
+            .borderRadius($r('sys.float.ohos_id_corner_radius_default_l'))
+            .padding($r('sys.float.ohos_id_corner_radius_mark'))
           }
-          .margin({
-            top: $r('sys.float.ohos_id_elements_margin_vertical_l')
-          })
+          .alignItems(HorizontalAlign.Start)
         }
+        .margin({
+          top: $r('sys.float.ohos_id_elements_margin_vertical_l')
+        })
+
         ListItem() {
           Column() {
             Text('文件')
@@ -707,18 +750,20 @@ struct Commonsetting {
                   right: 12
                 })
               Row() {
-                Text('自定义下载位置')
+                Text('复制、移动冲突时操作')
                   .fontWeight(FontWeight.Medium)
                   .layoutWeight(1)
                   .margin({
                     right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
                   })
-                Toggle({
-                  type: ToggleType.Switch,
-                  isOn: this.selectFileDownloadPath!!
-                })
-                  .onChange(isOn => {
-                    setFlushPreference(this.context, 'commonSetting', 'selectFileDownloadPath', isOn)
+                Select([
+                  { value: '跳过' },
+                  { value: '覆盖' }
+                ])
+                  .selected(this.operationWhenCopyMoveConflictIndex!!)
+                  .value(this.operationWhenCopyMoveConflictValue!!)
+                  .onSelect(index => {
+                    setFlushPreference(this.context, 'commonSetting', 'operationWhenCopyMoveConflict', index)
                   })
               }
               .borderRadius(12)
@@ -1046,6 +1091,17 @@ struct Commonsetting {
       if (downloadDirectory === 1 && getPermission('ohos.permission.READ_WRITE_DOWNLOAD_DIRECTORY')) {
         this.downloadDirectoryValue = '系统'
       }
+      this.selectFileDownloadPath =
+        getFlushPreference(this.context, 'commonSetting', 'selectFileDownloadPath', false) as boolean
+      const operationWhenDownloadConflict =
+        getFlushPreference(this.context, 'commonSetting', 'operationWhenDownloadConflict', 0)
+      this.operationWhenDownloadConflictIndex = operationWhenDownloadConflict as number
+      if (operationWhenDownloadConflict === 0) {
+        this.operationWhenDownloadConflictValue = '重命名'
+      }
+      if (operationWhenDownloadConflict === 1) {
+        this.operationWhenDownloadConflictValue = '覆盖'
+      }
       const filePreviewType = getFlushPreference(this.context, 'commonSetting', 'filePreviewType', 0)
       this.filePreviewTypeIndex = filePreviewType as number
       if (filePreviewType === 0) {
@@ -1055,8 +1111,15 @@ struct Commonsetting {
         this.filePreviewTypeValue = '自行选择'
       }
       this.onlinePreviewMedia = getFlushPreference(this.context, 'commonSetting', 'onlinePreviewMedia', true) as boolean
-      this.selectFileDownloadPath =
-        getFlushPreference(this.context, 'commonSetting', 'selectFileDownloadPath', false) as boolean
+      const operationWhenCopyMoveConflict =
+        getFlushPreference(this.context, 'commonSetting', 'operationWhenCopyMoveConflict', 0)
+      this.operationWhenCopyMoveConflictIndex = operationWhenCopyMoveConflict as number
+      if (operationWhenCopyMoveConflict === 0) {
+        this.operationWhenCopyMoveConflictValue = '跳过'
+      }
+      if (operationWhenCopyMoveConflict === 1) {
+        this.operationWhenCopyMoveConflictValue = '覆盖'
+      }
       this.showAccountlistAfterAppLaunch =
         getFlushPreference(this.context, 'commonSetting', 'showAccountlistAfterAppLaunch', false) as boolean
       const cellularDataUseRemind = getFlushPreference(this.context, 'commonSetting', 'cellularDataUseRemind', 0)

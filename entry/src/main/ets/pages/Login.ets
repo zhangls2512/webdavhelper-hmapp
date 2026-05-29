@@ -5,16 +5,15 @@ import { LoadingDialog, promptAction } from '@kit.ArkUI'
 import { netBoost } from '@kit.NetworkBoostKit'
 import { rcp } from '@kit.RemoteCommunicationKit'
 import { setAccount } from '../common/Account'
-import { getDnsServer } from '../common/Dnsserver'
 import openLink from '../common/Openlink'
-import { getFlushPreference } from '../common/Preference'
+import { getWebdavGlobalSession } from '../common/Request'
 
 @ComponentV2
 export default struct Login {
   @Consumer() isShowLoginSheet: boolean = false
   @Local scheme: string = 'https'
   @Local host: string = ''
-  @Local port: string = ''
+  @Local port: string = '443'
   @Local name: string = ''
   @Local password: string = ''
   @Local bz: string = ''
@@ -223,26 +222,6 @@ export default struct Login {
                 scene: 'login',
                 sceneEvent: netBoost.SceneEvent.SCENE_EVENT_ENTER
               })
-              const session = rcp.createSession({
-                requestConfiguration: {
-                  dns: {
-                    dnsRules: getDnsServer(this.context)
-                  },
-                  security: {
-                    remoteValidation: getFlushPreference(this.context, 'debugSetting',
-                      'closeRemoteValidationWhenLinkWebdav', 'system') as 'system' | 'skip',
-                    tlsRange: {
-                      min: 'TlsV1.2'
-                    }
-                  }
-                },
-                headers: {
-                  Authorization: 'Basic ' +
-                    new util.Base64Helper().encodeToStringSync(new util.TextEncoder().encodeInto(this.name + ':' +
-                      this.password)),
-                  Depth: '0'
-                }
-              })
               const dialogControllerProgress = new CustomDialogController({
                 builder: LoadingDialog({
                   content: '请求中...'
@@ -250,8 +229,12 @@ export default struct Login {
               })
               dialogControllerProgress.open()
               try {
-                const response = await session.fetch(new rcp.Request(path + '/', 'PROPFIND'))
-                session.close()
+                const response =
+                  await getWebdavGlobalSession(this.context).fetch(new rcp.Request(path + '/', 'PROPFIND', {
+                    Authorization: 'Basic ' + new util.Base64Helper().encodeToStringSync(
+                      new util.TextEncoder().encodeInto(this.name + ':' + this.password)),
+                    Depth: '0'
+                  }))
                 netBoost.setSceneDesc({
                   scene: 'login',
                   sceneEvent: netBoost.SceneEvent.SCENE_EVENT_LEAVE
@@ -284,7 +267,6 @@ export default struct Login {
                   }
                 }
               } catch (err) {
-                session.close()
                 netBoost.setSceneDesc({
                   scene: 'login',
                   sceneEvent: netBoost.SceneEvent.SCENE_EVENT_LEAVE
