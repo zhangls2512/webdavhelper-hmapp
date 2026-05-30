@@ -1,11 +1,9 @@
 import { common } from '@kit.AbilityKit'
 import { promptAction } from '@kit.ArkUI'
-import { rcp } from '@kit.RemoteCommunicationKit'
 import { hdsEffect } from '@kit.UIDesignKit'
 import { AccountInfo, getAccountList, removeAccount, setAccount, setAccountBz } from '../common/Account'
-import { getDnsServer } from '../common/Dnsserver'
 import copy from '../common/Pasteboard'
-import { getFlushPreference } from '../common/Preference'
+import { getWebdavGlobalSession } from '../common/Request'
 
 @ComponentV2
 export default struct Accountlist {
@@ -57,7 +55,7 @@ export default struct Accountlist {
             ]
           })
           if (data.index === 1) {
-            await removeAccount(this.context, item.id)
+            await removeAccount(item.id)
             this.accountArray = await getAccountList(this.context)
             if (item.isLogin === 'true') {
               this.context.eventHub.emit('refreshMe')
@@ -81,6 +79,7 @@ export default struct Accountlist {
           }
           .borderRadius(20)
           .height(40)
+          .keyboardShortcut('N', [ModifierKey.CTRL, ModifierKey.SHIFT])
           .margin({
             right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
           })
@@ -327,26 +326,10 @@ export default struct Accountlist {
       this.accountArray = await getAccountList(this.context)
       this.pathConnectionStatusArray = Array(this.accountArray.length).fill('connecting')
       const promises = this.accountArray.map(async (item, index) => {
-        const session = rcp.createSession({
-          requestConfiguration: {
-            dns: {
-              dnsRules: getDnsServer(this.context)
-            },
-            security: {
-              remoteValidation: getFlushPreference(this.context, 'debugSetting', 'closeRemoteValidationWhenLinkWebdav',
-                'system') as 'system' | 'skip',
-              tlsRange: {
-                min: 'TlsV1.2'
-              }
-            }
-          }
-        })
         try {
-          await session.get(item.path)
-          session.close()
+          await getWebdavGlobalSession(this.context).get(item.path)
           this.pathConnectionStatusArray[index] = 'connected'
         } catch {
-          session.close()
           this.pathConnectionStatusArray[index] = 'disconnected'
         }
       })

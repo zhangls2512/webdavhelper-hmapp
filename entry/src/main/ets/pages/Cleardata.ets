@@ -5,6 +5,7 @@ import { webview } from '@kit.ArkWeb'
 import { fileIo } from '@kit.CoreFileKit'
 import { hdsMaterial, HdsNavigation, HdsNavigationTitleMode, ScrollEffectType } from '@kit.UIDesignKit'
 import { getDirectorySize, getFileSize } from '../common/File'
+import { restartApp } from '../common/Restartapp'
 import { getSizeString } from '../common/Stringformat'
 
 @ComponentV2
@@ -226,11 +227,7 @@ export default struct Cleardata {
                     ]
                   })
                   if (res.index === 1) {
-                    const applicationContext = this.context.getApplicationContext()
-                    applicationContext.restartApp({
-                      bundleName: 'com.zhuzx.webdavhelper',
-                      abilityName: 'EntryAbility'
-                    })
+                    await restartApp(this.context, this.UIContext)
                   }
                 }
               })

@@ -1,3 +1,5 @@
 .hvigor
 .idea
 build
+*.ps1
+*.zip

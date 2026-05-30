@@ -1,6 +1,6 @@
 import { LengthMetrics, LoadingDialog, promptAction } from '@kit.ArkUI'
-import { rcp } from '@kit.RemoteCommunicationKit'
 import { hdsMaterial, HdsNavDestination, HdsNavDestinationTitleMode, ScrollEffectType } from '@kit.UIDesignKit'
+import { defaultGlobalSession } from '../common/Request'
 
 interface Item {
   title: string,
@@ -166,18 +166,8 @@ struct Letsencryptrss {
         })
       })
       dialogControllerProgress.open()
-      const session = rcp.createSession({
-        requestConfiguration: {
-          security: {
-            tlsRange: {
-              min: 'TlsV1.2'
-            }
-          }
-        }
-      })
       try {
-        const response = await session.get('https://letsencrypt.org/feed.xml')
-        session.close()
+        const response = await defaultGlobalSession.get('https://letsencrypt.org/feed.xml')
         dialogControllerProgress.close()
         if (response.statusCode >= 200 && response.statusCode < 300) {
           let rss = String(response)
@@ -198,7 +188,6 @@ struct Letsencryptrss {
           })
         }
       } catch (err) {
-        session.close()
         dialogControllerProgress.close()
         await promptAction.openToast({
           message: '发生错误，错误码：' + err.code

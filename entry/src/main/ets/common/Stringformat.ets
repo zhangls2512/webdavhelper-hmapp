@@ -27,3 +27,12 @@ export function getSizeString(size: number) {
   }
   return ''
 }
+
+export function addFilePathIndex(path: string, index: number) {
+  const lastDot = path.lastIndexOf('.')
+  const lastSlash = path.lastIndexOf('/')
+  if (lastDot === -1 || lastDot < lastSlash) {
+    return path + '(' + index + ')'
+  }
+  return path.slice(0, lastDot) + '(' + index + ')' + path.slice(lastDot)
+}

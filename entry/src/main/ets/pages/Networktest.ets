@@ -1,6 +1,6 @@
 import { LengthMetrics, LoadingDialog, promptAction } from '@kit.ArkUI'
-import { rcp } from '@kit.RemoteCommunicationKit'
 import { hdsMaterial, HdsNavDestination, HdsNavDestinationTitleMode, ScrollEffectType } from '@kit.UIDesignKit'
+import { defaultGlobalSession } from '../common/Request'
 
 interface Response {
   errCode: number,
@@ -42,19 +42,9 @@ struct Networktest {
                   })
                 })
                 dialogControllerProgress.open()
-                const session = rcp.createSession({
-                  requestConfiguration: {
-                    security: {
-                      tlsRange: {
-                        min: 'TlsV1.2'
-                      }
-                    }
-                  }
-                })
                 try {
                   const startTime = Date.now()
-                  const response = await session.get('https://api.zhangls2512.cn/test')
-                  session.close()
+                  const response = await defaultGlobalSession.get('https://api.zhangls2512.cn/test')
                   dialogControllerProgress.close()
                   if (response.statusCode >= 200 && response.statusCode < 300) {
                     const res = response.toJSON() as Response
@@ -70,7 +60,6 @@ struct Networktest {
                     })
                   }
                 } catch (err) {
-                  session.close()
                   dialogControllerProgress.close()
                   await promptAction.openToast({
                     message: '发生错误，错误码：' + err.code

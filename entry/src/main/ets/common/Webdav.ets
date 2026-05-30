@@ -60,22 +60,22 @@ export async function mkdir(context: Context, path: string, name: string) {
   })
 }
 
-export async function cp(context: Context, srcPath: string, destPath: string) {
+export async function cp(context: Context, srcPath: string, destPath: string, overwrite: boolean) {
   const accountInfo = await getAccountInfo(context)
   return await webdavRequest(context, encodePath(srcPath), 'COPY', {
     Authorization: await getAccountAuthorization(context),
     Destination: accountInfo.path + '/' + encodePath(destPath + '/' + srcPath.substring(srcPath.lastIndexOf('/') + 1)),
     Depth: 'infinity',
-    Overwrite: 'T'
+    Overwrite: overwrite ? 'T' : 'F'
   })
 }
 
-export async function mv(context: Context, srcPath: string, destPath: string) {
+export async function mv(context: Context, srcPath: string, destPath: string, overwrite: boolean) {
   const accountInfo = await getAccountInfo(context)
   return await webdavRequest(context, encodePath(srcPath), 'MOVE', {
     Authorization: await getAccountAuthorization(context),
     Destination: accountInfo.path + '/' + encodePath(destPath + '/' + srcPath.substring(srcPath.lastIndexOf('/') + 1)),
-    Overwrite: 'T'
+    Overwrite: overwrite ? 'T' : 'F'
   })
 }
 
