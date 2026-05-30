@@ -1661,6 +1661,7 @@ export default struct Filelist {
                         name: 'transferTask'
                       })
                       const accountInfo = await getAccountInfo(this.context)
+                      const authorization = await getAccountAuthorization(this.context)
                       let count = 0
                       const records = event.getData().getRecords()
                       try {
@@ -1680,6 +1681,7 @@ export default struct Filelist {
                               errCode: 0,
                               type: 'upload',
                               accountInfo: accountInfo,
+                              authorization: authorization,
                               srcFileUri: data.uri
                             }))
                             count++
@@ -1786,6 +1788,7 @@ export default struct Filelist {
                   name: 'transferTask'
                 })
                 const accountInfo = await getAccountInfo(this.context)
+                const authorization = await getAccountAuthorization(this.context)
                 const records = event.getData().getRecords()
                 let count = 0
                 try {
@@ -1805,6 +1808,7 @@ export default struct Filelist {
                         errCode: 0,
                         type: 'upload',
                         accountInfo: accountInfo,
+                        authorization: authorization,
                         srcFileUri: data.uri
                       }))
                       count++
