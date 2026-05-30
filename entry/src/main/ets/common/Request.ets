@@ -10,26 +10,43 @@ interface DeveloperErrorResponse {
   errFix: string
 }
 
-export async function webdavRequest(context: Context, path: string, method: string, headers: rcp.RequestHeaders) {
-  const accountInfo = await getAccountInfo(context)
-  const session = rcp.createSession({
-    requestConfiguration: {
-      dns: {
-        dnsRules: getDnsServer(context)
-      },
-      security: {
-        remoteValidation: getFlushPreference(context, 'debugSetting', 'closeRemoteValidationWhenLinkWebdav',
-          'system') as 'system' | 'skip',
-        tlsRange: {
-          min: 'TlsV1.2'
+export let webdavGlobalSession: rcp.Session | undefined = undefined
+
+export const defaultGlobalSession = rcp.createSession({
+  requestConfiguration: {
+    security: {
+      tlsRange: {
+        min: 'TlsV1.2'
+      }
+    }
+  }
+})
+
+export function getWebdavGlobalSession(context: Context) {
+  if (!webdavGlobalSession) {
+    webdavGlobalSession = rcp.createSession({
+      requestConfiguration: {
+        dns: {
+          dnsRules: getDnsServer(context)
+        },
+        security: {
+          remoteValidation: getFlushPreference(context, 'debugSetting', 'closeRemoteValidationWhenLinkWebdav',
+            'system') as 'system' | 'skip',
+          tlsRange: {
+            min: 'TlsV1.2'
+          }
         }
       }
-    },
-    headers: headers
-  })
+    })
+  }
+  return webdavGlobalSession
+}
+
+export async function webdavRequest(context: Context, path: string, method: string, headers: rcp.RequestHeaders) {
+  const accountInfo = await getAccountInfo(context)
   try {
-    const response = await session.fetch(new rcp.Request(accountInfo.path + '/' + path, method, headers))
-    session.close()
+    const response =
+      await getWebdavGlobalSession(context).fetch(new rcp.Request(accountInfo.path + '/' + path, method, headers))
     if (response.statusCode >= 200 && response.statusCode < 300) {
       return String(response)
     } else {
@@ -39,7 +56,6 @@ export async function webdavRequest(context: Context, path: string, method: stri
       return 'fail'
     }
   } catch (err) {
-    session.close()
     await promptAction.openToast({
       message: '发生错误，错误码：' + err.code
     })
@@ -54,18 +70,8 @@ export async function developerRequest(context: Context, path: string, body: rcp
       '全量模式未开启，无法使用在线功能。如需使用在线功能，请前往“我的”>“设置”>“更多”>“应用服务模式”，开启全量模式。')
     return 'fail'
   }
-  const session = rcp.createSession({
-    requestConfiguration: {
-      security: {
-        tlsRange: {
-          min: 'TlsV1.2'
-        }
-      }
-    }
-  })
   try {
-    const response = await session.post('https://api.zhangls2512.cn' + path, body)
-    session.close()
+    const response = await defaultGlobalSession.post('https://api.zhangls2512.cn' + path, body)
     if (response.statusCode >= 200 && response.statusCode < 300) {
       const res = response.toJSON() as DeveloperErrorResponse
       if (res.errCode === 0) {
@@ -81,7 +87,6 @@ export async function developerRequest(context: Context, path: string, body: rcp
       return 'fail'
     }
   } catch (err) {
-    session.close()
     await promptAction.openToast({
       message: '发生错误，错误码：' + err.code
     })

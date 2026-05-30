@@ -1,8 +1,9 @@
 import { common, wantConstant } from '@kit.AbilityKit'
-import { sendablePreferences, unifiedDataChannel, uniformTypeDescriptor } from '@kit.ArkData'
+import { sendablePreferences, unifiedDataChannel } from '@kit.ArkData'
 import { util } from '@kit.ArkTS'
 import { LoadingDialog, promptAction } from '@kit.ArkUI'
-import { fileIo, fileUri, picker } from '@kit.CoreFileKit'
+import { deviceInfo } from '@kit.BasicServicesKit'
+import { Environment, fileIo, fileUri, picker } from '@kit.CoreFileKit'
 import { netBoost } from '@kit.NetworkBoostKit'
 import { filePreview } from '@kit.PreviewKit'
 import { rcp } from '@kit.RemoteCommunicationKit'
@@ -21,9 +22,10 @@ import { getDnsServer } from '../common/Dnsserver'
 import { getFileTypeIcon } from '../common/File'
 import { sha256hash } from '../common/Hash'
 import { getCurrentNetworkBearerType } from '../common/Network'
+import { getPermission } from '../common/Permission'
 import { getFlushPreference, setTempPreference } from '../common/Preference'
 import { getPreferType } from '../common/Prefertype'
-import { getSizeString, getTimeStringFromTimeStamp } from '../common/Stringformat'
+import { addFilePathIndex, getSizeString, getTimeStringFromTimeStamp } from '../common/Stringformat'
 import { cp, FileItem, ls, mv, rm } from '../common/Webdav'
 import Newfolder from './Newfolder'
 import Player from './Player'
@@ -242,6 +244,16 @@ export default struct Filelist {
                   let filePath = ''
                   if (!selectFileDownloadPath) {
                     filePath = new fileUri.FileUri(uris[0] + '/' + item.name).path
+                    const originFilePath = filePath
+                    if (getFlushPreference(this.context, 'commonSetting', 'operationWhenDownloadConflict', 0) === 0) {
+                      let index = 0
+                      let fileExist = fileIo.accessSync(filePath)
+                      while (fileExist) {
+                        index++
+                        filePath = addFilePathIndex(originFilePath, index)
+                        fileExist = fileIo.accessSync(filePath)
+                      }
+                    }
                   }
                   if (selectFileDownloadPath) {
                     filePath = uris[0]
@@ -288,8 +300,7 @@ export default struct Filelist {
                       },
                       security: {
                         remoteValidation: getFlushPreference(this.context, 'debugSetting',
-                          'closeRemoteValidationWhenLinkWebdav',
-                          'system') as 'system' | 'skip',
+                          'closeRemoteValidationWhenLinkWebdav', 'system') as 'system' | 'skip',
                         tlsRange: {
                           min: 'TlsV1.2'
                         }
@@ -614,6 +625,36 @@ export default struct Filelist {
                   })
                   return
                 }
+                let destDownloadRootPath = ''
+                const selectFileDownloadPath =
+                  getFlushPreference(this.context, 'commonSetting', 'selectFileDownloadPath', false)
+                if (!selectFileDownloadPath) {
+                  const downloadDirectory = getFlushPreference(this.context, 'commonSetting', 'downloadDirectory', 0)
+                  if (downloadDirectory === 1 && getPermission('ohos.permission.READ_WRITE_DOWNLOAD_DIRECTORY') &&
+                    deviceInfo.deviceType !== 'phone') {
+                    destDownloadRootPath = Environment.getUserDownloadDir()
+                  } else {
+                    const documentSaveOptions = new picker.DocumentSaveOptions()
+                    documentSaveOptions.pickerMode = picker.DocumentPickerMode.DOWNLOAD
+                    const documentViewPicker = new picker.DocumentViewPicker(this.context)
+                    const uris = await documentViewPicker.save(documentSaveOptions)
+                    if (uris.length === 1) {
+                      destDownloadRootPath = new fileUri.FileUri(uris[0]).path
+                    }
+                  }
+                }
+                if (selectFileDownloadPath) {
+                  const documentSelectOptions = new picker.DocumentSelectOptions
+                  documentSelectOptions.selectMode = picker.DocumentSelectMode.FOLDER
+                  const documentViewPicker = new picker.DocumentViewPicker(this.context)
+                  const uris = await documentViewPicker.select(documentSelectOptions)
+                  if (uris.length === 1) {
+                    destDownloadRootPath = new fileUri.FileUri(uris[0]).path
+                  }
+                }
+                if (!destDownloadRootPath) {
+                  return
+                }
                 const transferTaskDataPreferences = sendablePreferences.getPreferencesSync(this.context, {
                   name: 'transferTask'
                 })
@@ -632,7 +673,8 @@ export default struct Filelist {
                     errCode: 0,
                     type: 'download',
                     accountInfo: accountInfo,
-                    authorization: authorization
+                    authorization: authorization,
+                    destDownloadPath: destDownloadRootPath + '/' + item.name
                   }))
                 })
                 await promptAction.openToast({
@@ -690,14 +732,19 @@ export default struct Filelist {
                     })
                     dialogControllerProgress.open()
                     if (!this.remove) {
-                      await cp(this.context, item.path, this.getPath())
+                      await cp(this.context, item.path, this.getPath(),
+                        getFlushPreference(this.context, 'commonSetting', 'operationWhenCopyMoveConflict', 0) === 0 ?
+                          false : true)
                     }
                     if (this.remove) {
-                      await mv(this.context, item.path, this.getPath())
+                      await mv(this.context, item.path, this.getPath(),
+                        getFlushPreference(this.context, 'commonSetting', 'operationWhenCopyMoveConflict', 0) === 0 ?
+                          false : true)
                     }
                     dialogControllerProgress.close()
                   }
                   this.exitMultipleSelect()
+                  this.remove = undefined
                   await promptAction.openToast({
                     message: text + '成功'
                   })
@@ -747,7 +794,9 @@ export default struct Filelist {
                       })
                     })
                     dialogControllerProgress.open()
-                    await cp(this.context, item.path, this.getPath())
+                    await cp(this.context, item.path, this.getPath(),
+                      getFlushPreference(this.context, 'commonSetting', 'operationWhenCopyMoveConflict', 0) === 0 ?
+                        false : true)
                     dialogControllerProgress.close()
                   }
                   this.exitMultipleSelect()
@@ -799,7 +848,9 @@ export default struct Filelist {
                       })
                     })
                     dialogControllerProgress.open()
-                    await mv(this.context, item.path, this.getPath())
+                    await mv(this.context, item.path, this.getPath(),
+                      getFlushPreference(this.context, 'commonSetting', 'operationWhenCopyMoveConflict', 0) === 0 ?
+                        false : true)
                     dialogControllerProgress.close()
                   }
                   this.exitMultipleSelect()
@@ -908,7 +959,7 @@ export default struct Filelist {
                 this.loading = true
               } else if (!this.multipleSelect && !this.copyMovePath) {
                 this.dirnames = []
-                await exitAccount(this.context)
+                await exitAccount()
                 this.loading = true
               } else {
                 await promptAction.openToast({
@@ -967,7 +1018,7 @@ export default struct Filelist {
                   return
                 }
                 this.dirnames = []
-                await exitAccount(this.context)
+                await exitAccount()
                 this.loading = true
               })
             Span('/')
@@ -1171,10 +1222,14 @@ export default struct Filelist {
                 let res = ''
                 this.dialogControllerProgress.open()
                 if (!this.remove) {
-                  res = await cp(this.context, this.copyMovePath, this.getPath())
+                  res = await cp(this.context, this.copyMovePath, this.getPath(),
+                    getFlushPreference(this.context, 'commonSetting', 'operationWhenCopyMoveConflict', 0) === 0 ?
+                      false : true)
                 }
                 if (this.remove) {
-                  res = await mv(this.context, this.copyMovePath, this.getPath())
+                  res = await mv(this.context, this.copyMovePath, this.getPath(),
+                    getFlushPreference(this.context, 'commonSetting', 'operationWhenCopyMoveConflict', 0) === 0 ?
+                      false : true)
                 }
                 this.dialogControllerProgress.close()
                 this.copyMovePath = ''
@@ -1272,395 +1327,447 @@ export default struct Filelist {
                 }
                 .width('100%')
               }
-              ForEach(this.fileArray, (item: FileItem, index) => {
-                ListItem() {
-                  Column() {
-                    if (index !== 0) {
-                      Divider()
-                        .padding({
-                          left: 6,
-                          right: 6
-                        })
-                    }
-                    Row() {
-                      if (this.multipleSelect) {
-                        Toggle({
-                          type: ToggleType.Checkbox,
-                          isOn: this.multipleSelectArray.some(selectItem => selectItem.path === item.path)
-                        })
-                          .margin({
-                            right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
+              Repeat<FileItem>(this.fileArray)
+                .each((item: RepeatItem<FileItem>) => {
+                  ListItem() {
+                    Column() {
+                      if (item.index !== 0) {
+                        Divider()
+                          .padding({
+                            left: 6,
+                            right: 6
                           })
-                          .onChange(isOn => {
-                            const exist = this.multipleSelectArray.find(selectItem => selectItem.path === item.path)
-                            if (!isOn && exist) {
+                      }
+                      Row() {
+                        if (this.multipleSelect) {
+                          Toggle({
+                            type: ToggleType.Checkbox,
+                            isOn: this.multipleSelectArray.some(selectItem => selectItem.path === item.item.path)
+                          })
+                            .margin({
+                              right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
+                            })
+                            .onChange(isOn => {
+                              const exist =
+                                this.multipleSelectArray.find(selectItem => selectItem.path === item.item.path)
+                              if (!isOn && exist) {
+                                this.multipleSelectArray.splice(
+                                  this.multipleSelectArray.findIndex(selectItem => selectItem.path ===
+                                    item.item.path), 1)
+                              }
+                              if (isOn && !exist) {
+                                this.multipleSelectArray.push(item.item)
+                              }
+                            })
+                        }
+                        if (!item.item.isdir) {
+                          Image(getFileTypeIcon(item.item.name))
+                            .height(24)
+                            .margin({
+                              right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
+                            })
+                            .width(24)
+                        }
+                        if (item.item.isdir) {
+                          Image($r('app.media.foldericon'))
+                            .height(24)
+                            .margin({
+                              right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
+                            })
+                            .width(24)
+                        }
+                        Column() {
+                          Text(item.item.name)
+                            .enableAutoSpacing(true)
+                            .fontWeight(FontWeight.Medium)
+                            .width('85%')
+                          Text() {
+                            Span(getTimeStringFromTimeStamp(item.item.modifyTime))
+                            if (item.item.size >= 0) {
+                              Span(' - ' + getSizeString(item.item.size))
+                            }
+                          }
+                          .fontColor($r('sys.color.font_secondary'))
+                          .fontSize($r('sys.float.ohos_id_text_size_body2'))
+                          .margin({
+                            top: $r('sys.float.ohos_id_text_margin_vertical')
+                          })
+                        }
+                        .alignItems(HorizontalAlign.Start)
+                        .layoutWeight(1)
+                        .margin({
+                          right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
+                        })
+
+                        Image($r('app.media.right'))
+                          .fillColor($r('sys.color.icon_fourth'))
+                          .height(12)
+                          .width(12)
+                      }
+                      .borderRadius(12)
+                      .padding({
+                        bottom: 12,
+                        left: 6,
+                        right: 5,
+                        top: 12
+                      })
+                      .stateStyles({
+                        normal: {
+                          .backgroundColor(this.hoverId === item.index ? $r('sys.color.interactive_hover') : '')
+                        },
+                        pressed: {
+                          .backgroundColor($r('sys.color.comp_background_secondary'))
+                        }
+                      })
+                      .onHover(isHover => {
+                        if (!isHover) {
+                          this.hoverId = -1
+                        }
+                        if (isHover) {
+                          this.hoverId = item.index
+                        }
+                      })
+                      .onClick(async () => {
+                        if (!item.item.isdir) {
+                          if (this.multipleSelect) {
+                            const exist =
+                              this.multipleSelectArray.find(selectItem => selectItem.path === item.item.path)
+                            if (exist) {
                               this.multipleSelectArray.splice(
                                 this.multipleSelectArray.findIndex(selectItem => selectItem.path ===
-                                  item.path), 1)
+                                  item.item.path), 1)
                             }
-                            if (isOn && !exist) {
-                              this.multipleSelectArray.push(item)
+                            if (!exist) {
+                              this.multipleSelectArray.push(item.item)
                             }
-                          })
-                      }
-                      if (!item.isdir) {
-                        Image(getFileTypeIcon(item.name))
-                          .height(24)
-                          .margin({
-                            right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
-                          })
-                          .width(24)
-                      }
-                      if (item.isdir) {
-                        Image($r('app.media.foldericon'))
-                          .height(24)
-                          .margin({
-                            right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
-                          })
-                          .width(24)
-                      }
-                      Column() {
-                        Text(item.name)
-                          .enableAutoSpacing(true)
-                          .fontWeight(FontWeight.Medium)
-                          .width('85%')
-                        Text() {
-                          Span(getTimeStringFromTimeStamp(item.modifyTime))
-                          if (item.size >= 0) {
-                            Span(' - ' + getSizeString(item.size))
+                            return
                           }
-                        }
-                        .fontColor($r('sys.color.font_secondary'))
-                        .fontSize($r('sys.float.ohos_id_text_size_body2'))
-                        .margin({
-                          top: $r('sys.float.ohos_id_text_margin_vertical')
-                        })
-                      }
-                      .alignItems(HorizontalAlign.Start)
-                      .layoutWeight(1)
-                      .margin({
-                        right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
-                      })
-
-                      Image($r('app.media.right'))
-                        .fillColor($r('sys.color.icon_fourth'))
-                        .height(12)
-                        .width(12)
-                    }
-                    .allowDrop([uniformTypeDescriptor.UniformDataType.PLAIN_TEXT])
-                    .borderRadius(12)
-                    .padding({
-                      bottom: 12,
-                      left: 6,
-                      right: 5,
-                      top: 12
-                    })
-                    .stateStyles({
-                      normal: {
-                        .backgroundColor(this.hoverId === index ? $r('sys.color.interactive_hover') : '')
-                      },
-                      pressed: {
-                        .backgroundColor($r('sys.color.comp_background_secondary'))
-                      }
-                    })
-                    .onHover(isHover => {
-                      if (!isHover) {
-                        this.hoverId = -1
-                      }
-                      if (isHover) {
-                        this.hoverId = index
-                      }
-                    })
-                    .onClick(async () => {
-                      if (!item.isdir) {
-                        if (this.multipleSelect) {
-                          const exist = this.multipleSelectArray.find(selectItem => selectItem.path === item.path)
-                          if (exist) {
-                            this.multipleSelectArray.splice(
-                              this.multipleSelectArray.findIndex(selectItem => selectItem.path ===
-                                item.path), 1)
+                          let houzhui = ''
+                          const lastDotIndex = item.item.name.lastIndexOf('.')
+                          if (lastDotIndex !== -1) {
+                            houzhui = item.item.name.slice(lastDotIndex + 1)
                           }
-                          if (!exist) {
-                            this.multipleSelectArray.push(item)
+                          const supportedformats =
+                            ['mp4', 'mkv', 'm4a', 'aac', 'mp3', 'ogg', 'wav', 'flac', 'amr', 'ape']
+                          if (supportedformats.includes(houzhui.toLocaleLowerCase()) &&
+                            getFlushPreference(this.context, 'commonSetting', 'onlinePreviewMedia', true)) {
+                            const accountInfo = await getAccountInfo(this.context)
+                            this.src = accountInfo.path + '/' + item.item.path
+                            this.srcName = item.item.name
+                            this.isShowPlayerSheet = true
+                            return
                           }
-                          return
-                        }
-                        let houzhui = ''
-                        const lastDotIndex = item.name.lastIndexOf('.')
-                        if (lastDotIndex !== -1) {
-                          houzhui = item.name.slice(lastDotIndex + 1)
-                        }
-                        const supportedformats = ['mp4', 'mkv', 'm4a', 'aac', 'mp3', 'ogg', 'wav', 'flac', 'amr', 'ape']
-                        if (supportedformats.includes(houzhui) &&
-                          getFlushPreference(this.context, 'commonSetting', 'onlinePreviewMedia', true)) {
-                          const accountInfo = await getAccountInfo(this.context)
-                          this.src = accountInfo.path + '/' + item.path
-                          this.srcName = item.name
-                          this.isShowPlayerSheet = true
-                          return
-                        }
-                        const promptAction = this.UIContext.getPromptAction()
-                        if (item.size > Math.pow(1024, 3)) {
-                          await promptAction.openToast({
-                            message: '大小大于 1GB，请长按将其下载到本地后预览'
-                          })
-                          return
-                        }
-                        if (getCurrentNetworkBearerType() === 0) {
-                          const cellularDataUseRemind =
-                            getFlushPreference(this.context, 'commonSetting', 'cellularDataUseRemind', 0)
-                          if (cellularDataUseRemind === 0 ||
-                            (cellularDataUseRemind === 1 && item.size > 200 * Math.pow(1024, 2))) {
-                            const data = await promptAction.showDialog({
-                              title: '流量使用提醒',
-                              message: '当前正在使用流量上网，下载此文件将消耗约 ' + getSizeString(item.size) +
-                                ' 流量，确定下载？',
-                              buttons: [
-                                {
-                                  text: '取消',
-                                  color: $r('sys.color.font_primary')
-                                },
-                                {
-                                  text: '确定',
-                                  color: $r('sys.color.font_emphasize')
-                                }
-                              ]
+                          const promptAction = this.UIContext.getPromptAction()
+                          if (item.item.size > Math.pow(1024, 3)) {
+                            await promptAction.openToast({
+                              message: '大小大于 1GB，请长按将其下载到本地后预览'
                             })
-                            if (data.index === 0) {
-                              return
-                            }
+                            return
                           }
-                        }
-                        try {
-                          const previewDir =
-                            this.context.tempDir + '/preview/' + this.account + '/' + sha256hash(item.path)
-                          if (!fileIo.accessSync(previewDir)) {
-                            await fileIo.mkdir(previewDir, true)
-                          }
-                          const filePath = previewDir + '/' + item.name
-                          const file = fileIo.openSync(filePath, fileIo.OpenMode.CREATE | fileIo.OpenMode.WRITE_ONLY)
-                          const fileStream = fileIo.fdopenStreamSync(file.fd, 'w+')
-                          netBoost.setSceneDesc({
-                            scene: 'download',
-                            sceneEvent: netBoost.SceneEvent.SCENE_EVENT_ENTER
-                          })
-                          const accountInfo = await getAccountInfo(this.context)
-                          const session = rcp.createSession({
-                            requestConfiguration: {
-                              transfer: {
-                                timeout: {
-                                  transferMs: 0
-                                }
-                              },
-                              tracing: {
-                                httpEventsHandler: {
-                                  onDataReceive: async (incomingData) => {
-                                    await fileStream.write(incomingData)
+                          if (getCurrentNetworkBearerType() === 0) {
+                            const cellularDataUseRemind =
+                              getFlushPreference(this.context, 'commonSetting', 'cellularDataUseRemind', 0)
+                            if (cellularDataUseRemind === 0 ||
+                              (cellularDataUseRemind === 1 && item.item.size > 200 * Math.pow(1024, 2))) {
+                              const data = await promptAction.showDialog({
+                                title: '流量使用提醒',
+                                message: '当前正在使用流量上网，下载此文件将消耗约 ' + getSizeString(item.item.size) +
+                                  ' 流量，确定下载？',
+                                buttons: [
+                                  {
+                                    text: '取消',
+                                    color: $r('sys.color.font_primary')
                                   },
-                                  onDownloadProgress: (totalSize, transferredSize) => {
-                                    this.transferredSize = transferredSize
-                                    this.totalSize = totalSize
-                                  },
-                                  onDataEnd: () => {
-                                    this.isShowProgressSheet = false
-                                    session.close()
-                                    netBoost.setSceneDesc({
-                                      scene: 'download',
-                                      sceneEvent: netBoost.SceneEvent.SCENE_EVENT_LEAVE
-                                    })
-                                    fileStream.closeSync()
-                                    this.context.eventHub.off('cancelDownload')
-                                    this.transferredSize = 0
-                                    this.totalSize = 0
+                                  {
+                                    text: '确定',
+                                    color: $r('sys.color.font_emphasize')
                                   }
-                                }
-                              },
-                              dns: {
-                                dnsRules: getDnsServer(this.context)
-                              },
-                              security: {
-                                remoteValidation: getFlushPreference(this.context, 'debugSetting',
-                                  'closeRemoteValidationWhenLinkWebdav',
-                                  'system') as 'system' | 'skip',
-                                tlsRange: {
-                                  min: 'TlsV1.2'
-                                }
-                              }
-                            },
-                            headers: {
-                              Authorization: await getAccountAuthorization(this.context)
-                            }
-                          })
-                          this.totalSize = item.size
-                          this.context.eventHub.on('cancelDownload', () => {
-                            session.cancel()
-                          })
-                          this.isShowProgressSheet = true
-                          try {
-                            const response = await session.get(accountInfo.path + '/' + item.path)
-                            if (response.statusCode >= 200 && response.statusCode < 300) {
-                              const uri = fileUri.getUriFromPath(filePath)
-                              const filePreviewType =
-                                getFlushPreference(this.context, 'commonSetting', 'filePreviewType', 0)
-                              if (filePreviewType === 0) {
-                                const supportedReaderFormats = ['.epub', '.mobi', '.azw', '.azw3']
-                                if (!supportedReaderFormats.some(formatItem => item.name.endsWith(formatItem))) {
-                                  const canPreview = await filePreview.canPreview(this.context, uri)
-                                  if (!canPreview) {
-                                    await promptAction.openToast({
-                                      message: '此类型不支持预览'
-                                    })
-                                  }
-                                  if (canPreview) {
-                                    await filePreview.openPreview(this.context, {
-                                      title: item.name,
-                                      uri: uri,
-                                      mimeType: ''
-                                    })
-                                  }
-                                }
-                                if (supportedReaderFormats.some(formatItem => item.name.endsWith(formatItem))) {
-                                  const dir = this.context.tempDir + '/preview/reader/' + this.account + '/' +
-                                    sha256hash(item.name)
-                                  if (!fileIo.accessSync(dir)) {
-                                    await fileIo.mkdir(dir, true)
-                                  }
-                                  const newFilePath = dir + '/' + item.name
-                                  await fileIo.moveFile(filePath, newFilePath)
-                                  this.src = newFilePath
-                                  this.srcName = item.name
-                                  this.isShowReaderSheet = true
-                                }
-                              }
-                              if (filePreviewType === 1) {
-                                await this.context.startAbility({
-                                  action: 'ohos.want.action.viewData',
-                                  uri: uri,
-                                  parameters: {
-                                    'ohos.ability.params.showDefaultPicker': true
-                                  },
-                                  flags: wantConstant.Flags.FLAG_AUTH_READ_URI_PERMISSION
-                                })
-                              }
-                            } else {
-                              await fileIo.unlink(filePath)
-                              await promptAction.openToast({
-                                message: 'HTTP 请求失败，状态码：' + response.statusCode
+                                ]
                               })
+                              if (data.index === 0) {
+                                return
+                              }
                             }
-                          } catch (err) {
-                            this.isShowProgressSheet = false
-                            session.close()
+                          }
+                          try {
+                            const previewDir =
+                              this.context.tempDir + '/preview/' + this.account + '/' + sha256hash(item.item.path)
+                            if (!fileIo.accessSync(previewDir)) {
+                              await fileIo.mkdir(previewDir, true)
+                            }
+                            const filePath = previewDir + '/' + item.item.name
+                            const file = fileIo.openSync(filePath, fileIo.OpenMode.CREATE | fileIo.OpenMode.WRITE_ONLY)
+                            const fileStream = fileIo.fdopenStreamSync(file.fd, 'w+')
                             netBoost.setSceneDesc({
                               scene: 'download',
-                              sceneEvent: netBoost.SceneEvent.SCENE_EVENT_LEAVE
+                              sceneEvent: netBoost.SceneEvent.SCENE_EVENT_ENTER
                             })
-                            fileStream.closeSync()
-                            this.context.eventHub.off('cancelDownload')
-                            this.transferredSize = 0
-                            this.totalSize = 0
-                            await fileIo.unlink(filePath)
-                            if (err.code !== 1007900992) {
-                              await promptAction.openToast({
-                                message: '下载失败，错误码：' + err.code
+                            const accountInfo = await getAccountInfo(this.context)
+                            const session = rcp.createSession({
+                              requestConfiguration: {
+                                transfer: {
+                                  timeout: {
+                                    transferMs: 0
+                                  }
+                                },
+                                tracing: {
+                                  httpEventsHandler: {
+                                    onDataReceive: async (incomingData) => {
+                                      await fileStream.write(incomingData)
+                                    },
+                                    onDownloadProgress: (totalSize, transferredSize) => {
+                                      this.transferredSize = transferredSize
+                                      this.totalSize = totalSize
+                                    },
+                                    onDataEnd: () => {
+                                      this.isShowProgressSheet = false
+                                      session.close()
+                                      netBoost.setSceneDesc({
+                                        scene: 'download',
+                                        sceneEvent: netBoost.SceneEvent.SCENE_EVENT_LEAVE
+                                      })
+                                      fileStream.closeSync()
+                                      this.context.eventHub.off('cancelDownload')
+                                      this.transferredSize = 0
+                                      this.totalSize = 0
+                                    }
+                                  }
+                                },
+                                dns: {
+                                  dnsRules: getDnsServer(this.context)
+                                },
+                                security: {
+                                  remoteValidation: getFlushPreference(this.context, 'debugSetting',
+                                    'closeRemoteValidationWhenLinkWebdav', 'system') as 'system' | 'skip',
+                                  tlsRange: {
+                                    min: 'TlsV1.2'
+                                  }
+                                }
+                              },
+                              headers: {
+                                Authorization: await getAccountAuthorization(this.context)
+                              }
+                            })
+                            this.totalSize = item.item.size
+                            this.context.eventHub.on('cancelDownload', () => {
+                              session.cancel()
+                            })
+                            this.isShowProgressSheet = true
+                            try {
+                              const response = await session.get(accountInfo.path + '/' + item.item.path)
+                              if (response.statusCode >= 200 && response.statusCode < 300) {
+                                const uri = fileUri.getUriFromPath(filePath)
+                                const filePreviewType =
+                                  getFlushPreference(this.context, 'commonSetting', 'filePreviewType', 0)
+                                if (filePreviewType === 0) {
+                                  const supportedReaderFormats = ['.epub', '.mobi', '.azw', '.azw3']
+                                  if (!supportedReaderFormats.some(formatItem => item.item.name.endsWith(formatItem))) {
+                                    const canPreview = await filePreview.canPreview(this.context, uri)
+                                    if (!canPreview) {
+                                      await promptAction.openToast({
+                                        message: '此类型不支持预览'
+                                      })
+                                    }
+                                    if (canPreview) {
+                                      await filePreview.openPreview(this.context, {
+                                        title: item.item.name,
+                                        uri: uri,
+                                        mimeType: ''
+                                      })
+                                    }
+                                  }
+                                  if (supportedReaderFormats.some(formatItem => item.item.name.endsWith(formatItem))) {
+                                    const dir = this.context.tempDir + '/preview/reader/' + this.account + '/' +
+                                      sha256hash(item.item.name)
+                                    if (!fileIo.accessSync(dir)) {
+                                      await fileIo.mkdir(dir, true)
+                                    }
+                                    const newFilePath = dir + '/' + item.item.name
+                                    await fileIo.moveFile(filePath, newFilePath)
+                                    this.src = newFilePath
+                                    this.srcName = item.item.name
+                                    this.isShowReaderSheet = true
+                                  }
+                                }
+                                if (filePreviewType === 1) {
+                                  await this.context.startAbility({
+                                    action: 'ohos.want.action.viewData',
+                                    uri: uri,
+                                    parameters: {
+                                      'ohos.ability.params.showDefaultPicker': true
+                                    },
+                                    flags: wantConstant.Flags.FLAG_AUTH_READ_URI_PERMISSION
+                                  })
+                                }
+                              } else {
+                                await fileIo.unlink(filePath)
+                                await promptAction.openToast({
+                                  message: 'HTTP 请求失败，状态码：' + response.statusCode
+                                })
+                              }
+                            } catch (err) {
+                              this.isShowProgressSheet = false
+                              session.close()
+                              netBoost.setSceneDesc({
+                                scene: 'download',
+                                sceneEvent: netBoost.SceneEvent.SCENE_EVENT_LEAVE
                               })
+                              fileStream.closeSync()
+                              this.context.eventHub.off('cancelDownload')
+                              this.transferredSize = 0
+                              this.totalSize = 0
+                              await fileIo.unlink(filePath)
+                              if (err.code !== 1007900992) {
+                                await promptAction.openToast({
+                                  message: '下载失败，错误码：' + err.code
+                                })
+                              }
                             }
+                          } catch (err) {
+                            await promptAction.openToast({
+                              message: '发生错误，错误码：' + err.code
+                            })
                           }
-                        } catch (err) {
-                          await promptAction.openToast({
-                            message: '发生错误，错误码：' + err.code
-                          })
                         }
-                      }
-                      if (item.isdir) {
-                        this.dirnames.push(item.name)
-                        this.loading = true
-                      }
-                    })
-                    .bindContextMenu(this.MenuBuilder(item), ResponseType.LongPress, {
-                      hapticFeedbackMode: HapticFeedbackMode.AUTO
-                    })
-                    .bindContextMenu(this.MenuBuilder(item), ResponseType.RightClick, {
-                      hapticFeedbackMode: HapticFeedbackMode.AUTO
-                    })
-                  }
-                }
-                .borderRadius($r('sys.float.ohos_id_corner_radius_default_l'))
-                .selected(this.multipleSelectArray.some(selectItem => selectItem.path === item.path))
-                .onDragStart(event => {
-                  event.dragBehavior = DragBehavior.MOVE
-                  const data = new unifiedDataChannel.PlainText()
-                  if (!this.multipleSelect) {
-                    data.textContent = JSON.stringify([item.path])
-                  }
-                  if (this.multipleSelect) {
-                    data.textContent = JSON.stringify(this.multipleSelectArray.map(item => item.path))
-                  }
-                  event.setData(new unifiedDataChannel.UnifiedData(data))
-                })
-                .onDrop(event => {
-                  event.dragBehavior = DragBehavior.MOVE
-                  if (event.isRemote() || event.getDragSource() !== 'com.zhuzx.webdavhelper') {
-                    event.setResult(DragResult.DROP_DISABLED)
-                    return
-                  }
-                  if (!item.isdir) {
-                    event.setResult(DragResult.DROP_DISABLED)
-                    return
-                  }
-                  event.setResult(DragResult.DRAG_SUCCESSFUL)
-                  event.getData().getRecords().forEach(async (recordItem) => {
-                    if (recordItem.getType() === uniformTypeDescriptor.UniformDataType.PLAIN_TEXT) {
-                      const data = recordItem as unifiedDataChannel.PlainText
-                      const paths = JSON.parse(data.textContent) as string[]
-                      if (paths.length === 1) {
-                        this.dialogControllerProgress.open()
-                        const res = await mv(this.context, paths[0], item.path)
-                        this.dialogControllerProgress.close()
-                        if (res !== 'fail') {
-                          await promptAction.openToast({
-                            message: '移动成功'
-                          })
+                        if (item.item.isdir) {
+                          this.dirnames.push(item.item.name)
                           this.loading = true
                         }
-                      }
-                      if (paths.length > 1) {
-                        for (let i = 0; i < paths.length; i++) {
-                          const path = paths[i]
-                          const dialogControllerProgress = new CustomDialogController({
-                            builder: LoadingDialog({
-                              content: '正在移动文件，进度：' + (i + 1) + '/' + paths.length
-                            })
-                          })
-                          dialogControllerProgress.open()
-                          await mv(this.context, path, item.path)
-                          dialogControllerProgress.close()
+                      })
+                      .bindContextMenu(this.MenuBuilder(item.item), ResponseType.LongPress, {
+                        hapticFeedbackMode: HapticFeedbackMode.AUTO
+                      })
+                      .bindContextMenu(this.MenuBuilder(item.item), ResponseType.RightClick, {
+                        hapticFeedbackMode: HapticFeedbackMode.AUTO
+                      })
+                    }
+                  }
+                  .borderRadius($r('sys.float.ohos_id_corner_radius_default_l'))
+                  .selected(this.multipleSelectArray.some(selectItem => selectItem.path === item.item.path))
+                  .onDragStart(event => {
+                    event.dragBehavior = DragBehavior.MOVE
+                    const data = new unifiedDataChannel.PlainText()
+                    if (!this.multipleSelect) {
+                      data.textContent = JSON.stringify([item.item.path])
+                    }
+                    if (this.multipleSelect) {
+                      data.textContent = JSON.stringify(this.multipleSelectArray.map(item => item.path))
+                    }
+                    event.setData(new unifiedDataChannel.UnifiedData(data))
+                  })
+                  .onDrop(async (event) => {
+                    if (event.getDragSource() !== 'com.zhuzx.webdavhelper') {
+                      const transferTaskDataPreferences = sendablePreferences.getPreferencesSync(this.context, {
+                        name: 'transferTask'
+                      })
+                      const accountInfo = await getAccountInfo(this.context)
+                      const authorization = await getAccountAuthorization(this.context)
+                      let count = 0
+                      const records = event.getData().getRecords()
+                      try {
+                        for (let i = 0; i < records.length; i++) {
+                          const recordItem = records[i]
+                          const data = recordItem as unifiedDataChannel.File
+                          const stat = fileIo.statSync(data.uri)
+                          if (!stat.isDirectory()) {
+                            const id = util.generateRandomUUID()
+                            transferTaskDataPreferences.putSync(id, JSON.stringify({
+                              id: id,
+                              path: item.item.isdir ? this.getPath() + '/' + item.item.name : this.getPath(),
+                              name: new fileUri.FileUri(data.uri).name,
+                              transferredSize: 0,
+                              totalSize: stat.size,
+                              status: 'pending',
+                              errCode: 0,
+                              type: 'upload',
+                              accountInfo: accountInfo,
+                              authorization: authorization,
+                              srcFileUri: data.uri
+                            }))
+                            count++
+                          }
                         }
-                        this.exitMultipleSelect()
-                        await promptAction.openToast({
-                          message: '移动成功'
+                        event.setResult(DragResult.DRAG_SUCCESSFUL)
+                        if (count > 0) {
+                          await promptAction.openToast({
+                            message: count + ' 项传输任务已添加'
+                          })
+                        }
+                      } catch {
+                        event.setResult(DragResult.DRAG_FAILED)
+                      }
+                    }
+                    if (event.getDragSource() === 'com.zhuzx.webdavhelper') {
+                      event.dragBehavior = DragBehavior.MOVE
+                      if (!event.isRemote() && item.item.isdir) {
+                        event.getData().getRecords().forEach(async (recordItem) => {
+                          try {
+                            const data = recordItem as unifiedDataChannel.PlainText
+                            const paths = JSON.parse(data.textContent) as string[]
+                            event.setResult(DragResult.DRAG_SUCCESSFUL)
+                            if (paths.length === 1) {
+                              this.dialogControllerProgress.open()
+                              const res = await mv(this.context, paths[0], item.item.path,
+                                getFlushPreference(this.context, 'commonSetting', 'operationWhenCopyMoveConflict',
+                                  0) === 0 ? false : true)
+                              this.dialogControllerProgress.close()
+                              if (res !== 'fail') {
+                                await promptAction.openToast({
+                                  message: '移动成功'
+                                })
+                                this.loading = true
+                              }
+                            }
+                            if (paths.length > 1) {
+                              for (let i = 0; i < paths.length; i++) {
+                                const path = paths[i]
+                                const dialogControllerProgress = new CustomDialogController({
+                                  builder: LoadingDialog({
+                                    content: '正在移动文件，进度：' + (i + 1) + '/' + paths.length
+                                  })
+                                })
+                                dialogControllerProgress.open()
+                                await mv(this.context, path, item.item.path,
+                                  getFlushPreference(this.context, 'commonSetting', 'operationWhenCopyMoveConflict',
+                                    0) === 0 ? false : true)
+                                dialogControllerProgress.close()
+                              }
+                              this.exitMultipleSelect()
+                              this.remove = undefined
+                              await promptAction.openToast({
+                                message: '移动成功'
+                              })
+                              this.loading = true
+                            }
+                          } catch {
+                            event.setResult(DragResult.DRAG_FAILED)
+                          }
                         })
-                        this.loading = true
+                      } else {
+                        await promptAction.openToast({
+                          message: '仅支持移动到目录'
+                        })
+                        event.setResult(DragResult.DROP_DISABLED)
+                      }
+                    }
+                  })
+                  .onSelect(isSelected => {
+                    if (!isSelected) {
+                      this.multipleSelectArray =
+                        this.multipleSelectArray.filter(selectItem => selectItem.path !== item.item.path)
+                    }
+                    if (isSelected) {
+                      this.multipleSelect = true
+                      if (!this.multipleSelectArray.find(selectItem => selectItem.path === item.item.path)) {
+                        this.multipleSelectArray.push(item.item)
                       }
                     }
                   })
                 })
-                .onSelect(isSelected => {
-                  if (!isSelected) {
-                    this.multipleSelectArray =
-                      this.multipleSelectArray.filter(selectItem => selectItem.path !== item.path)
-                  }
-                  if (isSelected) {
-                    this.multipleSelect = true
-                    if (!this.multipleSelectArray.find(selectItem => selectItem.path === item.path)) {
-                      this.multipleSelectArray.push(item)
-                    }
-                  }
-                })
-              })
+                .virtualScroll()
               ListItem()
                 .margin({
-                  bottom: this.preferType === 0 ? 80 : 0
+                  bottom: 80
                 })
                 .bindSheet(this.isShowProgressSheet!!, this.ProgressSheetBuilder(), {
                   height: SheetSize.FIT_CONTENT,
@@ -1675,6 +1782,52 @@ export default struct Filelist {
             }
             .height('100%')
             .multiSelectable(true)
+            .onDrop(async (event) => {
+              if (event.getDragSource() !== 'com.zhuzx.webdavhelper') {
+                const transferTaskDataPreferences = sendablePreferences.getPreferencesSync(this.context, {
+                  name: 'transferTask'
+                })
+                const accountInfo = await getAccountInfo(this.context)
+                const authorization = await getAccountAuthorization(this.context)
+                const records = event.getData().getRecords()
+                let count = 0
+                try {
+                  for (let i = 0; i < records.length; i++) {
+                    const item = records[i]
+                    const data = item as unifiedDataChannel.File
+                    const stat = fileIo.statSync(data.uri)
+                    if (!stat.isDirectory()) {
+                      const id = util.generateRandomUUID()
+                      transferTaskDataPreferences.putSync(id, JSON.stringify({
+                        id: id,
+                        path: this.getPath(),
+                        name: new fileUri.FileUri(data.uri).name,
+                        transferredSize: 0,
+                        totalSize: stat.size,
+                        status: 'pending',
+                        errCode: 0,
+                        type: 'upload',
+                        accountInfo: accountInfo,
+                        authorization: authorization,
+                        srcFileUri: data.uri
+                      }))
+                      count++
+                    }
+                    event.setResult(DragResult.DRAG_SUCCESSFUL)
+                    if (count > 0) {
+                      await promptAction.openToast({
+                        message: count + ' 项传输任务已添加'
+                      })
+                    }
+                  }
+                } catch {
+                  event.setResult(DragResult.DRAG_FAILED)
+                }
+              }
+              if (event.getDragSource() === 'com.zhuzx.webdavhelper') {
+                event.setResult(DragResult.DROP_DISABLED)
+              }
+            })
           }
           .keyboardShortcut('R', [ModifierKey.CTRL], () => {
             this.loading = true
@@ -1701,7 +1854,7 @@ export default struct Filelist {
           this.loading = true
         } else if (!this.multipleSelect && !this.copyMovePath) {
           this.dirnames = []
-          await exitAccount(this.context)
+          await exitAccount()
           this.loading = true
         } else {
           await promptAction.openToast({
@@ -1710,8 +1863,10 @@ export default struct Filelist {
         }
       })
       this.context.eventHub.on('refreshFilelist', () => {
+        this.searchKeyword = ''
         this.exitMultipleSelect()
         this.copyMovePath = ''
+        this.remove = undefined
         this.loading = true
       })
       const showAccountlistAfterAppLaunch =
@@ -1719,7 +1874,7 @@ export default struct Filelist {
       const isLogin = await getLoginStatus(this.context)
       if (showAccountlistAfterAppLaunch) {
         if (isLogin) {
-          await exitAccount(this.context)
+          await exitAccount()
         }
       }
       this.loading = true

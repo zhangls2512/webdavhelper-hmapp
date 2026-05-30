@@ -98,16 +98,16 @@
         "recoverable": true
       },
       {
-        "name": "BackGroundAbility",
-        "srcEntry": "./ets/backgroundability/BackGroundAbility.ets",
+        "name": "BackgroundAbility",
+        "srcEntry": "./ets/backgroundability/BackgroundAbility.ets",
         "startWindowIcon": "$media:layered_image",
         "startWindowBackground": "$color:start_window_background"
       }
     ],
     "extensionAbilities": [
       {
-        "name": "BackupExtensionAbility",
-        "srcEntry": "./ets/BackupExtension/BackupExtension.ets",
+        "name": "BackupAbility",
+        "srcEntry": "./ets/backupability/BackupAbility.ets",
         "type": "backup",
         "metadata": [
           {

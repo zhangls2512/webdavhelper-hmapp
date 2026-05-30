@@ -1,6 +1,7 @@
 import { common } from '@kit.AbilityKit'
 import { LengthMetrics } from '@kit.ArkUI'
 import { hdsMaterial, HdsNavDestination, HdsNavDestinationTitleMode, ScrollEffectType } from '@kit.UIDesignKit'
+import { restartApp } from '../common/Restartapp'
 
 @Builder
 export function MoresettingBuilder() {
@@ -10,7 +11,8 @@ export function MoresettingBuilder() {
 @ComponentV2
 struct Moresetting {
   @Local hoverId: number = -1
-  context = this.getUIContext().getHostContext() as common.UIAbilityContext
+  UIContext = this.getUIContext()
+  context = this.UIContext.getHostContext() as common.UIAbilityContext
 
   build() {
     HdsNavDestination() {
@@ -62,12 +64,8 @@ struct Moresetting {
                   this.hoverId = 0
                 }
               })
-              .onClick(() => {
-                const applicationContext = this.context.getApplicationContext()
-                applicationContext.restartApp({
-                  bundleName: 'com.zhuzx.webdavhelper',
-                  abilityName: 'EntryAbility'
-                })
+              .onClick(async () => {
+                await restartApp(this.context, this.UIContext)
               })
 
               Divider()

@@ -65,8 +65,9 @@ export default struct Transfer {
                             })
                         }
                         if (item.status === 'processing') {
-                          Text(Number((item.transferredSize / item.totalSize).toFixed(2)) * 100 + '%(' +
-                            getSizeString(item.transferredSize) + '/' + getSizeString(item.totalSize) + ')')
+                          Text(Number((item.transferredSize / item.totalSize).toFixed(2)) * 100 + '% - ' +
+                            getSizeString(item.transferredSize) + '/' + getSizeString(item.totalSize) + ' - ' +
+                            getSizeString(item.speed) + '/s')
                             .fontColor($r('sys.color.font_secondary'))
                             .fontSize($r('sys.float.ohos_id_text_size_body2'))
                             .margin({
@@ -107,21 +108,20 @@ export default struct Transfer {
                       if (item.status === 'processing') {
                         Image($r('app.media.close'))
                           .height(24)
-                          .margin({
-                            right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
-                          })
                           .onClick(async () => {
                             await backgroundTaskManager.stopBackgroundRunning(this.context)
                           })
                       }
-                      Image($r('app.media.delete'))
-                        .height(24)
-                        .onClick(() => {
-                          const transferTaskDataPreferences = sendablePreferences.getPreferencesSync(this.context, {
-                            name: 'transferTask'
+                      if (item.status !== 'processing') {
+                        Image($r('app.media.delete'))
+                          .height(24)
+                          .onClick(() => {
+                            const transferTaskDataPreferences = sendablePreferences.getPreferencesSync(this.context, {
+                              name: 'transferTask'
+                            })
+                            transferTaskDataPreferences.deleteSync(item.id)
                           })
-                          transferTaskDataPreferences.deleteSync(item.id)
-                        })
+                      }
                     }
                     .borderRadius(12)
                     .padding(12)
@@ -171,8 +171,9 @@ export default struct Transfer {
                             })
                         }
                         if (item.status === 'processing') {
-                          Text(Number((item.transferredSize / item.totalSize).toFixed(2)) * 100 + '%(' +
-                            getSizeString(item.transferredSize) + '/' + getSizeString(item.totalSize) + ')')
+                          Text(Number((item.transferredSize / item.totalSize).toFixed(2)) * 100 + '% - ' +
+                            getSizeString(item.transferredSize) + '/' + getSizeString(item.totalSize) + ' - ' +
+                            getSizeString(item.speed) + '/s')
                             .fontColor($r('sys.color.font_secondary'))
                             .fontSize($r('sys.float.ohos_id_text_size_body2'))
                             .margin({
@@ -213,21 +214,20 @@ export default struct Transfer {
                       if (item.status === 'processing') {
                         Image($r('app.media.close'))
                           .height(24)
-                          .margin({
-                            right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
-                          })
                           .onClick(async () => {
                             await backgroundTaskManager.stopBackgroundRunning(this.context)
                           })
                       }
-                      Image($r('app.media.delete'))
-                        .height(24)
-                        .onClick(() => {
-                          const transferTaskDataPreferences = sendablePreferences.getPreferencesSync(this.context, {
-                            name: 'transferTask'
+                      if (item.status !== 'processing') {
+                        Image($r('app.media.delete'))
+                          .height(24)
+                          .onClick(() => {
+                            const transferTaskDataPreferences = sendablePreferences.getPreferencesSync(this.context, {
+                              name: 'transferTask'
+                            })
+                            transferTaskDataPreferences.deleteSync(item.id)
                           })
-                          transferTaskDataPreferences.deleteSync(item.id)
-                        })
+                      }
                     }
                     .borderRadius(12)
                     .padding(12)
