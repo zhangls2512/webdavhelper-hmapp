@@ -180,6 +180,7 @@ export async function upload(context: Context, id: string) {
         }
       },
       headers: {
+        'content-length': String(fileIo.statSync(transferTask.srcFileUri).size),
         Authorization: transferTask.authorization
       }
     })

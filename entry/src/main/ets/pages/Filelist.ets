@@ -1744,10 +1744,10 @@ export default struct Filelist {
                           }
                         })
                       } else {
+                        event.setResult(DragResult.DROP_DISABLED)
                         await promptAction.openToast({
                           message: '仅支持移动到目录'
                         })
-                        event.setResult(DragResult.DROP_DISABLED)
                       }
                     }
                   })
@@ -1813,12 +1813,12 @@ export default struct Filelist {
                       }))
                       count++
                     }
-                    event.setResult(DragResult.DRAG_SUCCESSFUL)
-                    if (count > 0) {
-                      await promptAction.openToast({
-                        message: count + ' 项传输任务已添加'
-                      })
-                    }
+                  }
+                  event.setResult(DragResult.DRAG_SUCCESSFUL)
+                  if (count > 0) {
+                    await promptAction.openToast({
+                      message: count + ' 项传输任务已添加'
+                    })
                   }
                 } catch {
                   event.setResult(DragResult.DRAG_FAILED)
