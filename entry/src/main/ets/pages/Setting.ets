@@ -148,6 +148,7 @@ export default struct Setting {
                     const uri = uris[0]
                     await importAccounts(this.context, uri)
                     await this.getSetting()
+                    this.context.eventHub.emit('refreshMe')
                   }
                 })
 
