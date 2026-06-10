@@ -19,6 +19,7 @@ import {
   setAccount
 } from '../common/Account'
 import { getDnsServer } from '../common/Dnsserver'
+import { deleteFavouritePath, FavouritePath, getFavouritePathList, newFavouritePath } from '../common/Favouritepath'
 import { getFileTypeIcon } from '../common/File'
 import { sha256hash } from '../common/Hash'
 import { getCurrentNetworkBearerType } from '../common/Network'
@@ -45,6 +46,7 @@ export default struct Filelist {
   @Local preferType: number = 1
   @Local loading: boolean = false
   @Local accountArray: AccountInfo[] = []
+  @Local favouritePathArray: FavouritePath[] = []
   @Local fileArray: FileItem[] = []
   @Local dirnames: string[] = []
   @Local isLogin: boolean = false
@@ -57,7 +59,7 @@ export default struct Filelist {
   @Local multipleSelectArray: FileItem[] = []
   @Local copyMovePath: string = ''
   @Local remove: boolean | undefined = undefined
-  @Local hoverId: number = -1
+  @Local hoverId: number | string = -1
   UIContext = this.getUIContext()
   context = this.UIContext.getHostContext() as common.UIAbilityContext
   account = ''
@@ -80,12 +82,15 @@ export default struct Filelist {
     setTempPreference(this.context, 'back', 'filelist', this.isLogin)
     if (!this.isLogin) {
       this.account = ''
+      this.accountArray = []
       this.accountArray = await getAccountList(this.context)
+      this.favouritePathArray = []
+      this.favouritePathArray = await getFavouritePathList(this.context)
     }
     if (this.isLogin) {
       const accountInfo = await getAccountInfo(this.context)
       const account = getAccountHash(accountInfo)
-      if (this.account !== account) {
+      if (this.account !== account && this.account) {
         this.dirnames = []
       }
       this.account = account
@@ -386,6 +391,20 @@ export default struct Filelist {
               }
             })
         }
+        if (item.isdir) {
+          MenuItem({
+            startIcon: $r('app.media.favourite'),
+            content: '收藏'
+          })
+            .onClick(async () => {
+              const promptAction = this.UIContext.getPromptAction()
+              const accountInfo = await getAccountInfo(this.context)
+              const res = await newFavouritePath(this.context, accountInfo.id, item.path)
+              await promptAction.openToast({
+                message: res === 'fail' ? '已收藏，无需重复收藏' : '收藏成功'
+              })
+            })
+        }
         MenuItem({
           startIcon: $r('app.media.copy'),
           content: '复制'
@@ -447,6 +466,37 @@ export default struct Filelist {
     }
   }
 
+  @Builder
+  FavouritePathMenuBuilder(item: FavouritePath) {
+    Menu() {
+      MenuItem({
+        startIcon: $r('app.media.delete'),
+        content: '删除'
+      })
+        .onClick(async () => {
+          const promptAction = this.UIContext.getPromptAction()
+          const data = await promptAction.showDialog({
+            title: '提示',
+            message: '删除成功后无法恢复，确定删除？',
+            buttons: [
+              {
+                text: '取消',
+                color: $r('sys.color.font_primary')
+              },
+              {
+                text: '删除',
+                color: $r('sys.color.warning')
+              }
+            ]
+          })
+          if (data.index === 1) {
+            await deleteFavouritePath(this.context, item.accountId, item.path)
+            this.loading = true
+          }
+        })
+    }
+  }
+
   build() {
     Scroll() {
       Column() {
@@ -455,6 +505,15 @@ export default struct Filelist {
             refreshing: $$this.loading
           }) {
             List() {
+              ListItem() {
+                Text('账号')
+                  .fontSize($r('sys.float.ohos_id_text_size_dialog_tittle'))
+                  .fontWeight(FontWeight.Bold)
+              }
+              .margin({
+                bottom: $r('sys.float.ohos_id_elements_margin_vertical_l')
+              })
+
               if (this.accountArray.length === 0) {
                 ListItem() {
                   Text('无数据')
@@ -515,7 +574,7 @@ export default struct Filelist {
                     })
                     .stateStyles({
                       normal: {
-                        .backgroundColor(this.hoverId === index ? $r('sys.color.interactive_hover') :
+                        .backgroundColor(this.hoverId === '0,' + index ? $r('sys.color.interactive_hover') :
                           $r('sys.color.background_secondary'))
                       },
                       pressed: {
@@ -527,7 +586,7 @@ export default struct Filelist {
                         this.hoverId = -1
                       }
                       if (isHover) {
-                        this.hoverId = index
+                        this.hoverId = '0,' + index
                       }
                     })
                     .onClick(async () => {
@@ -539,6 +598,107 @@ export default struct Filelist {
                         isLogin: 'true'
                       })
                       this.loading = true
+                    })
+                  }
+                }
+              })
+              ListItem() {
+                Text('收藏')
+                  .fontSize($r('sys.float.ohos_id_text_size_dialog_tittle'))
+                  .fontWeight(FontWeight.Bold)
+              }
+              .margin({
+                bottom: $r('sys.float.ohos_id_elements_margin_vertical_l'),
+                top: $r('sys.float.ohos_id_elements_margin_vertical_l')
+              })
+
+              if (this.favouritePathArray.length === 0) {
+                ListItem() {
+                  Text('无数据')
+                }
+                .width('100%')
+              }
+              ForEach(this.favouritePathArray, (item: FavouritePath, index) => {
+                ListItem() {
+                  Column() {
+                    if (index !== 0) {
+                      Divider()
+                        .padding({
+                          left: 6,
+                          right: 6
+                        })
+                    }
+                    Row() {
+                      Image($r('app.media.foldericon'))
+                        .height(24)
+                        .margin({
+                          right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
+                        })
+                        .width(24)
+                      Column() {
+                        Text(item.name)
+                          .fontWeight(FontWeight.Medium)
+                          .width('85%')
+                        Text(item.accountInfo.bz ? item.accountInfo.bz :
+                          item.accountInfo.path + ' - ' + item.accountInfo.name)
+                          .enableAutoSpacing(true)
+                          .fontColor($r('sys.color.font_secondary'))
+                          .fontSize($r('sys.float.ohos_id_text_size_body2'))
+                          .margin({
+                            top: $r('sys.float.ohos_id_text_margin_vertical')
+                          })
+                      }
+                      .alignItems(HorizontalAlign.Start)
+                      .layoutWeight(1)
+                      .margin({
+                        right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
+                      })
+
+                      Image($r('app.media.right'))
+                        .fillColor($r('sys.color.icon_fourth'))
+                        .height(12)
+                        .width(12)
+                    }
+                    .borderRadius(12)
+                    .padding({
+                      bottom: 12,
+                      left: 6,
+                      right: 5,
+                      top: 12
+                    })
+                    .stateStyles({
+                      normal: {
+                        .backgroundColor(this.hoverId === '1,' + index ? $r('sys.color.interactive_hover') :
+                          $r('sys.color.background_secondary'))
+                      },
+                      pressed: {
+                        .backgroundColor($r('sys.color.comp_background_secondary'))
+                      }
+                    })
+                    .onHover(isHover => {
+                      if (!isHover) {
+                        this.hoverId = -1
+                      }
+                      if (isHover) {
+                        this.hoverId = '1,' + index
+                      }
+                    })
+                    .onClick(async () => {
+                      await setAccount(this.context, {
+                        path: item.accountInfo.path,
+                        name: item.accountInfo.name,
+                        password: item.accountInfo.password,
+                        bz: item.accountInfo.bz,
+                        isLogin: 'true'
+                      })
+                      this.dirnames = item.path.split('/')
+                      this.loading = true
+                    })
+                    .bindContextMenu(this.FavouritePathMenuBuilder(item), ResponseType.LongPress, {
+                      hapticFeedbackMode: HapticFeedbackMode.AUTO
+                    })
+                    .bindContextMenu(this.FavouritePathMenuBuilder(item), ResponseType.RightClick, {
+                      hapticFeedbackMode: HapticFeedbackMode.AUTO
                     })
                   }
                 }
