@@ -126,7 +126,7 @@ export default struct Player {
                 } catch (err) {
                   this.dialogControllerProgress.open()
                   await promptAction.openToast({
-                    message: '发生错误，错误码：' + err.code
+                    message: '发生错误，错误码：' + err.code + (err.message ? '，错误信息：' + err.message : '')
                   })
                 }
               }
@@ -393,7 +393,7 @@ export default struct Player {
             } catch (err) {
               this.dialogControllerProgress.open()
               await promptAction.openToast({
-                message: '发生错误，错误码：' + err.code
+                message: '发生错误，错误码：' + err.code + (err.message ? '，错误信息：' + err.message : '')
               })
             }
           }
@@ -421,7 +421,7 @@ export default struct Player {
       })
       this.avPlayer.on('error', async (err) => {
         await promptAction.openToast({
-          message: '发生错误，错误码：' + err.code
+          message: '发生错误，错误码：' + err.code + (err.message ? '，错误信息：' + err.message : '')
         })
       })
     })

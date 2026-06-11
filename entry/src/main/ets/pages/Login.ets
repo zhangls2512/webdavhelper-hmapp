@@ -273,7 +273,7 @@ export default struct Login {
                 })
                 dialogControllerProgress.close()
                 await promptAction.openToast({
-                  message: '发生错误，错误码：' + err.code
+                  message: '发生错误，错误码：' + err.code + (err.message ? '，错误信息：' + err.message : '')
                 })
               }
             })
@@ -296,7 +296,7 @@ export default struct Login {
                     await openLink(this.context, appPrivacyLink?.url as string)
                   } catch (err) {
                     await promptAction.openToast({
-                      message: '发生错误，错误码：' + err.code + '，错误信息：' + err.message
+                      message: '发生错误，错误码：' + err.code + (err.message ? '，错误信息：' + err.message : '')
                     })
                   }
                 })
@@ -309,7 +309,7 @@ export default struct Login {
                     await openLink(this.context, appPrivacyLink?.url as string)
                   } catch (err) {
                     await promptAction.openToast({
-                      message: '发生错误，错误码：' + err.code + '，错误信息：' + err.message
+                      message: '发生错误，错误码：' + err.code + (err.message ? '，错误信息：' + err.message : '')
                     })
                   }
                 })

@@ -320,7 +320,7 @@ export default struct Accountlist {
       }
     }
     .padding({
-      bottom: $r('sys.float.ohos_id_default_padding_bottom_fixed')
+      bottom: this.accountArray.length > 0 ? 28 : 12
     })
     .onAppear(async () => {
       this.accountArray = await getAccountList(this.context)
