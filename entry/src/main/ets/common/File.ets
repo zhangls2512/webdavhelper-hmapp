@@ -11,12 +11,12 @@ export async function read(path: string, ignoreNotexist = false) {
   } catch (err) {
     if (err.code !== 13900002) {
       await promptAction.openToast({
-        message: '发生错误，错误码：' + err.code
+        message: '发生错误，错误码：' + err.code + (err.message ? '，错误信息：' + err.message : '')
       })
     }
     if (err.code === 13900002 && !ignoreNotexist) {
       await promptAction.openToast({
-        message: '发生错误，错误码：' + err.code
+        message: '发生错误，错误码：' + err.code + (err.message ? '，错误信息：' + err.message : '')
       })
     }
     return 'fail'
@@ -34,7 +34,7 @@ export async function readUri(uri: string) {
     return decoder.decodeToString(new Uint8Array(filebuffer))
   } catch (err) {
     await promptAction.openToast({
-      message: '发生错误，错误码：' + err.code
+      message: '发生错误，错误码：' + err.code + (err.message ? '，错误信息：' + err.message : '')
     })
     return 'fail'
   }
@@ -51,7 +51,7 @@ export async function write(path: string, content: string) {
     fileIo.closeSync(file)
   } catch (err) {
     await promptAction.openToast({
-      message: '发生错误，错误码：' + err.code
+      message: '发生错误，错误码：' + err.code + (err.message ? '，错误信息：' + err.message : '')
     })
   }
 }
@@ -63,7 +63,7 @@ export async function writeUri(uri: string, content: string) {
     fileIo.closeSync(file)
   } catch (err) {
     await promptAction.openToast({
-      message: '发生错误，错误码：' + err.code
+      message: '发生错误，错误码：' + err.code + (err.message ? '，错误信息：' + err.message : '')
     })
   }
 }

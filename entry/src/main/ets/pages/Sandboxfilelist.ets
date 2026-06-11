@@ -133,7 +133,7 @@ struct Sandboxfilelist {
       } catch (err) {
         if (err.code !== 13900012) {
           await promptAction.openToast({
-            message: '发生错误，错误码：' + err.code
+            message: '发生错误，错误码：' + err.code + (err.message ? '，错误信息：' + err.message : '')
           })
         }
         if (err.code === 13900012) {
@@ -201,7 +201,7 @@ struct Sandboxfilelist {
             } catch (err) {
               if (err.code !== 13900012) {
                 await promptAction.openToast({
-                  message: '发生错误，错误码：' + err.code
+                  message: '发生错误，错误码：' + err.code + (err.message ? '，错误信息：' + err.message : '')
                 })
               }
               if (err.code === 13900012) {

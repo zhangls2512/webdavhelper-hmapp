@@ -35,7 +35,7 @@ export default struct Setting {
         appPrivacyResults.find(item => item.type === privacyManager.AppPrivacyType.PRIVACY_AGREEMENT)?.result
     } catch (err) {
       await promptAction.openToast({
-        message: '发生错误，错误码：' + err.code + '，错误信息：' + err.message
+        message: '发生错误，错误码：' + err.code + (err.message ? '，错误信息：' + err.message : '')
       })
     }
     this.isLogin = await getLoginStatus(this.context)
@@ -92,7 +92,7 @@ export default struct Setting {
                       } catch (err) {
                         this.accountDataSync = false
                         await promptAction.openToast({
-                          message: '发生错误，错误码：' + err.code
+                          message: '发生错误，错误码：' + err.code + (err.message ? '，错误信息：' + err.message : '')
                         })
                       }
                     })
@@ -148,6 +148,7 @@ export default struct Setting {
                     const uri = uris[0]
                     await importAccounts(this.context, uri)
                     await this.getSetting()
+                    this.context.eventHub.emit('refreshMe')
                   }
                 })
 
@@ -670,7 +671,7 @@ export default struct Setting {
                   })
                 } catch (err) {
                   await promptAction.openToast({
-                    message: '发生错误，错误码：' + err.code + '，错误信息：' + err.message
+                    message: '发生错误，错误码：' + err.code + (err.message ? '，错误信息：' + err.message : '')
                   })
                 }
               })
