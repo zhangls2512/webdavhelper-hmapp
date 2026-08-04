@@ -1,6 +1,5 @@
 import { common } from '@kit.AbilityKit'
-import { promptAction } from '@kit.ArkUI'
-import { hdsEffect } from '@kit.UIDesignKit'
+import { promptAction, uiMaterial } from '@kit.ArkUI'
 import { AccountInfo, getAccountList, removeAccount, setAccount, setAccountBz } from '../common/Account'
 import copy from '../common/Pasteboard'
 import { getWebdavGlobalSession } from '../common/Request'
@@ -12,7 +11,6 @@ export default struct Accountlist {
   @Local pathConnectionStatusArray: string[] = []
   @Local bzId: string = ''
   @Local bz: string = ''
-  @Local hoverId: number = -1
   UIContext = this.getUIContext()
   context = this.UIContext.getHostContext() as common.UIAbilityContext
 
@@ -92,12 +90,13 @@ export default struct Accountlist {
               .backgroundColor($r('sys.color.interactive_pressed'))
             }
           })
-          .visualEffect(new hdsEffect.HdsEffectBuilder()
-            .pointLight({
-              sourceType: hdsEffect.PointLightSourceType.SOFT,
-              illuminatedType: hdsEffect.PointLightIlluminatedType.BORDER_CONTENT
-            })
-            .buildEffect())
+          .systemMaterial(new uiMaterial.ImmersiveMaterial({
+            style: uiMaterial.ImmersiveStyle.REGULAR,
+            interactive: true,
+            lightEffect: {
+              color: Color.White
+            }
+          }))
           .width(40)
           .onClick(() => {
             this.context.eventHub.emit('login')
@@ -118,12 +117,13 @@ export default struct Accountlist {
               .backgroundColor($r('sys.color.interactive_pressed'))
             }
           })
-          .visualEffect(new hdsEffect.HdsEffectBuilder()
-            .pointLight({
-              sourceType: hdsEffect.PointLightSourceType.SOFT,
-              illuminatedType: hdsEffect.PointLightIlluminatedType.BORDER_CONTENT
-            })
-            .buildEffect())
+          .systemMaterial(new uiMaterial.ImmersiveMaterial({
+            style: uiMaterial.ImmersiveStyle.REGULAR,
+            interactive: true,
+            lightEffect: {
+              color: Color.White
+            }
+          }))
           .width(40)
           .onClick(() => {
             this.isShowAccountlistSheet = false
@@ -219,19 +219,13 @@ export default struct Accountlist {
               .padding(12)
               .stateStyles({
                 normal: {
-                  .backgroundColor(this.hoverId === 0 ? $r('sys.color.interactive_hover') :
-                    $r('sys.color.ohos_id_color_card_bg'))
+                  .backgroundColor($r('sys.color.ohos_id_color_card_bg'))
+                },
+                hovered: {
+                  .backgroundColor($r('sys.color.interactive_hover'))
                 },
                 pressed: {
                   .backgroundColor($r('sys.color.interactive_pressed'))
-                }
-              })
-              .onHover(isHover => {
-                if (!isHover) {
-                  this.hoverId = -1
-                }
-                if (isHover) {
-                  this.hoverId = 0
                 }
               })
               .onClick(async () => {

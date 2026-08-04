@@ -154,7 +154,7 @@ export default struct Uploaderrorlog {
               dialogControllerProgress.open()
               const res = await developerRequest(this.context, '/product/newErrorLog', {
                 product: 'webdavhelper',
-                version: '1.0.1.7',
+                version: '1.0.1.8',
                 errorDesc: this.errorDesc,
                 errorObject: this.uploadErrorObject ? this.errorObject : false,
                 contactType: this.contactType,

@@ -26,7 +26,8 @@ struct Bestaddress {
               { text: '原始' },
               { text: '解析' }
             ]),
-            selectedIndex: this.selectedIndex!!
+            selectedIndex: this.selectedIndex!!,
+            enableStateAnimation: true
           })
             .margin({
               bottom: $r('sys.float.ohos_id_elements_margin_vertical_m'),

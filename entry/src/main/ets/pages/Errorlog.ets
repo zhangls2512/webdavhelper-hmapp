@@ -22,7 +22,6 @@ export function ErrorlogBuilder() {
 @ComponentV2
 struct Errorlog {
   @Local errorLogArray: ErrorLogItem[] = []
-  @Local hoverId: number = -1
   UIContext = this.getUIContext()
   context = this.UIContext.getHostContext() as common.UIAbilityContext
   typeArray: Type[] = [
@@ -41,6 +40,10 @@ struct Errorlog {
     {
       name: '应用冻屏',
       value: 'APP_FREEZE'
+    },
+    {
+      name: '应用冻屏告警',
+      value: 'APPFREEZE_WARNING'
     },
     {
       name: '资源泄漏',
@@ -167,7 +170,7 @@ struct Errorlog {
               })
               .width('100%')
             }
-            ForEach(this.errorLogArray, (item: ErrorLogItem, index) => {
+            ForEach(this.errorLogArray, (item: ErrorLogItem) => {
               ListItem() {
                 Column() {
                   Row() {
@@ -206,19 +209,13 @@ struct Errorlog {
                   .padding(12)
                   .stateStyles({
                     normal: {
-                      .backgroundColor(this.hoverId === index ? $r('sys.color.interactive_hover') :
-                        $r('sys.color.ohos_id_color_card_bg'))
+                      .backgroundColor($r('sys.color.ohos_id_color_card_bg'))
+                    },
+                    hovered: {
+                      .backgroundColor($r('sys.color.interactive_hover'))
                     },
                     pressed: {
                       .backgroundColor($r('sys.color.interactive_pressed'))
-                    }
-                  })
-                  .onHover(isHover => {
-                    if (!isHover) {
-                      this.hoverId = -1
-                    }
-                    if (isHover) {
-                      this.hoverId = index
                     }
                   })
                   .onClick(async () => {
