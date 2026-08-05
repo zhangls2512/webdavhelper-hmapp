@@ -20,9 +20,9 @@ export default struct Setting {
   @Local allService: boolean = false
   @Local agreedPrivacyAgreement: number | undefined = undefined
   @Local accountDataSyncEnabled: boolean = false
+  @Local accountDataSync: boolean = false
   @Local isLogin: boolean = false
   @Local accountCount: number = -1
-  @Local accountDataSync: boolean = false
   UIContext = this.getUIContext()
   context = this.UIContext.getHostContext() as common.UIAbilityContext
   pageInfos = new NavPathStack()
