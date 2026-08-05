@@ -36,7 +36,7 @@ struct Debugsetting {
   @Local highLatencyThreshold: string = '200'
   @Local entryLowPowerModeWhenLowBatteryLevel: boolean = false
   @Local closeRemoteValidationWhenLinkWebdav: boolean = false
-  @Local optimizeParserBudget: boolean = true
+  @Local optimizeParserBudget: boolean = false
   @Local destroyModeIndex: webview.WebDestroyMode = webview.WebDestroyMode.NORMAL_MODE
   @Local destroyModeValue: string = '普通'
   @Local allService: boolean = false
