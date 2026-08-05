@@ -74,7 +74,7 @@ export default struct Me {
               .backgroundColor($r('sys.color.interactive_hover'))
             },
             pressed: {
-              .backgroundColor($r('sys.color.comp_background_secondary'))
+              .backgroundColor($r('sys.color.interactive_pressed'))
             }
           })
           .onClick(() => {
@@ -124,7 +124,7 @@ export default struct Me {
               .backgroundColor($r('sys.color.interactive_hover'))
             },
             pressed: {
-              .backgroundColor($r('sys.color.comp_background_secondary'))
+              .backgroundColor($r('sys.color.interactive_pressed'))
             }
           })
           .onClick(() => {
@@ -172,7 +172,7 @@ export default struct Me {
               .backgroundColor($r('sys.color.interactive_hover'))
             },
             pressed: {
-              .backgroundColor($r('sys.color.comp_background_secondary'))
+              .backgroundColor($r('sys.color.interactive_pressed'))
             }
           })
           .onClick(() => {
