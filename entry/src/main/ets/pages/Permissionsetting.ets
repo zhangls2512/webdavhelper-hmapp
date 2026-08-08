@@ -14,7 +14,6 @@ export function PermissionsettingBuilder() {
 @ComponentV2
 struct Permissionsetting {
   @Local writePasteBoard: boolean = false
-  @Local hoverId: number = -1
   context = this.getUIContext().getHostContext() as common.UIAbilityContext
   dataSync = getPermission('ohos.permission.DISTRIBUTED_DATASYNC')
   readWriteDownloadDirectory = getPermission('ohos.permission.READ_WRITE_DOWNLOAD_DIRECTORY')
@@ -49,7 +48,8 @@ struct Permissionsetting {
             .borderRadius($r('sys.float.ohos_id_corner_radius_default_l'))
             .padding($r('sys.float.ohos_id_corner_radius_mark'))
 
-            Text('系统自动开启此权限，无法手动管理。本应用使用此权限获取并根据指定类型文件图标、网络、Wi-Fi等信息，使用互联网、在后台持续运行、应用关闭前执行自定义的预关闭动作、振动、窗口置顶等能力优化使用体验。通过此权限获取的信息不上传到本应用开发者服务器。')
+            Text(
+              '系统自动开启此权限，无法手动管理。本应用使用此权限获取并根据指定类型文件图标、网络、Wi-Fi等信息，使用互联网、在后台持续运行、应用关闭前执行自定义的预关闭动作、配置每个Ability的图标和标签信息、振动、窗口置顶等能力优化使用体验。通过此权限获取的信息不上传到本应用开发者服务器。')
               .enableAutoSpacing(true)
               .fontColor($r('sys.color.font_secondary'))
               .fontSize($r('sys.float.ohos_id_text_size_body3'))
@@ -83,19 +83,13 @@ struct Permissionsetting {
             .padding(12)
             .stateStyles({
               normal: {
-                .backgroundColor(this.hoverId === 0 ? $r('sys.color.interactive_hover') :
-                  $r('sys.color.ohos_id_color_card_bg'))
+                .backgroundColor($r('sys.color.ohos_id_color_card_bg'))
+              },
+              hovered: {
+                .backgroundColor($r('sys.color.interactive_hover'))
               },
               pressed: {
                 .backgroundColor($r('sys.color.interactive_pressed'))
-              }
-            })
-            .onHover(isHover => {
-              if (!isHover) {
-                this.hoverId = -1
-              }
-              if (isHover) {
-                this.hoverId = 0
               }
             })
             .onClick(async () => {

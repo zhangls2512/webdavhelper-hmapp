@@ -11,8 +11,9 @@ export function DumpjsrawheapdataBuilder() {
 
 @ComponentV2
 struct Dumpjsrawheapdata {
-  @Local needGC: boolean = false
+  @Local needGC: boolean = true
   @Local needClean: boolean = false
+  @Local processDump: boolean = false
   UIContext = this.getUIContext()
   context = this.UIContext.getHostContext() as common.UIAbilityContext
 
@@ -58,7 +59,26 @@ struct Dumpjsrawheapdata {
                   type: ToggleType.Switch,
                   isOn: this.needClean!!
                 })
-                  .enabled(false)
+              }
+              .borderRadius(12)
+              .padding(12)
+
+              Divider()
+                .padding({
+                  left: 12,
+                  right: 12
+                })
+              Row() {
+                Text('进程')
+                  .fontWeight(FontWeight.Medium)
+                  .layoutWeight(1)
+                  .margin({
+                    right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
+                  })
+                Toggle({
+                  type: ToggleType.Switch,
+                  isOn: this.processDump!!
+                })
               }
               .borderRadius(12)
               .padding(12)
@@ -90,22 +110,25 @@ struct Dumpjsrawheapdata {
                 })
                 if (data.index === 1) {
                   try {
-                    const res = await hidebug.dumpJsRawHeapData(this.needGC)
-                    const documentSaveOptions = new picker.DocumentSaveOptions()
-                    documentSaveOptions.newFileNames = [res.substring(res.lastIndexOf('/') + 1).slice(0, -8)]
-                    documentSaveOptions.fileSuffixChoices = ['.rawheap']
-                    const documentViewPicker = new picker.DocumentViewPicker(this.context)
-                    const uris = await documentViewPicker.save(documentSaveOptions)
-                    if (uris.length === 1) {
-                      const destFile = fileIo.openSync(uris[0],
-                        fileIo.OpenMode.CREATE | fileIo.OpenMode.WRITE_ONLY | fileIo.OpenMode.TRUNC)
-                      await fileIo.copyFile(res, destFile.fd)
-                      fileIo.closeSync(destFile)
-                      await promptAction.openToast({
-                        message: '转储成功'
-                      })
+                    const paths = await hidebug.dumpJsRawHeapData(this.needGC, this.needClean, this.processDump)
+                    for (let i = 0; i < paths.length; i++) {
+                      const res = paths[i]
+                      const documentSaveOptions = new picker.DocumentSaveOptions()
+                      documentSaveOptions.newFileNames = [res.substring(res.lastIndexOf('/') + 1).slice(0, -8)]
+                      documentSaveOptions.fileSuffixChoices = ['.rawheap']
+                      const documentViewPicker = new picker.DocumentViewPicker(this.context)
+                      const uris = await documentViewPicker.save(documentSaveOptions)
+                      if (uris.length === 1) {
+                        const destFile = fileIo.openSync(uris[0],
+                          fileIo.OpenMode.CREATE | fileIo.OpenMode.WRITE_ONLY | fileIo.OpenMode.TRUNC)
+                        await fileIo.copyFile(res, destFile.fd)
+                        fileIo.closeSync(destFile)
+                        await promptAction.openToast({
+                          message: '转储成功'
+                        })
+                      }
+                      await fileIo.unlink(res)
                     }
-                    await fileIo.unlink(res)
                   } catch (err) {
                     await promptAction.openToast({
                       message: '发生错误，错误码：' + err.code + (err.message ? '，错误信息：' + err.message : '')
@@ -157,7 +180,7 @@ struct Dumpjsrawheapdata {
       },
       content: {
         title: {
-          mainTitle: '转储当前线程虚拟机原始堆快照'
+          mainTitle: '转储虚拟机原始堆快照'
         }
       }
     })

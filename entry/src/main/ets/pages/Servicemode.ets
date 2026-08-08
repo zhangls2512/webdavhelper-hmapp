@@ -3,6 +3,7 @@ import { privacyManager } from '@kit.AppGalleryKit'
 import { LengthMetrics, promptAction } from '@kit.ArkUI'
 import { hdsMaterial, HdsNavDestination, HdsNavDestinationTitleMode, ScrollEffectType } from '@kit.UIDesignKit'
 import { getFlushPreference, setFlushPreference } from '../common/Preference'
+import { Param } from './Webview'
 
 @Builder
 export function ServicemodeBuilder() {
@@ -63,7 +64,10 @@ struct Servicemode {
                       .find(item => item.type === privacyManager.AppPrivacyLinkType.PRIVACY_STATEMENT_LINK)
                     this.pageInfos.pushPath({
                       name: 'Webview',
-                      param: appPrivacyLink?.url
+                      param: {
+                        url: appPrivacyLink?.url,
+                        trust: false
+                      } as Param
                     })
                   } catch (err) {
                     await promptAction.openToast({

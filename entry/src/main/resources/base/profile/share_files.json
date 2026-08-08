@@ -1,0 +1,21 @@
+{
+  "share_files": {
+    "scopes": [
+      {
+        "path": "/el2/base",
+        "permission": "r+w"
+      },
+      {
+        "path": "/el2/distributedfiles",
+        "permission": "r+w"
+      },
+      {
+        "path": "/el2/cloud",
+        "permission": "r+w"
+      }
+    ],
+    "sharingOSPath": "/el2/base",
+    "sharingOSSubpath": "",
+    "sharingOSPermission": "r+w"
+  }
+}

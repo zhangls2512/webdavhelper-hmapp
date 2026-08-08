@@ -1,7 +1,6 @@
 import { common } from '@kit.AbilityKit'
-import { LoadingDialog, PiPWindow, promptAction, window } from '@kit.ArkUI'
+import { LoadingDialog, PiPWindow, promptAction, uiMaterial, window } from '@kit.ArkUI'
 import { media } from '@kit.MediaKit'
-import { hdsEffect } from '@kit.UIDesignKit'
 import { getAccountAuthorization } from '../common/Account'
 
 @ComponentV2
@@ -79,12 +78,13 @@ export default struct Player {
                 .backgroundColor($r('sys.color.interactive_pressed'))
               }
             })
-            .visualEffect(new hdsEffect.HdsEffectBuilder()
-              .pointLight({
-                sourceType: hdsEffect.PointLightSourceType.SOFT,
-                illuminatedType: hdsEffect.PointLightIlluminatedType.BORDER_CONTENT
-              })
-              .buildEffect())
+            .systemMaterial(new uiMaterial.ImmersiveMaterial({
+              style: uiMaterial.ImmersiveStyle.REGULAR,
+              interactive: true,
+              lightEffect: {
+                color: Color.White
+              }
+            }))
             .width(40)
             .onClick(async () => {
               this.avPlayer?.seek(this.time * 1000 - 15000)
@@ -111,12 +111,13 @@ export default struct Player {
                 .backgroundColor($r('sys.color.interactive_pressed'))
               }
             })
-            .visualEffect(new hdsEffect.HdsEffectBuilder()
-              .pointLight({
-                sourceType: hdsEffect.PointLightSourceType.SOFT,
-                illuminatedType: hdsEffect.PointLightIlluminatedType.BORDER_CONTENT
-              })
-              .buildEffect())
+            .systemMaterial(new uiMaterial.ImmersiveMaterial({
+              style: uiMaterial.ImmersiveStyle.REGULAR,
+              interactive: true,
+              lightEffect: {
+                color: Color.White
+              }
+            }))
             .width(40)
             .onClick(async () => {
               if (this.state === 'stopped') {
@@ -151,12 +152,13 @@ export default struct Player {
                 .backgroundColor($r('sys.color.interactive_pressed'))
               }
             })
-            .visualEffect(new hdsEffect.HdsEffectBuilder()
-              .pointLight({
-                sourceType: hdsEffect.PointLightSourceType.SOFT,
-                illuminatedType: hdsEffect.PointLightIlluminatedType.BORDER_CONTENT
-              })
-              .buildEffect())
+            .systemMaterial(new uiMaterial.ImmersiveMaterial({
+              style: uiMaterial.ImmersiveStyle.REGULAR,
+              interactive: true,
+              lightEffect: {
+                color: Color.White
+              }
+            }))
             .width(40)
             .onClick(async () => {
               await this.avPlayer?.pause()
@@ -177,12 +179,13 @@ export default struct Player {
                 .backgroundColor($r('sys.color.interactive_pressed'))
               }
             })
-            .visualEffect(new hdsEffect.HdsEffectBuilder()
-              .pointLight({
-                sourceType: hdsEffect.PointLightSourceType.SOFT,
-                illuminatedType: hdsEffect.PointLightIlluminatedType.BORDER_CONTENT
-              })
-              .buildEffect())
+            .systemMaterial(new uiMaterial.ImmersiveMaterial({
+              style: uiMaterial.ImmersiveStyle.REGULAR,
+              interactive: true,
+              lightEffect: {
+                color: Color.White
+              }
+            }))
             .width(40)
             .onClick(async () => {
               await this.avPlayer?.stop()
@@ -207,12 +210,13 @@ export default struct Player {
                 .backgroundColor($r('sys.color.interactive_pressed'))
               }
             })
-            .visualEffect(new hdsEffect.HdsEffectBuilder()
-              .pointLight({
-                sourceType: hdsEffect.PointLightSourceType.SOFT,
-                illuminatedType: hdsEffect.PointLightIlluminatedType.BORDER_CONTENT
-              })
-              .buildEffect())
+            .systemMaterial(new uiMaterial.ImmersiveMaterial({
+              style: uiMaterial.ImmersiveStyle.REGULAR,
+              interactive: true,
+              lightEffect: {
+                color: Color.White
+              }
+            }))
             .width(40)
             .onClick(() => {
               this.avPlayer?.seek(this.time * 1000 + 15000)
@@ -427,6 +431,8 @@ export default struct Player {
     })
     .onDisAppear(async () => {
       await this.avPlayer?.release()
+      const lastWindow = await window.getLastWindow(this.context)
+      lastWindow.off('windowSizeChange')
     })
   }
 }
