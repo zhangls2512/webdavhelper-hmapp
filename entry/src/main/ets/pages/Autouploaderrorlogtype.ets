@@ -15,8 +15,8 @@ export function AutouploaderrorlogtypeBuilder() {
 
 @ComponentV2
 struct Autouploaderrorlogtype {
+  @Local autoUploadErrorLogType: string[] = []
   context = this.getUIContext().getHostContext() as common.UIAbilityContext
-  autoUploadErrorLogType: string[] = []
   typeArray: Type[] = [
     {
       name: 'js运行异常',
@@ -29,6 +29,10 @@ struct Autouploaderrorlogtype {
     {
       name: '应用冻屏',
       value: 'APP_FREEZE'
+    },
+    {
+      name: '应用冻屏告警',
+      value: 'APPFREEZE_WARNING'
     },
     {
       name: '资源泄漏',

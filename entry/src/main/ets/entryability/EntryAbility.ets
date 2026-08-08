@@ -1,6 +1,5 @@
 import {
   AbilityConstant,
-  appRecovery,
   bundleManager,
   ConfigurationConstant,
   contextConstant,
@@ -12,11 +11,11 @@ import {
 import { updateManager } from '@kit.AppGalleryKit'
 import { uniformTypeDescriptor } from '@kit.ArkData'
 import { promptAction, window } from '@kit.ArkUI'
-import { commonEventManager, deviceInfo } from '@kit.BasicServicesKit'
+import { batteryInfo, commonEventManager, deviceInfo } from '@kit.BasicServicesKit'
 import { fileIo, fileUri } from '@kit.CoreFileKit'
 import { statusBarManager } from '@kit.DeskTopExtensionKit'
 import { image } from '@kit.ImageKit'
-import { netQuality } from '@kit.NetworkBoostKit'
+import { netBoost, netQuality } from '@kit.NetworkBoostKit'
 import { connection } from '@kit.NetworkKit'
 import { notificationManager } from '@kit.NotificationKit'
 import { hiAppEvent } from '@kit.PerformanceAnalysisKit'
@@ -290,6 +289,35 @@ export default class EntryAbility extends UIAbility {
         }
       }
     })
+    const entryLowPowerModeWhenLowBatteryLevel =
+      getFlushPreference(this.context, 'debugSetting', 'entryLowPowerModeWhenLowBatteryLevel', true) as boolean
+    if (entryLowPowerModeWhenLowBatteryLevel && batteryInfo.batteryCapacityLevel >= 4) {
+      netBoost.setLowPowerMode(true)
+      await promptAction.openToast({
+        message: '网络传输进入低功耗模式成功'
+      })
+    }
+    const subscriber = commonEventManager.createSubscriberSync({
+      events: ['usual.event.BATTERY_LOW', 'usual.event.BATTERY_OKAY']
+    })
+    await commonEventManager.subscribeToEvent(subscriber, async (data) => {
+      const entryLowPowerModeWhenLowBatteryLevel =
+        getFlushPreference(this.context, 'debugSetting', 'entryLowPowerModeWhenLowBatteryLevel', true) as boolean
+      if (entryLowPowerModeWhenLowBatteryLevel) {
+        if (data.event === 'usual.event.BATTERY_LOW') {
+          netBoost.setLowPowerMode(true)
+          await promptAction.openToast({
+            message: '网络传输进入低功耗模式成功'
+          })
+        }
+        if (data.event === 'usual.event.BATTERY_OKAY') {
+          netBoost.setLowPowerMode(false)
+          await promptAction.openToast({
+            message: '网络传输退出低功耗模式成功'
+          })
+        }
+      }
+    })
     if (getFlushPreference(this.context, 'debugSetting', 'deleteErrorLogBeforeUpdateTimeWhenAppLaunch', true)) {
       const bundleInfo = bundleManager.getBundleInfoForSelfSync(bundleManager.BundleFlag.GET_BUNDLE_INFO_DEFAULT)
       const updateTime = bundleInfo.updateTime
@@ -324,7 +352,6 @@ export default class EntryAbility extends UIAbility {
   }
 
   async onCreate(want: Want) {
-    appRecovery.enableAppRecovery(appRecovery.RestartFlag.RESTART_WHEN_APP_FREEZE)
     const allowContinue = getFlushPreference(this.context, 'commonSetting', 'allowContinue', true)
     if (!allowContinue) {
       await this.context.setMissionContinueState(AbilityConstant.ContinueState.INACTIVE)
@@ -482,7 +509,7 @@ export default class EntryAbility extends UIAbility {
   }
 
   async onContinue(wantParam: Record<string, Object>) {
-    if (wantParam.version !== 12) {
+    if (wantParam.version !== 13) {
       await promptAction.openToast({
         message: '接续失败，原因：目标端应用版本号与发起端不匹配'
       })

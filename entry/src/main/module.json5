@@ -10,6 +10,12 @@
     ],
     "deliveryWithInstall": true,
     "pages": "$profile:main_pages",
+    "metadata": [
+      {
+        "name": "ohos.arkui.UIMaterial.state",
+        "value": "enable"
+      }
+    ],
     "abilities": [
       {
         "name": "EntryAbility",
@@ -148,6 +154,9 @@
         "name": "ohos.permission.PREPARE_APP_TERMINATE"
       },
       {
+        "name": "ohos.permission.SET_ABILITY_INSTANCE_INFO"
+      },
+      {
         "name": "ohos.permission.VIBRATE"
       },
       {
@@ -176,6 +185,7 @@
     ],
     "compressNativeLibs": true,
     "fileContextMenu": "$profile:menu",
-    "routerMap": "$profile:router_map"
+    "routerMap": "$profile:router_map",
+    "shareFiles": "$profile:share_files"
   }
 }

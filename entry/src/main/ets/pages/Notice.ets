@@ -13,6 +13,7 @@ interface NoticeItem {
 
 @ComponentV2
 export default struct Notice {
+  @Local isOn: boolean = notificationManager.isNotificationEnabledSync()
   @Local noticeArray: NoticeItem[] = []
   @Local pushToken: string = ''
   @Local loading: boolean = false
@@ -32,7 +33,7 @@ export default struct Notice {
                 })
               Toggle({
                 type: ToggleType.Switch,
-                isOn: notificationManager.isNotificationEnabledSync()
+                isOn: this.isOn
               })
                 .enabled(false)
             }
@@ -50,7 +51,8 @@ export default struct Notice {
               .fontColor($r('sys.color.font_emphasize'))
               .fontWeight(FontWeight.Medium)
               .onClick(async () => {
-                await notificationManager.openNotificationSettings(this.context)
+                const res = await notificationManager.openNotificationSettingsWithResult(this.context)
+                this.isOn = res.notificationEnabled ?? false
               })
             Span('管理此开关。')
               .fontColor($r('sys.color.font_secondary'))

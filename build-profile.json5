@@ -30,7 +30,7 @@
       {
         "name": "default",
         "signingConfig": "debug",
-        "compatibleSdkVersion": "6.1.0(23)",
+        "compatibleSdkVersion": "26.0.0",
         "buildOption": {
           "packOptions": {
             "fastBuildApp": true,
@@ -41,6 +41,9 @@
             "resCompileThreads": 32
           },
           "arkOptions": {
+            "tscConfig": {
+              "tsImportSoCheck": true
+            },
             "autoLazyImport": true,
             "reExportCheckMode": "strict",
             "branchElimination": true,
@@ -54,7 +57,8 @@
             "caseSensitiveCheck": true,
             "harLocalDependencyCheck": true,
             "enableStrictCheckOHModule": true,
-            "strictCheckerOnly": true
+            "strictCheckerOnly": true,
+            "apiCompatibilityCheck": "error"
           },
           "preloadSystemSo": true
         },
