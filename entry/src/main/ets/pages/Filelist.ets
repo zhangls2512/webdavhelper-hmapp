@@ -42,7 +42,7 @@ export default struct Filelist {
   @Provider() transferredSize: number = 0
   @Provider() totalSize: number = 0
   @Local isShowReaderSheet: boolean = false
-  @Local preferType: number = 1
+  @Local preferType: SheetType = SheetType.CENTER
   @Local loading: boolean = false
   @Local accountArray: AccountInfo[] = []
   @Local favouritePathArray: FavouritePath[] = []
@@ -692,7 +692,7 @@ export default struct Filelist {
               })
               ListItem()
                 .margin({
-                  bottom: this.preferType === 0 ? 80 : 0
+                  bottom: this.preferType === SheetType.BOTTOM ? 80 : 0
                 })
             }
           }
@@ -2008,7 +2008,7 @@ export default struct Filelist {
     .padding({
       left: $r('sys.float.ohos_id_elements_margin_horizontal_l'),
       right: $r('sys.float.ohos_id_elements_margin_horizontal_l'),
-      top: this.preferType === 0 ? 0 : $r('sys.float.ohos_id_default_padding_top')
+      top: this.preferType === SheetType.BOTTOM ? 0 : $r('sys.float.ohos_id_default_padding_top')
     })
     .onAppear(async () => {
       this.preferType = getPreferType(this.UIContext)

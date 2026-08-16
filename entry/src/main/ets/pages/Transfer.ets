@@ -10,7 +10,7 @@ import { TransferTaskItem } from './Index'
 export default struct Transfer {
   @Local selectedIndex: number = 0
   @Local transferTaskArray: TransferTaskItem[] = []
-  @Local preferType: number = 1
+  @Local preferType: SheetType = SheetType.CENTER
   UIContext = this.getUIContext()
   context = this.UIContext.getHostContext() as common.UIAbilityContext
   intervalId = -1
@@ -244,7 +244,7 @@ export default struct Transfer {
           }
           ListItem()
             .margin({
-              bottom: this.preferType === 0 ? 80 : 0
+              bottom: this.preferType === SheetType.BOTTOM ? 80 : 0
             })
         }
         .layoutWeight(1)
@@ -253,7 +253,7 @@ export default struct Transfer {
     .padding({
       left: $r('sys.float.ohos_id_elements_margin_horizontal_l'),
       right: $r('sys.float.ohos_id_elements_margin_horizontal_l'),
-      top: this.preferType === 0 ? 0 : $r('sys.float.ohos_id_default_padding_top')
+      top: this.preferType === SheetType.BOTTOM ? 0 : $r('sys.float.ohos_id_default_padding_top')
     })
     .onAppear(() => {
       this.preferType = getPreferType(this.UIContext)

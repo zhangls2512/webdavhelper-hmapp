@@ -53,7 +53,7 @@ struct Index {
   @Local errorType: string = ''
   @Local errorObject: string = ''
   @Local backgroundImagePixelMap: PixelMap | undefined = undefined
-  @Local preferType: number = 1
+  @Local preferType: SheetType = SheetType.CENTER
   @Local index: number = 0
   @Local isShowCleardataSheet: boolean = false
   @Local isShowNoticeSheet: boolean = false
