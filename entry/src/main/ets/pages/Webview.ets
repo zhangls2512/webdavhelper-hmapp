@@ -61,7 +61,7 @@ struct Webview {
           this.controller.enableAdsBlock(true)
           this.controller.enableIntelligentTrackingPrevention(true)
           this.controller.enableSafeBrowsing(true)
-          this.controller.setErrorPageEnabled(true)
+          this.controller.setErrorPageEnabled(true, true)
           if (this.trust) {
             const urlTrustList = {
               UrlPermissionList: []
