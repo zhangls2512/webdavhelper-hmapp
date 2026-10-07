@@ -1,12 +1,13 @@
 import { common, wantConstant } from '@kit.AbilityKit'
 import { sendablePreferences, unifiedDataChannel } from '@kit.ArkData'
 import { util } from '@kit.ArkTS'
-import { LoadingDialog, promptAction, uiMaterial } from '@kit.ArkUI'
+import { LoadingDialog, promptAction } from '@kit.ArkUI'
 import { deviceInfo } from '@kit.BasicServicesKit'
 import { Environment, fileIo, fileUri, picker } from '@kit.CoreFileKit'
 import { netBoost } from '@kit.NetworkBoostKit'
 import { filePreview } from '@kit.PreviewKit'
 import { rcp } from '@kit.RemoteCommunicationKit'
+import { hdsEffect } from '@kit.UIDesignKit'
 import {
   AccountInfo,
   exitAccount,
@@ -724,13 +725,12 @@ export default struct Filelist {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .systemMaterial(new uiMaterial.ImmersiveMaterial({
-                style: uiMaterial.ImmersiveStyle.REGULAR,
-                interactive: true,
-                lightEffect: {
-                  color: Color.White
-                }
-              }))
+              .visualEffect(new hdsEffect.HdsEffectBuilder()
+                .pointLight({
+                  sourceType: hdsEffect.PointLightSourceType.SOFT,
+                  illuminatedType: hdsEffect.PointLightIlluminatedType.BORDER_CONTENT
+                })
+                .buildEffect())
               .width(40)
               .onClick(() => {
                 this.exitMultipleSelect()
@@ -761,13 +761,12 @@ export default struct Filelist {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .systemMaterial(new uiMaterial.ImmersiveMaterial({
-                style: uiMaterial.ImmersiveStyle.REGULAR,
-                interactive: true,
-                lightEffect: {
-                  color: Color.White
-                }
-              }))
+              .visualEffect(new hdsEffect.HdsEffectBuilder()
+                .pointLight({
+                  sourceType: hdsEffect.PointLightSourceType.SOFT,
+                  illuminatedType: hdsEffect.PointLightIlluminatedType.BORDER_CONTENT
+                })
+                .buildEffect())
               .width(40)
               .onClick(async () => {
                 if (this.multipleSelectArray.length === 0) {
@@ -854,13 +853,12 @@ export default struct Filelist {
                     .backgroundColor($r('sys.color.interactive_pressed'))
                   }
                 })
-                .systemMaterial(new uiMaterial.ImmersiveMaterial({
-                  style: uiMaterial.ImmersiveStyle.REGULAR,
-                  interactive: true,
-                  lightEffect: {
-                    color: Color.White
-                  }
-                }))
+                .visualEffect(new hdsEffect.HdsEffectBuilder()
+                  .pointLight({
+                    sourceType: hdsEffect.PointLightSourceType.SOFT,
+                    illuminatedType: hdsEffect.PointLightIlluminatedType.BORDER_CONTENT
+                  })
+                  .buildEffect())
                 .width(40)
                 .onClick(async () => {
                   let text = ''
@@ -926,13 +924,12 @@ export default struct Filelist {
                     .backgroundColor($r('sys.color.interactive_pressed'))
                   }
                 })
-                .systemMaterial(new uiMaterial.ImmersiveMaterial({
-                  style: uiMaterial.ImmersiveStyle.REGULAR,
-                  interactive: true,
-                  lightEffect: {
-                    color: Color.White
-                  }
-                }))
+                .visualEffect(new hdsEffect.HdsEffectBuilder()
+                  .pointLight({
+                    sourceType: hdsEffect.PointLightSourceType.SOFT,
+                    illuminatedType: hdsEffect.PointLightIlluminatedType.BORDER_CONTENT
+                  })
+                  .buildEffect())
                 .width(40)
                 .onClick(async () => {
                   if (this.multipleSelectArray.length === 0) {
@@ -982,13 +979,12 @@ export default struct Filelist {
                     .backgroundColor($r('sys.color.interactive_pressed'))
                   }
                 })
-                .systemMaterial(new uiMaterial.ImmersiveMaterial({
-                  style: uiMaterial.ImmersiveStyle.REGULAR,
-                  interactive: true,
-                  lightEffect: {
-                    color: Color.White
-                  }
-                }))
+                .visualEffect(new hdsEffect.HdsEffectBuilder()
+                  .pointLight({
+                    sourceType: hdsEffect.PointLightSourceType.SOFT,
+                    illuminatedType: hdsEffect.PointLightIlluminatedType.BORDER_CONTENT
+                  })
+                  .buildEffect())
                 .width(40)
                 .onClick(async () => {
                   if (this.multipleSelectArray.length === 0) {
@@ -1033,13 +1029,12 @@ export default struct Filelist {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .systemMaterial(new uiMaterial.ImmersiveMaterial({
-                style: uiMaterial.ImmersiveStyle.REGULAR,
-                interactive: true,
-                lightEffect: {
-                  color: Color.White
-                }
-              }))
+              .visualEffect(new hdsEffect.HdsEffectBuilder()
+                .pointLight({
+                  sourceType: hdsEffect.PointLightSourceType.SOFT,
+                  illuminatedType: hdsEffect.PointLightIlluminatedType.BORDER_CONTENT
+                })
+                .buildEffect())
               .width(40)
               .onClick(async () => {
                 const promptAction = this.UIContext.getPromptAction()
@@ -1106,13 +1101,12 @@ export default struct Filelist {
                 .backgroundColor($r('sys.color.interactive_pressed'))
               }
             })
-            .systemMaterial(new uiMaterial.ImmersiveMaterial({
-              style: uiMaterial.ImmersiveStyle.REGULAR,
-              interactive: true,
-              lightEffect: {
-                color: Color.White
-              }
-            }))
+            .visualEffect(new hdsEffect.HdsEffectBuilder()
+              .pointLight({
+                sourceType: hdsEffect.PointLightSourceType.SOFT,
+                illuminatedType: hdsEffect.PointLightIlluminatedType.BORDER_CONTENT
+              })
+              .buildEffect())
             .width(40)
             .onClick(async () => {
               if (this.dirnames.length > 0) {
@@ -1211,10 +1205,6 @@ export default struct Filelist {
             value: this.searchKeyword!!
           })
             .searchButton('搜索')
-            .systemMaterial(new uiMaterial.ImmersiveMaterial({
-              style: uiMaterial.ImmersiveStyle.REGULAR,
-              interactive: true
-            }))
             .onSubmit(async (value) => {
               this.dialogControllerProgress.open()
               await this.get()
@@ -1239,13 +1229,12 @@ export default struct Filelist {
                 .backgroundColor($r('sys.color.interactive_pressed'))
               }
             })
-            .systemMaterial(new uiMaterial.ImmersiveMaterial({
-              style: uiMaterial.ImmersiveStyle.REGULAR,
-              interactive: true,
-              lightEffect: {
-                color: Color.White
-              }
-            }))
+            .visualEffect(new hdsEffect.HdsEffectBuilder()
+              .pointLight({
+                sourceType: hdsEffect.PointLightSourceType.SOFT,
+                illuminatedType: hdsEffect.PointLightIlluminatedType.BORDER_CONTENT
+              })
+              .buildEffect())
             .width(40)
             .onClick(() => {
               this.editPath = this.getPath()
@@ -1279,13 +1268,12 @@ export default struct Filelist {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .systemMaterial(new uiMaterial.ImmersiveMaterial({
-                style: uiMaterial.ImmersiveStyle.REGULAR,
-                interactive: true,
-                lightEffect: {
-                  color: Color.White
-                }
-              }))
+              .visualEffect(new hdsEffect.HdsEffectBuilder()
+                .pointLight({
+                  sourceType: hdsEffect.PointLightSourceType.SOFT,
+                  illuminatedType: hdsEffect.PointLightIlluminatedType.BORDER_CONTENT
+                })
+                .buildEffect())
               .width(40)
               .onClick(async () => {
                 const documentViewPicker = new picker.DocumentViewPicker(this.context)
@@ -1339,13 +1327,12 @@ export default struct Filelist {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .systemMaterial(new uiMaterial.ImmersiveMaterial({
-                style: uiMaterial.ImmersiveStyle.REGULAR,
-                interactive: true,
-                lightEffect: {
-                  color: Color.White
-                }
-              }))
+              .visualEffect(new hdsEffect.HdsEffectBuilder()
+                .pointLight({
+                  sourceType: hdsEffect.PointLightSourceType.SOFT,
+                  illuminatedType: hdsEffect.PointLightIlluminatedType.BORDER_CONTENT
+                })
+                .buildEffect())
               .width(40)
               .onClick(() => {
                 this.copyMovePath = ''
@@ -1367,13 +1354,12 @@ export default struct Filelist {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .systemMaterial(new uiMaterial.ImmersiveMaterial({
-                style: uiMaterial.ImmersiveStyle.REGULAR,
-                interactive: true,
-                lightEffect: {
-                  color: Color.White
-                }
-              }))
+              .visualEffect(new hdsEffect.HdsEffectBuilder()
+                .pointLight({
+                  sourceType: hdsEffect.PointLightSourceType.SOFT,
+                  illuminatedType: hdsEffect.PointLightIlluminatedType.BORDER_CONTENT
+                })
+                .buildEffect())
               .width(40)
               .onClick(async () => {
                 let text = ''
@@ -1426,13 +1412,12 @@ export default struct Filelist {
                     .backgroundColor($r('sys.color.interactive_pressed'))
                   }
                 })
-                .systemMaterial(new uiMaterial.ImmersiveMaterial({
-                  style: uiMaterial.ImmersiveStyle.REGULAR,
-                  interactive: true,
-                  lightEffect: {
-                    color: Color.White
-                  }
-                }))
+                .visualEffect(new hdsEffect.HdsEffectBuilder()
+                  .pointLight({
+                    sourceType: hdsEffect.PointLightSourceType.SOFT,
+                    illuminatedType: hdsEffect.PointLightIlluminatedType.BORDER_CONTENT
+                  })
+                  .buildEffect())
                 .width(40)
                 .onClick(() => {
                   this.fileArray.forEach(item => {
@@ -1460,13 +1445,12 @@ export default struct Filelist {
                     .backgroundColor($r('sys.color.interactive_pressed'))
                   }
                 })
-                .systemMaterial(new uiMaterial.ImmersiveMaterial({
-                  style: uiMaterial.ImmersiveStyle.REGULAR,
-                  interactive: true,
-                  lightEffect: {
-                    color: Color.White
-                  }
-                }))
+                .visualEffect(new hdsEffect.HdsEffectBuilder()
+                  .pointLight({
+                    sourceType: hdsEffect.PointLightSourceType.SOFT,
+                    illuminatedType: hdsEffect.PointLightIlluminatedType.BORDER_CONTENT
+                  })
+                  .buildEffect())
                 .width(40)
                 .onClick(() => {
                   this.fileArray.forEach(item => {

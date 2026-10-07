@@ -10,6 +10,7 @@
     "plugin:@compatibility/all"
   ],
   "rules": {
+    "@typescript-eslint/await-thenable": "off",
     "@typescript-eslint/ban-types": "off",
     "@typescript-eslint/explicit-member-accessibility": "off",
     "@typescript-eslint/member-delimiter-style": [
@@ -61,6 +62,7 @@
     "@cross-device-app-dev/immersive-effect-check": "off",
     "@cross-device-app-dev/one-multi-breakpoint-check": "off",
     "@hw-stylistic/max-len": "off",
+    "@correctness/accessibility-focus-redundancy-check": "off",
     "@correctness/accessibility-label-check": "off",
     "@correctness/accessibility-status-missing-check": "off",
     "@correctness/audio-interrupt-check": "off",

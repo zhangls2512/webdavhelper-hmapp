@@ -4,6 +4,7 @@ import { avSession } from '@kit.AVSessionKit'
 import { backgroundTaskManager } from '@kit.BackgroundTasksKit'
 import { deviceInfo } from '@kit.BasicServicesKit'
 import { media } from '@kit.MediaKit'
+import { hdsEffect } from '@kit.UIDesignKit'
 import { getAccountAuthorization } from '../common/Account'
 
 @ComponentV2
@@ -481,6 +482,7 @@ export default struct Player {
         Column() {
           Column() {
             Image($r('app.media.back'))
+              .fillColor(Color.White)
           }
           .bindTips('返回')
           .borderRadius(20)
@@ -495,13 +497,12 @@ export default struct Player {
               .backgroundColor($r('sys.color.interactive_pressed'))
             }
           })
-          .systemMaterial(new uiMaterial.ImmersiveMaterial({
-            style: uiMaterial.ImmersiveStyle.REGULAR,
-            interactive: true,
-            lightEffect: {
-              color: Color.White
-            }
-          }))
+          .visualEffect(new hdsEffect.HdsEffectBuilder()
+            .pointLight({
+              sourceType: hdsEffect.PointLightSourceType.SOFT,
+              illuminatedType: hdsEffect.PointLightIlluminatedType.BORDER_CONTENT
+            })
+            .buildEffect())
           .width(40)
           .onClick(() => {
             this.isShowPlayer = false
@@ -539,6 +540,7 @@ export default struct Player {
               if (this.state !== 'stopped' && this.time >= 15) {
                 Column() {
                   Image($r('app.media.gobackward15'))
+                    .fillColor(Color.White)
                 }
                 .bindTips('快退')
                 .borderRadius(20)
@@ -556,13 +558,12 @@ export default struct Player {
                     .backgroundColor($r('sys.color.interactive_pressed'))
                   }
                 })
-                .systemMaterial(new uiMaterial.ImmersiveMaterial({
-                  style: uiMaterial.ImmersiveStyle.REGULAR,
-                  interactive: true,
-                  lightEffect: {
-                    color: Color.White
-                  }
-                }))
+                .visualEffect(new hdsEffect.HdsEffectBuilder()
+                  .pointLight({
+                    sourceType: hdsEffect.PointLightSourceType.SOFT,
+                    illuminatedType: hdsEffect.PointLightIlluminatedType.BORDER_CONTENT
+                  })
+                  .buildEffect())
                 .width(40)
                 .onClick(() => {
                   if (this.avPlayer) {
@@ -590,13 +591,12 @@ export default struct Player {
                     .backgroundColor($r('sys.color.interactive_pressed'))
                   }
                 })
-                .systemMaterial(new uiMaterial.ImmersiveMaterial({
-                  style: uiMaterial.ImmersiveStyle.REGULAR,
-                  interactive: true,
-                  lightEffect: {
-                    color: Color.White
-                  }
-                }))
+                .visualEffect(new hdsEffect.HdsEffectBuilder()
+                  .pointLight({
+                    sourceType: hdsEffect.PointLightSourceType.SOFT,
+                    illuminatedType: hdsEffect.PointLightIlluminatedType.BORDER_CONTENT
+                  })
+                  .buildEffect())
                 .width(40)
                 .onClick(async () => {
                   if (this.avPlayer) {
@@ -637,13 +637,12 @@ export default struct Player {
                     .backgroundColor($r('sys.color.interactive_pressed'))
                   }
                 })
-                .systemMaterial(new uiMaterial.ImmersiveMaterial({
-                  style: uiMaterial.ImmersiveStyle.REGULAR,
-                  interactive: true,
-                  lightEffect: {
-                    color: Color.White
-                  }
-                }))
+                .visualEffect(new hdsEffect.HdsEffectBuilder()
+                  .pointLight({
+                    sourceType: hdsEffect.PointLightSourceType.SOFT,
+                    illuminatedType: hdsEffect.PointLightIlluminatedType.BORDER_CONTENT
+                  })
+                  .buildEffect())
                 .width(40)
                 .onClick(async () => {
                   if (this.avPlayer) {
@@ -668,13 +667,12 @@ export default struct Player {
                     .backgroundColor($r('sys.color.interactive_pressed'))
                   }
                 })
-                .systemMaterial(new uiMaterial.ImmersiveMaterial({
-                  style: uiMaterial.ImmersiveStyle.REGULAR,
-                  interactive: true,
-                  lightEffect: {
-                    color: Color.White
-                  }
-                }))
+                .visualEffect(new hdsEffect.HdsEffectBuilder()
+                  .pointLight({
+                    sourceType: hdsEffect.PointLightSourceType.SOFT,
+                    illuminatedType: hdsEffect.PointLightIlluminatedType.BORDER_CONTENT
+                  })
+                  .buildEffect())
                 .width(40)
                 .onClick(async () => {
                   if (this.avPlayer) {
@@ -685,6 +683,7 @@ export default struct Player {
               if (this.state !== 'stopped' && this.duration - this.time >= 15) {
                 Column() {
                   Image($r('app.media.goforward15'))
+                    .fillColor(Color.White)
                 }
                 .bindTips('快进')
                 .borderRadius(20)
@@ -702,13 +701,12 @@ export default struct Player {
                     .backgroundColor($r('sys.color.interactive_pressed'))
                   }
                 })
-                .systemMaterial(new uiMaterial.ImmersiveMaterial({
-                  style: uiMaterial.ImmersiveStyle.REGULAR,
-                  interactive: true,
-                  lightEffect: {
-                    color: Color.White
-                  }
-                }))
+                .visualEffect(new hdsEffect.HdsEffectBuilder()
+                  .pointLight({
+                    sourceType: hdsEffect.PointLightSourceType.SOFT,
+                    illuminatedType: hdsEffect.PointLightIlluminatedType.BORDER_CONTENT
+                  })
+                  .buildEffect())
                 .width(40)
                 .onClick(() => {
                   if (this.avPlayer) {
@@ -719,7 +717,7 @@ export default struct Player {
               Blank()
               Column() {
                 Image($r('app.media.setting'))
-                  .fillColor($r('sys.color.icon_primary'))
+                  .fillColor(Color.White)
               }
               .bindTips('设置')
               .borderRadius(20)
@@ -734,13 +732,12 @@ export default struct Player {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .systemMaterial(new uiMaterial.ImmersiveMaterial({
-                style: uiMaterial.ImmersiveStyle.REGULAR,
-                interactive: true,
-                lightEffect: {
-                  color: Color.White
-                }
-              }))
+              .visualEffect(new hdsEffect.HdsEffectBuilder()
+                .pointLight({
+                  sourceType: hdsEffect.PointLightSourceType.SOFT,
+                  illuminatedType: hdsEffect.PointLightIlluminatedType.BORDER_CONTENT
+                })
+                .buildEffect())
               .width(40)
               .onClick(() => {
                 this.showSetting = true
