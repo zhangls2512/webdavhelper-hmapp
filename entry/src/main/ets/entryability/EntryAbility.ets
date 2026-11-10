@@ -198,6 +198,9 @@ export default class EntryAbility extends UIAbility {
     const netConnection = connection.createNetConnection()
     netConnection.register(() => {
     })
+    netConnection.on('netConnectionPropertiesChange', async () => {
+      await generateBestAddress(this.context)
+    })
     netConnection.on('netAvailable', async (data) => {
       if (getFlushPreference(this.context, 'debugSetting', 'showNetAvailableStatusChange', false)) {
         await promptAction.openToast({

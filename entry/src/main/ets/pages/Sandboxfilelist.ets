@@ -130,16 +130,9 @@ struct Sandboxfilelist {
         await Promise.all(promises)
         this.fileArray = fileArray.sort((a, b) => a.name.localeCompare(b.name))
       } catch (err) {
-        if (err.code !== 13900012) {
-          await promptAction.openToast({
-            message: '发生错误，错误码：' + err.code + (err.message ? '，错误信息：' + err.message : '')
-          })
-        }
-        if (err.code === 13900012) {
-          await promptAction.openToast({
-            message: '无权限'
-          })
-        }
+        await promptAction.openToast({
+          message: '发生错误，错误码：' + err.code + (err.message ? '，错误信息：' + err.message : '')
+        })
         this.dirnames.pop()
         await this.get()
       }
@@ -198,16 +191,9 @@ struct Sandboxfilelist {
               })
               await this.get()
             } catch (err) {
-              if (err.code !== 13900012) {
-                await promptAction.openToast({
-                  message: '发生错误，错误码：' + err.code + (err.message ? '，错误信息：' + err.message : '')
-                })
-              }
-              if (err.code === 13900012) {
-                await promptAction.openToast({
-                  message: '无权限'
-                })
-              }
+              await promptAction.openToast({
+                message: '发生错误，错误码：' + err.code + (err.message ? '，错误信息：' + err.message : '')
+              })
             }
           }
         })
