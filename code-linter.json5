@@ -12,18 +12,14 @@
   "rules": {
     "@typescript-eslint/await-thenable": "off",
     "@typescript-eslint/ban-types": "off",
+    "@typescript-eslint/comma-dangle": "off",
+    "@typescript-eslint/consistent-type-assertions": "off",
     "@typescript-eslint/explicit-member-accessibility": "off",
-    "@typescript-eslint/member-delimiter-style": [
-      "error",
-      {
-        "multiline": {
-          "delimiter": "comma",
-          "requireLast": false
-        }
-      }
-    ],
+    "@typescript-eslint/member-delimiter-style": "off",
     "@typescript-eslint/member-ordering": "off",
     "@typescript-eslint/naming-convention": "off",
+    "@typescript-eslint/no-base-to-string": "off",
+    "@typescript-eslint/no-confusing-void-expression": "off",
     "@typescript-eslint/no-empty-function": "off",
     "@typescript-eslint/no-extraneous-class": "off",
     "@typescript-eslint/no-extra-non-null-assertion": "off",
@@ -34,6 +30,8 @@
     "@typescript-eslint/no-shadow": "off",
     "@typescript-eslint/no-unnecessary-condition": "off",
     "@typescript-eslint/no-unnecessary-type-assertion": "off",
+    "@typescript-eslint/no-unused-expressions": "off",
+    "@typescript-eslint/no-unused-vars": "off",
     "@typescript-eslint/prefer-for-of": "off",
     "@typescript-eslint/prefer-nullish-coalescing": "off",
     "@typescript-eslint/prefer-optional-chain": "off",
@@ -43,6 +41,7 @@
       "error",
       "single"
     ],
+    "@typescript-eslint/restrict-plus-operands": "off",
     "@typescript-eslint/return-await": "off",
     "@typescript-eslint/semi": [
       "error",

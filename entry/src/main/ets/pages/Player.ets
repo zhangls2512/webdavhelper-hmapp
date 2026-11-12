@@ -774,10 +774,12 @@ export default struct Player {
     .onAppear(async () => {
       const lastWindow = await window.getLastWindow(this.context)
       lastWindow.setWindowDecorVisible(false)
+      if (deviceInfo.deviceType !== '2in1') {
+        await lastWindow.setSpecificSystemBarEnabled('status', false, true)
+      }
       if (deviceInfo.deviceType === '2in1') {
         lastWindow.setWindowTitleButtonVisible(false, false, false)
       }
-      await lastWindow.setSpecificSystemBarEnabled('status', false, true)
       const windowProperties = lastWindow.getWindowProperties()
       const windowHeight = this.UIContext.px2vp(windowProperties.windowRect.height)
       const windowWidth = this.UIContext.px2vp(windowProperties.windowRect.width)
@@ -926,7 +928,9 @@ export default struct Player {
                 this.videoWidth = windowWidth
               }
               if (windowHeight >= windowWidth && this.avPlayer.height < this.avPlayer.width) {
-                await lastWindow.setPreferredOrientation(window.Orientation.LANDSCAPE)
+                if (deviceInfo.deviceType !== '2in1') {
+                  await lastWindow.setPreferredOrientation(window.Orientation.LANDSCAPE)
+                }
                 this.videoHeight = windowWidth
                 this.videoWidth = windowHeight
               }
@@ -1002,8 +1006,10 @@ export default struct Player {
         this.pipWindow.off('controlEvent')
       }
       const lastWindow = await window.getLastWindow(this.context)
-      await lastWindow.setPreferredOrientation(window.Orientation.PORTRAIT)
-      await lastWindow.setSpecificSystemBarEnabled('status', true, true)
+      if (deviceInfo.deviceType !== '2in1') {
+        await lastWindow.setPreferredOrientation(window.Orientation.PORTRAIT)
+        await lastWindow.setSpecificSystemBarEnabled('status', true, true)
+      }
       if (deviceInfo.deviceType === '2in1') {
         lastWindow.setWindowTitleButtonVisible(true, true, true)
       }
