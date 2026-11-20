@@ -28,8 +28,10 @@ export async function restartApp(context: common.UIAbilityContext, UIContext: UI
       context.getApplicationContext().restartApp(want)
     }
   } catch (err) {
-    await promptAction.openToast({
-      message: '发生错误，错误码：' + err.code + (err.message ? '，错误信息：' + err.message : '')
-    })
+    if (err.message !== 'cancel') {
+      await promptAction.openToast({
+        message: '发生错误，错误码：' + err.code + (err.message ? '，错误信息：' + err.message : '')
+      })
+    }
   }
 }

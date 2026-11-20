@@ -1,12 +1,13 @@
 import { common, wantConstant } from '@kit.AbilityKit'
 import { sendablePreferences, unifiedDataChannel } from '@kit.ArkData'
 import { util } from '@kit.ArkTS'
-import { LoadingDialog, promptAction, uiMaterial } from '@kit.ArkUI'
+import { LoadingDialog, promptAction } from '@kit.ArkUI'
 import { deviceInfo } from '@kit.BasicServicesKit'
 import { Environment, fileIo, fileUri, picker } from '@kit.CoreFileKit'
 import { netBoost } from '@kit.NetworkBoostKit'
 import { filePreview } from '@kit.PreviewKit'
 import { rcp } from '@kit.RemoteCommunicationKit'
+import { hdsEffect } from '@kit.UIDesignKit'
 import {
   AccountInfo,
   exitAccount,
@@ -42,7 +43,7 @@ export default struct Filelist {
   @Provider() transferredSize: number = 0
   @Provider() totalSize: number = 0
   @Local isShowReaderSheet: boolean = false
-  @Local preferType: number = 1
+  @Local preferType: SheetType = SheetType.CENTER
   @Local loading: boolean = false
   @Local accountArray: AccountInfo[] = []
   @Local favouritePathArray: FavouritePath[] = []
@@ -181,14 +182,16 @@ export default struct Filelist {
           })
       }
       if (!this.multipleSelect) {
-        MenuItem({
-          startIcon: $r('app.media.multipleselect'),
-          content: '多选'
-        })
-          .onClick(() => {
-            this.multipleSelect = true
-            this.multipleSelectArray.push(item)
+        if (!this.copyMovePath) {
+          MenuItem({
+            startIcon: $r('app.media.multipleselect'),
+            content: '多选'
           })
+            .onClick(() => {
+              this.multipleSelect = true
+              this.multipleSelectArray.push(item)
+            })
+        }
         if (!item.isdir) {
           MenuItem({
             startIcon: $r('app.media.download'),
@@ -234,8 +237,8 @@ export default struct Filelist {
                 if (selectFileDownloadPath) {
                   const lastDotIndex = item.name.lastIndexOf('.')
                   if (lastDotIndex !== -1) {
-                    documentSaveOptions.newFileNames = [item.name.substring(0, lastDotIndex)]
-                    documentSaveOptions.fileSuffixChoices = ['.' + item.name.substring(lastDotIndex + 1)]
+                    documentSaveOptions.newFileNames = [item.name.slice(0, lastDotIndex)]
+                    documentSaveOptions.fileSuffixChoices = ['.' + item.name.slice(lastDotIndex + 1)]
                   }
                   if (lastDotIndex === -1) {
                     documentSaveOptions.newFileNames = [item.name]
@@ -404,63 +407,65 @@ export default struct Filelist {
               })
             })
         }
-        MenuItem({
-          startIcon: $r('app.media.copy'),
-          content: '复制'
-        })
-          .onClick(() => {
-            this.copyMovePath = item.path
-            this.remove = false
+        if (!this.copyMovePath) {
+          MenuItem({
+            startIcon: $r('app.media.copy'),
+            content: '复制'
           })
-        MenuItem({
-          startIcon: $r('app.media.move'),
-          content: '移动'
-        })
-          .onClick(() => {
-            this.copyMovePath = item.path
-            this.remove = true
-          })
-        MenuItem({
-          startIcon: $r('app.media.rename'),
-          content: '重命名'
-        })
-          .onClick(() => {
-            this.editPath = item.path
-            this.editName = item.name
-            this.isShowRenamefileSheet = true
-          })
-        MenuItem({
-          startIcon: $r('app.media.delete'),
-          content: '删除'
-        })
-          .onClick(async () => {
-            const promptAction = this.UIContext.getPromptAction()
-            const data = await promptAction.showDialog({
-              title: '提示',
-              message: '删除成功后无法恢复，确定删除？',
-              buttons: [
-                {
-                  text: '取消',
-                  color: $r('sys.color.font_primary')
-                },
-                {
-                  text: '删除',
-                  color: $r('sys.color.warning')
-                }
-              ]
+            .onClick(() => {
+              this.copyMovePath = item.path
+              this.remove = false
             })
-            if (data.index === 1) {
-              this.dialogControllerProgress.open()
-              const res = await rm(this.context, item.path)
-              this.dialogControllerProgress.close()
-              if (res !== 'fail') {
-                await promptAction.openToast({
-                  message: '删除成功'
-                })
-                this.loading = true
-              }
-            }
+          MenuItem({
+            startIcon: $r('app.media.move'),
+            content: '移动'
           })
+            .onClick(() => {
+              this.copyMovePath = item.path
+              this.remove = true
+            })
+          MenuItem({
+            startIcon: $r('app.media.rename'),
+            content: '重命名'
+          })
+            .onClick(() => {
+              this.editPath = item.path
+              this.editName = item.name
+              this.isShowRenamefileSheet = true
+            })
+          MenuItem({
+            startIcon: $r('app.media.delete'),
+            content: '删除'
+          })
+            .onClick(async () => {
+              const promptAction = this.UIContext.getPromptAction()
+              const data = await promptAction.showDialog({
+                title: '提示',
+                message: '删除成功后无法恢复，确定删除？',
+                buttons: [
+                  {
+                    text: '取消',
+                    color: $r('sys.color.font_primary')
+                  },
+                  {
+                    text: '删除',
+                    color: $r('sys.color.warning')
+                  }
+                ]
+              })
+              if (data.index === 1) {
+                this.dialogControllerProgress.open()
+                const res = await rm(this.context, item.path)
+                this.dialogControllerProgress.close()
+                if (res !== 'fail') {
+                  await promptAction.openToast({
+                    message: '删除成功'
+                  })
+                  this.loading = true
+                }
+              }
+            })
+        }
       }
     }
   }
@@ -692,7 +697,7 @@ export default struct Filelist {
               })
               ListItem()
                 .margin({
-                  bottom: this.preferType === 0 ? 80 : 0
+                  bottom: this.preferType === SheetType.BOTTOM ? 80 : 0
                 })
             }
           }
@@ -724,13 +729,12 @@ export default struct Filelist {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .systemMaterial(new uiMaterial.ImmersiveMaterial({
-                style: uiMaterial.ImmersiveStyle.REGULAR,
-                interactive: true,
-                lightEffect: {
-                  color: Color.White
-                }
-              }))
+              .visualEffect(new hdsEffect.HdsEffectBuilder()
+                .pointLight({
+                  sourceType: hdsEffect.PointLightSourceType.SOFT,
+                  illuminatedType: hdsEffect.PointLightIlluminatedType.BORDER_CONTENT
+                })
+                .buildEffect())
               .width(40)
               .onClick(() => {
                 this.exitMultipleSelect()
@@ -761,13 +765,12 @@ export default struct Filelist {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .systemMaterial(new uiMaterial.ImmersiveMaterial({
-                style: uiMaterial.ImmersiveStyle.REGULAR,
-                interactive: true,
-                lightEffect: {
-                  color: Color.White
-                }
-              }))
+              .visualEffect(new hdsEffect.HdsEffectBuilder()
+                .pointLight({
+                  sourceType: hdsEffect.PointLightSourceType.SOFT,
+                  illuminatedType: hdsEffect.PointLightIlluminatedType.BORDER_CONTENT
+                })
+                .buildEffect())
               .width(40)
               .onClick(async () => {
                 if (this.multipleSelectArray.length === 0) {
@@ -854,13 +857,12 @@ export default struct Filelist {
                     .backgroundColor($r('sys.color.interactive_pressed'))
                   }
                 })
-                .systemMaterial(new uiMaterial.ImmersiveMaterial({
-                  style: uiMaterial.ImmersiveStyle.REGULAR,
-                  interactive: true,
-                  lightEffect: {
-                    color: Color.White
-                  }
-                }))
+                .visualEffect(new hdsEffect.HdsEffectBuilder()
+                  .pointLight({
+                    sourceType: hdsEffect.PointLightSourceType.SOFT,
+                    illuminatedType: hdsEffect.PointLightIlluminatedType.BORDER_CONTENT
+                  })
+                  .buildEffect())
                 .width(40)
                 .onClick(async () => {
                   let text = ''
@@ -926,13 +928,12 @@ export default struct Filelist {
                     .backgroundColor($r('sys.color.interactive_pressed'))
                   }
                 })
-                .systemMaterial(new uiMaterial.ImmersiveMaterial({
-                  style: uiMaterial.ImmersiveStyle.REGULAR,
-                  interactive: true,
-                  lightEffect: {
-                    color: Color.White
-                  }
-                }))
+                .visualEffect(new hdsEffect.HdsEffectBuilder()
+                  .pointLight({
+                    sourceType: hdsEffect.PointLightSourceType.SOFT,
+                    illuminatedType: hdsEffect.PointLightIlluminatedType.BORDER_CONTENT
+                  })
+                  .buildEffect())
                 .width(40)
                 .onClick(async () => {
                   if (this.multipleSelectArray.length === 0) {
@@ -982,13 +983,12 @@ export default struct Filelist {
                     .backgroundColor($r('sys.color.interactive_pressed'))
                   }
                 })
-                .systemMaterial(new uiMaterial.ImmersiveMaterial({
-                  style: uiMaterial.ImmersiveStyle.REGULAR,
-                  interactive: true,
-                  lightEffect: {
-                    color: Color.White
-                  }
-                }))
+                .visualEffect(new hdsEffect.HdsEffectBuilder()
+                  .pointLight({
+                    sourceType: hdsEffect.PointLightSourceType.SOFT,
+                    illuminatedType: hdsEffect.PointLightIlluminatedType.BORDER_CONTENT
+                  })
+                  .buildEffect())
                 .width(40)
                 .onClick(async () => {
                   if (this.multipleSelectArray.length === 0) {
@@ -1033,13 +1033,12 @@ export default struct Filelist {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .systemMaterial(new uiMaterial.ImmersiveMaterial({
-                style: uiMaterial.ImmersiveStyle.REGULAR,
-                interactive: true,
-                lightEffect: {
-                  color: Color.White
-                }
-              }))
+              .visualEffect(new hdsEffect.HdsEffectBuilder()
+                .pointLight({
+                  sourceType: hdsEffect.PointLightSourceType.SOFT,
+                  illuminatedType: hdsEffect.PointLightIlluminatedType.BORDER_CONTENT
+                })
+                .buildEffect())
               .width(40)
               .onClick(async () => {
                 const promptAction = this.UIContext.getPromptAction()
@@ -1106,13 +1105,12 @@ export default struct Filelist {
                 .backgroundColor($r('sys.color.interactive_pressed'))
               }
             })
-            .systemMaterial(new uiMaterial.ImmersiveMaterial({
-              style: uiMaterial.ImmersiveStyle.REGULAR,
-              interactive: true,
-              lightEffect: {
-                color: Color.White
-              }
-            }))
+            .visualEffect(new hdsEffect.HdsEffectBuilder()
+              .pointLight({
+                sourceType: hdsEffect.PointLightSourceType.SOFT,
+                illuminatedType: hdsEffect.PointLightIlluminatedType.BORDER_CONTENT
+              })
+              .buildEffect())
             .width(40)
             .onClick(async () => {
               if (this.dirnames.length > 0) {
@@ -1210,11 +1208,8 @@ export default struct Filelist {
             placeholder: '请输入搜索关键词',
             value: this.searchKeyword!!
           })
+            .enableAutoSpacing(true)
             .searchButton('搜索')
-            .systemMaterial(new uiMaterial.ImmersiveMaterial({
-              style: uiMaterial.ImmersiveStyle.REGULAR,
-              interactive: true
-            }))
             .onSubmit(async (value) => {
               this.dialogControllerProgress.open()
               await this.get()
@@ -1239,13 +1234,12 @@ export default struct Filelist {
                 .backgroundColor($r('sys.color.interactive_pressed'))
               }
             })
-            .systemMaterial(new uiMaterial.ImmersiveMaterial({
-              style: uiMaterial.ImmersiveStyle.REGULAR,
-              interactive: true,
-              lightEffect: {
-                color: Color.White
-              }
-            }))
+            .visualEffect(new hdsEffect.HdsEffectBuilder()
+              .pointLight({
+                sourceType: hdsEffect.PointLightSourceType.SOFT,
+                illuminatedType: hdsEffect.PointLightIlluminatedType.BORDER_CONTENT
+              })
+              .buildEffect())
             .width(40)
             .onClick(() => {
               this.editPath = this.getPath()
@@ -1279,13 +1273,12 @@ export default struct Filelist {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .systemMaterial(new uiMaterial.ImmersiveMaterial({
-                style: uiMaterial.ImmersiveStyle.REGULAR,
-                interactive: true,
-                lightEffect: {
-                  color: Color.White
-                }
-              }))
+              .visualEffect(new hdsEffect.HdsEffectBuilder()
+                .pointLight({
+                  sourceType: hdsEffect.PointLightSourceType.SOFT,
+                  illuminatedType: hdsEffect.PointLightIlluminatedType.BORDER_CONTENT
+                })
+                .buildEffect())
               .width(40)
               .onClick(async () => {
                 const documentViewPicker = new picker.DocumentViewPicker(this.context)
@@ -1339,13 +1332,12 @@ export default struct Filelist {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .systemMaterial(new uiMaterial.ImmersiveMaterial({
-                style: uiMaterial.ImmersiveStyle.REGULAR,
-                interactive: true,
-                lightEffect: {
-                  color: Color.White
-                }
-              }))
+              .visualEffect(new hdsEffect.HdsEffectBuilder()
+                .pointLight({
+                  sourceType: hdsEffect.PointLightSourceType.SOFT,
+                  illuminatedType: hdsEffect.PointLightIlluminatedType.BORDER_CONTENT
+                })
+                .buildEffect())
               .width(40)
               .onClick(() => {
                 this.copyMovePath = ''
@@ -1367,13 +1359,12 @@ export default struct Filelist {
                   .backgroundColor($r('sys.color.interactive_pressed'))
                 }
               })
-              .systemMaterial(new uiMaterial.ImmersiveMaterial({
-                style: uiMaterial.ImmersiveStyle.REGULAR,
-                interactive: true,
-                lightEffect: {
-                  color: Color.White
-                }
-              }))
+              .visualEffect(new hdsEffect.HdsEffectBuilder()
+                .pointLight({
+                  sourceType: hdsEffect.PointLightSourceType.SOFT,
+                  illuminatedType: hdsEffect.PointLightIlluminatedType.BORDER_CONTENT
+                })
+                .buildEffect())
               .width(40)
               .onClick(async () => {
                 let text = ''
@@ -1426,13 +1417,12 @@ export default struct Filelist {
                     .backgroundColor($r('sys.color.interactive_pressed'))
                   }
                 })
-                .systemMaterial(new uiMaterial.ImmersiveMaterial({
-                  style: uiMaterial.ImmersiveStyle.REGULAR,
-                  interactive: true,
-                  lightEffect: {
-                    color: Color.White
-                  }
-                }))
+                .visualEffect(new hdsEffect.HdsEffectBuilder()
+                  .pointLight({
+                    sourceType: hdsEffect.PointLightSourceType.SOFT,
+                    illuminatedType: hdsEffect.PointLightIlluminatedType.BORDER_CONTENT
+                  })
+                  .buildEffect())
                 .width(40)
                 .onClick(() => {
                   this.fileArray.forEach(item => {
@@ -1460,13 +1450,12 @@ export default struct Filelist {
                     .backgroundColor($r('sys.color.interactive_pressed'))
                   }
                 })
-                .systemMaterial(new uiMaterial.ImmersiveMaterial({
-                  style: uiMaterial.ImmersiveStyle.REGULAR,
-                  interactive: true,
-                  lightEffect: {
-                    color: Color.White
-                  }
-                }))
+                .visualEffect(new hdsEffect.HdsEffectBuilder()
+                  .pointLight({
+                    sourceType: hdsEffect.PointLightSourceType.SOFT,
+                    illuminatedType: hdsEffect.PointLightIlluminatedType.BORDER_CONTENT
+                  })
+                  .buildEffect())
                 .width(40)
                 .onClick(() => {
                   this.fileArray.forEach(item => {
@@ -1480,8 +1469,7 @@ export default struct Filelist {
             }
           }
           .margin({
-            bottom: $r('sys.float.ohos_id_elements_margin_vertical_m'),
-            top: $r('sys.float.ohos_id_elements_margin_vertical_m')
+            bottom: $r('sys.float.ohos_id_elements_margin_vertical_m')
           })
           .width('100%')
 
@@ -1608,11 +1596,11 @@ export default struct Filelist {
                           let houzhui = ''
                           const lastDotIndex = item.item.name.lastIndexOf('.')
                           if (lastDotIndex !== -1) {
-                            houzhui = item.item.name.slice(lastDotIndex + 1)
+                            houzhui = item.item.name.slice(lastDotIndex + 1).toLowerCase()
                           }
                           const supportedformats =
                             ['mp4', 'mkv', 'm4a', 'aac', 'mp3', 'ogg', 'wav', 'flac', 'amr', 'ape']
-                          if (supportedformats.includes(houzhui.toLocaleLowerCase()) &&
+                          if (supportedformats.includes(houzhui) &&
                             getFlushPreference(this.context, 'commonSetting', 'onlinePreviewMedia', true)) {
                             const accountInfo = await getAccountInfo(this.context)
                             this.src = accountInfo.path + '/' + item.item.path
@@ -1723,8 +1711,8 @@ export default struct Filelist {
                                 const filePreviewType =
                                   getFlushPreference(this.context, 'commonSetting', 'filePreviewType', 0)
                                 if (filePreviewType === 0) {
-                                  const supportedReaderFormats = ['.epub', '.mobi', '.azw', '.azw3']
-                                  if (!supportedReaderFormats.some(formatItem => item.item.name.endsWith(formatItem))) {
+                                  const supportedReaderFormats = ['epub', 'mobi', 'azw', 'azw3']
+                                  if (!supportedReaderFormats.includes(houzhui)) {
                                     const canPreview = await filePreview.canPreview(this.context, uri)
                                     if (!canPreview) {
                                       await promptAction.openToast({
@@ -1739,9 +1727,9 @@ export default struct Filelist {
                                       })
                                     }
                                   }
-                                  if (supportedReaderFormats.some(formatItem => item.item.name.endsWith(formatItem))) {
+                                  if (supportedReaderFormats.includes(houzhui)) {
                                     const dir = this.context.tempDir + '/preview/reader/' + this.account + '/' +
-                                      sha256hash(item.item.name)
+                                      sha256hash(item.item.path)
                                     if (!fileIo.accessSync(dir)) {
                                       await fileIo.mkdir(dir, true)
                                     }
@@ -2008,7 +1996,7 @@ export default struct Filelist {
     .padding({
       left: $r('sys.float.ohos_id_elements_margin_horizontal_l'),
       right: $r('sys.float.ohos_id_elements_margin_horizontal_l'),
-      top: this.preferType === 0 ? 0 : $r('sys.float.ohos_id_default_padding_top')
+      top: this.preferType === SheetType.BOTTOM ? 0 : $r('sys.float.ohos_id_default_padding_top')
     })
     .onAppear(async () => {
       this.preferType = getPreferType(this.UIContext)

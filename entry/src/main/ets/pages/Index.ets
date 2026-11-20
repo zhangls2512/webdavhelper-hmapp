@@ -53,7 +53,7 @@ struct Index {
   @Local errorType: string = ''
   @Local errorObject: string = ''
   @Local backgroundImagePixelMap: PixelMap | undefined = undefined
-  @Local preferType: number = 1
+  @Local preferType: SheetType = SheetType.CENTER
   @Local index: number = 0
   @Local isShowCleardataSheet: boolean = false
   @Local isShowNoticeSheet: boolean = false
@@ -379,7 +379,9 @@ struct Index {
           if (continuousTasks.length > 0) {
             const progress =
               Number((processingTransferTask.transferredSize / processingTransferTask.totalSize).toFixed(2)) * 100
-            await quickBarManager.setProgressValue(this.context, progress, 100)
+            if (deviceInfo.deviceType === '2in1') {
+              await quickBarManager.setProgressValue(this.context, progress, 100)
+            }
             await notificationManager.publish({
               content: {
                 notificationContentType: notificationManager.ContentType.NOTIFICATION_CONTENT_SYSTEM_LIVE_VIEW,
