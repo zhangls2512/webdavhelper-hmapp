@@ -182,14 +182,16 @@ export default struct Filelist {
           })
       }
       if (!this.multipleSelect) {
-        MenuItem({
-          startIcon: $r('app.media.multipleselect'),
-          content: '多选'
-        })
-          .onClick(() => {
-            this.multipleSelect = true
-            this.multipleSelectArray.push(item)
+        if (!this.copyMovePath) {
+          MenuItem({
+            startIcon: $r('app.media.multipleselect'),
+            content: '多选'
           })
+            .onClick(() => {
+              this.multipleSelect = true
+              this.multipleSelectArray.push(item)
+            })
+        }
         if (!item.isdir) {
           MenuItem({
             startIcon: $r('app.media.download'),

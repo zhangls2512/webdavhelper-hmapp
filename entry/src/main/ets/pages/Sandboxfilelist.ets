@@ -176,8 +176,8 @@ struct Sandboxfilelist {
 
   @Builder
   MenuBuilder(item: FileItem) {
-    Menu() {
-      if (this.dirnames.length > 0) {
+    if (this.dirnames.length > 0) {
+      Menu() {
         if (!item.isdir) {
           if (item.name.endsWith('.zip')) {
             MenuItem({
