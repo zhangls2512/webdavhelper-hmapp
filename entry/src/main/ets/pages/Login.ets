@@ -214,8 +214,8 @@ export default struct Login {
               let route = ''
               const index = this.host.indexOf('/')
               if (index !== -1) {
-                host = this.host.substring(0, index)
-                route = '/' + this.host.substring(index + 1)
+                host = this.host.slice(0, index)
+                route = '/' + this.host.slice(index + 1)
               }
               path = this.scheme + '://' + host + (this.port ? (':' + this.port) : '') + route
               netBoost.setSceneDesc({

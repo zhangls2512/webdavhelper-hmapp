@@ -171,9 +171,11 @@ struct Infolist {
                   })
                 } catch (err) {
                   dialogControllerProgress.close()
-                  await promptAction.openToast({
-                    message: '发生错误，错误码：' + err.code + (err.message ? '，错误信息：' + err.message : '')
-                  })
+                  if (err.message !== 'cancel') {
+                    await promptAction.openToast({
+                      message: '发生错误，错误码：' + err.code + (err.message ? '，错误信息：' + err.message : '')
+                    })
+                  }
                 }
               })
             }
