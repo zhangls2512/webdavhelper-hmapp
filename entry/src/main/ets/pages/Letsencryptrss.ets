@@ -169,15 +169,15 @@ struct Letsencryptrss {
         if (response.statusCode >= 200 && response.statusCode < 300) {
           let rss = String(response)
           while (rss.includes('<item>')) {
-            const item = rss.substring(rss.indexOf('<item>') + 6, rss.indexOf('</item>'))
-            const date = new Date(item.substring(item.indexOf('<pubDate>') + 9, item.indexOf('</pubDate>')))
+            const item = rss.slice(rss.indexOf('<item>') + 6, rss.indexOf('</item>'))
+            const date = new Date(item.slice(item.indexOf('<pubDate>') + 9, item.indexOf('</pubDate>')))
             this.itemArray.push({
-              title: item.substring(item.indexOf('<title>') + 7, item.indexOf('</title>')),
-              link: item.substring(item.indexOf('<link>') + 6, item.indexOf('</link>')),
+              title: item.slice(item.indexOf('<title>') + 7, item.indexOf('</title>')),
+              link: item.slice(item.indexOf('<link>') + 6, item.indexOf('</link>')),
               pubDate: date.getFullYear() + '-' + String((date.getMonth() + 1)).padStart(2, '0') + '-' +
                 String((date.getDate())).padStart(2, '0')
             })
-            rss = rss.substring(rss.indexOf('</item>') + 7)
+            rss = rss.slice(rss.indexOf('</item>') + 7)
           }
         } else {
           await promptAction.openToast({

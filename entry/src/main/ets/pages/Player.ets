@@ -540,7 +540,6 @@ export default struct Player {
               if (this.state !== 'stopped' && this.time >= 15) {
                 Column() {
                   Image($r('app.media.gobackward15'))
-                    .fillColor(Color.White)
                 }
                 .bindTips('快退')
                 .borderRadius(20)
@@ -683,7 +682,6 @@ export default struct Player {
               if (this.state !== 'stopped' && this.duration - this.time >= 15) {
                 Column() {
                   Image($r('app.media.goforward15'))
-                    .fillColor(Color.White)
                 }
                 .bindTips('快进')
                 .borderRadius(20)
@@ -715,6 +713,49 @@ export default struct Player {
                 })
               }
               Blank()
+              if (deviceInfo.deviceType !== '2in1') {
+                Column() {
+                  Image($r('app.media.rotate'))
+                }
+                .bindTips('横竖屏切换')
+                .borderRadius(20)
+                .height(40)
+                .hitTestBehavior(HitTestMode.Block)
+                .margin({
+                  right: $r('sys.float.ohos_id_elements_margin_horizontal_m')
+                })
+                .padding(11)
+                .stateStyles({
+                  normal: {
+                    .backgroundColor($r('sys.color.interactive_hover'))
+                  },
+                  pressed: {
+                    .backgroundColor($r('sys.color.interactive_pressed'))
+                  }
+                })
+                .visualEffect(new hdsEffect.HdsEffectBuilder()
+                  .pointLight({
+                    sourceType: hdsEffect.PointLightSourceType.SOFT,
+                    illuminatedType: hdsEffect.PointLightIlluminatedType.BORDER_CONTENT
+                  })
+                  .buildEffect())
+                .width(40)
+                .onClick(async () => {
+                  const lastWindow = await window.getLastWindow(this.context)
+                  const windowProperties = lastWindow.getWindowProperties()
+                  const windowHeight = this.UIContext.px2vp(windowProperties.windowRect.height)
+                  const windowWidth = this.UIContext.px2vp(windowProperties.windowRect.width)
+                  this.videoHeight = windowWidth
+                  this.videoWidth = windowHeight
+                  const orientation = lastWindow.getPreferredOrientation()
+                  if (orientation === window.Orientation.PORTRAIT) {
+                    await lastWindow.setPreferredOrientation(window.Orientation.LANDSCAPE)
+                  }
+                  if (orientation === window.Orientation.LANDSCAPE) {
+                    await lastWindow.setPreferredOrientation(window.Orientation.PORTRAIT)
+                  }
+                })
+              }
               Column() {
                 Image($r('app.media.setting'))
                   .fillColor(Color.White)

@@ -1,5 +1,6 @@
 import { sendablePreferences } from '@kit.ArkData'
 import { backgroundTaskManager } from '@kit.BackgroundTasksKit'
+import { deviceInfo } from '@kit.BasicServicesKit'
 import { fileIo, fileUri } from '@kit.CoreFileKit'
 import { quickBarManager } from '@kit.DeskTopExtensionKit'
 import { netBoost } from '@kit.NetworkBoostKit'
@@ -91,15 +92,21 @@ export async function download(context: Context, id: string) {
       }
     })
     try {
-      await quickBarManager.setProgressState(context, quickBarManager.ProgressState.NORMAL)
+      if (deviceInfo.deviceType === '2in1') {
+        await quickBarManager.setProgressState(context, quickBarManager.ProgressState.NORMAL)
+      }
       const response = await session.get(transferTask.accountInfo.path + '/' + transferTask.path)
       if (response.statusCode >= 200 && response.statusCode < 300) {
         transferTask.status = 'success'
-        await quickBarManager.setProgressState(context, quickBarManager.ProgressState.NO_PROGRESS)
+        if (deviceInfo.deviceType === '2in1') {
+          await quickBarManager.setProgressState(context, quickBarManager.ProgressState.NO_PROGRESS)
+        }
       } else {
         transferTask.status = 'fail'
         transferTask.errCode = response.statusCode
-        await quickBarManager.setProgressState(context, quickBarManager.ProgressState.ERROR)
+        if (deviceInfo.deviceType === '2in1') {
+          await quickBarManager.setProgressState(context, quickBarManager.ProgressState.ERROR)
+        }
       }
     } catch (err) {
       session.close()
@@ -111,17 +118,23 @@ export async function download(context: Context, id: string) {
       if (err.code !== 1007900992) {
         transferTask.status = 'fail'
         transferTask.errCode = err.code + (err.message ? '，错误信息：' + err.message : '')
-        await quickBarManager.setProgressState(context, quickBarManager.ProgressState.ERROR)
+        if (deviceInfo.deviceType === '2in1') {
+          await quickBarManager.setProgressState(context, quickBarManager.ProgressState.ERROR)
+        }
       }
       if (err.code === 1007900992) {
         transferTask.status = 'cancel'
-        await quickBarManager.setProgressState(context, quickBarManager.ProgressState.NO_PROGRESS)
+        if (deviceInfo.deviceType === '2in1') {
+          await quickBarManager.setProgressState(context, quickBarManager.ProgressState.NO_PROGRESS)
+        }
       }
     }
   } catch (err) {
     transferTask.status = 'fail'
     transferTask.errCode = err.code + (err.message ? '，错误信息：' + err.message : '')
-    await quickBarManager.setProgressState(context, quickBarManager.ProgressState.ERROR)
+    if (deviceInfo.deviceType === '2in1') {
+      await quickBarManager.setProgressState(context, quickBarManager.ProgressState.ERROR)
+    }
   }
   transferTaskDataPreferences.putSync(id, JSON.stringify(transferTask))
 }
@@ -198,18 +211,24 @@ export async function upload(context: Context, id: string) {
       }
     }, 1000)
     try {
-      await quickBarManager.setProgressState(context, quickBarManager.ProgressState.NORMAL)
+      if (deviceInfo.deviceType === '2in1') {
+        await quickBarManager.setProgressState(context, quickBarManager.ProgressState.NORMAL)
+      }
       const response =
         await session.put(transferTask.accountInfo.path + '/' + encodePath(transferTask.path + '/' + transferTask.name),
           new rcp.UploadFromFile(fileUri.getUriFromPath(transferTask.srcFileUri)))
       clearInterval(intervalId)
       if (response.statusCode >= 200 && response.statusCode < 300) {
         transferTask.status = 'success'
-        await quickBarManager.setProgressState(context, quickBarManager.ProgressState.NO_PROGRESS)
+        if (deviceInfo.deviceType === '2in1') {
+          await quickBarManager.setProgressState(context, quickBarManager.ProgressState.NO_PROGRESS)
+        }
       } else {
         transferTask.status = 'fail'
         transferTask.errCode = response.statusCode
-        await quickBarManager.setProgressState(context, quickBarManager.ProgressState.ERROR)
+        if (deviceInfo.deviceType === '2in1') {
+          await quickBarManager.setProgressState(context, quickBarManager.ProgressState.ERROR)
+        }
       }
     } catch (err) {
       clearInterval(intervalId)
@@ -221,17 +240,23 @@ export async function upload(context: Context, id: string) {
       if (err.code !== 1007900992) {
         transferTask.status = 'fail'
         transferTask.errCode = err.code + (err.message ? '，错误信息：' + err.message : '')
-        await quickBarManager.setProgressState(context, quickBarManager.ProgressState.ERROR)
+        if (deviceInfo.deviceType === '2in1') {
+          await quickBarManager.setProgressState(context, quickBarManager.ProgressState.ERROR)
+        }
       }
       if (err.code === 1007900992) {
         transferTask.status = 'cancel'
-        await quickBarManager.setProgressState(context, quickBarManager.ProgressState.NO_PROGRESS)
+        if (deviceInfo.deviceType === '2in1') {
+          await quickBarManager.setProgressState(context, quickBarManager.ProgressState.NO_PROGRESS)
+        }
       }
     }
   } catch (err) {
     transferTask.status = 'fail'
     transferTask.errCode = err.code + (err.message ? '，错误信息：' + err.message : '')
-    await quickBarManager.setProgressState(context, quickBarManager.ProgressState.ERROR)
+    if (deviceInfo.deviceType === '2in1') {
+      await quickBarManager.setProgressState(context, quickBarManager.ProgressState.ERROR)
+    }
   }
   transferTaskDataPreferences.putSync(id, JSON.stringify(transferTask))
 }

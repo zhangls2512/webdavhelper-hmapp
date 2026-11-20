@@ -379,7 +379,9 @@ struct Index {
           if (continuousTasks.length > 0) {
             const progress =
               Number((processingTransferTask.transferredSize / processingTransferTask.totalSize).toFixed(2)) * 100
-            await quickBarManager.setProgressValue(this.context, progress, 100)
+            if (deviceInfo.deviceType === '2in1') {
+              await quickBarManager.setProgressValue(this.context, progress, 100)
+            }
             await notificationManager.publish({
               content: {
                 notificationContentType: notificationManager.ContentType.NOTIFICATION_CONTENT_SYSTEM_LIVE_VIEW,

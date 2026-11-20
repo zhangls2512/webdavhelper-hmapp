@@ -51,7 +51,7 @@ export async function getFavouritePathList(context: Context) {
           accountId: item.accountId,
           accountInfo: accountInfo,
           path: item.path,
-          name: item.path.substring(item.path.lastIndexOf('/') + 1)
+          name: item.path.slice(item.path.lastIndexOf('/') + 1)
         })
       }
     })

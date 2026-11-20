@@ -73,14 +73,14 @@ struct Webview {
                 scheme: uriobject.scheme,
                 host: uriobject.host,
                 port: port,
-                path: uriobject.path.substring(1)
+                path: uriobject.path.slice(1)
               })
             }
             if (port === -1) {
               urlTrustList.UrlPermissionList.push({
                 scheme: uriobject.scheme,
                 host: uriobject.host,
-                path: uriobject.path.substring(1)
+                path: uriobject.path.slice(1)
               })
             }
             this.controller.setUrlTrustList(JSON.stringify(urlTrustList), true, false)

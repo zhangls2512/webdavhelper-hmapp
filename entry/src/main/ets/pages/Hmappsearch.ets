@@ -466,7 +466,7 @@ struct Hmappsearch {
                       sort: 'download_count',
                       desc: String(true)
                     }).toString(), 'POST', {
-                      userAgent: 'com.zhuzx.webdavhelper/1.0.1.9'
+                      userAgent: 'com.zhuzx.webdavhelper/1.0.1.10'
                     }, body))
                   dialogControllerProgress.close()
                   if (response.statusCode >= 200 && response.statusCode < 300) {

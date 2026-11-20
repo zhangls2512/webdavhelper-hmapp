@@ -235,8 +235,8 @@ export default struct Filelist {
                 if (selectFileDownloadPath) {
                   const lastDotIndex = item.name.lastIndexOf('.')
                   if (lastDotIndex !== -1) {
-                    documentSaveOptions.newFileNames = [item.name.substring(0, lastDotIndex)]
-                    documentSaveOptions.fileSuffixChoices = ['.' + item.name.substring(lastDotIndex + 1)]
+                    documentSaveOptions.newFileNames = [item.name.slice(0, lastDotIndex)]
+                    documentSaveOptions.fileSuffixChoices = ['.' + item.name.slice(lastDotIndex + 1)]
                   }
                   if (lastDotIndex === -1) {
                     documentSaveOptions.newFileNames = [item.name]
@@ -405,63 +405,65 @@ export default struct Filelist {
               })
             })
         }
-        MenuItem({
-          startIcon: $r('app.media.copy'),
-          content: '复制'
-        })
-          .onClick(() => {
-            this.copyMovePath = item.path
-            this.remove = false
+        if (!this.copyMovePath) {
+          MenuItem({
+            startIcon: $r('app.media.copy'),
+            content: '复制'
           })
-        MenuItem({
-          startIcon: $r('app.media.move'),
-          content: '移动'
-        })
-          .onClick(() => {
-            this.copyMovePath = item.path
-            this.remove = true
-          })
-        MenuItem({
-          startIcon: $r('app.media.rename'),
-          content: '重命名'
-        })
-          .onClick(() => {
-            this.editPath = item.path
-            this.editName = item.name
-            this.isShowRenamefileSheet = true
-          })
-        MenuItem({
-          startIcon: $r('app.media.delete'),
-          content: '删除'
-        })
-          .onClick(async () => {
-            const promptAction = this.UIContext.getPromptAction()
-            const data = await promptAction.showDialog({
-              title: '提示',
-              message: '删除成功后无法恢复，确定删除？',
-              buttons: [
-                {
-                  text: '取消',
-                  color: $r('sys.color.font_primary')
-                },
-                {
-                  text: '删除',
-                  color: $r('sys.color.warning')
-                }
-              ]
+            .onClick(() => {
+              this.copyMovePath = item.path
+              this.remove = false
             })
-            if (data.index === 1) {
-              this.dialogControllerProgress.open()
-              const res = await rm(this.context, item.path)
-              this.dialogControllerProgress.close()
-              if (res !== 'fail') {
-                await promptAction.openToast({
-                  message: '删除成功'
-                })
-                this.loading = true
-              }
-            }
+          MenuItem({
+            startIcon: $r('app.media.move'),
+            content: '移动'
           })
+            .onClick(() => {
+              this.copyMovePath = item.path
+              this.remove = true
+            })
+          MenuItem({
+            startIcon: $r('app.media.rename'),
+            content: '重命名'
+          })
+            .onClick(() => {
+              this.editPath = item.path
+              this.editName = item.name
+              this.isShowRenamefileSheet = true
+            })
+          MenuItem({
+            startIcon: $r('app.media.delete'),
+            content: '删除'
+          })
+            .onClick(async () => {
+              const promptAction = this.UIContext.getPromptAction()
+              const data = await promptAction.showDialog({
+                title: '提示',
+                message: '删除成功后无法恢复，确定删除？',
+                buttons: [
+                  {
+                    text: '取消',
+                    color: $r('sys.color.font_primary')
+                  },
+                  {
+                    text: '删除',
+                    color: $r('sys.color.warning')
+                  }
+                ]
+              })
+              if (data.index === 1) {
+                this.dialogControllerProgress.open()
+                const res = await rm(this.context, item.path)
+                this.dialogControllerProgress.close()
+                if (res !== 'fail') {
+                  await promptAction.openToast({
+                    message: '删除成功'
+                  })
+                  this.loading = true
+                }
+              }
+            })
+        }
       }
     }
   }
@@ -1465,8 +1467,7 @@ export default struct Filelist {
             }
           }
           .margin({
-            bottom: $r('sys.float.ohos_id_elements_margin_vertical_m'),
-            top: $r('sys.float.ohos_id_elements_margin_vertical_m')
+            bottom: $r('sys.float.ohos_id_elements_margin_vertical_m')
           })
           .width('100%')
 

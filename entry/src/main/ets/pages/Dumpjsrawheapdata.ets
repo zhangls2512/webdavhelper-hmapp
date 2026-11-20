@@ -114,7 +114,7 @@ struct Dumpjsrawheapdata {
                     for (let i = 0; i < paths.length; i++) {
                       const res = paths[i]
                       const documentSaveOptions = new picker.DocumentSaveOptions()
-                      documentSaveOptions.newFileNames = [res.substring(res.lastIndexOf('/') + 1).slice(0, -8)]
+                      documentSaveOptions.newFileNames = [res.slice(res.lastIndexOf('/') + 1, -8)]
                       documentSaveOptions.fileSuffixChoices = ['.rawheap']
                       const documentViewPicker = new picker.DocumentViewPicker(this.context)
                       const uris = await documentViewPicker.save(documentSaveOptions)
