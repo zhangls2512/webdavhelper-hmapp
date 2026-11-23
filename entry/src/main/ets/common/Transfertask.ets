@@ -204,12 +204,6 @@ export async function upload(context: Context, id: string) {
         Authorization: transferTask.authorization
       }
     })
-    const intervalId = setInterval(async () => {
-      const continuousTasks = await backgroundTaskManager.getAllContinuousTasks(context)
-      if (continuousTasks.length === 0) {
-        session.cancel()
-      }
-    }, 1000)
     try {
       if (deviceInfo.deviceType === '2in1') {
         await quickBarManager.setProgressState(context, quickBarManager.ProgressState.NORMAL)
@@ -217,7 +211,6 @@ export async function upload(context: Context, id: string) {
       const response =
         await session.put(transferTask.accountInfo.path + '/' + encodePath(transferTask.path + '/' + transferTask.name),
           new rcp.UploadFromFile(fileUri.getUriFromPath(transferTask.srcFileUri)))
-      clearInterval(intervalId)
       if (response.statusCode >= 200 && response.statusCode < 300) {
         transferTask.status = 'success'
         if (deviceInfo.deviceType === '2in1') {
@@ -231,7 +224,6 @@ export async function upload(context: Context, id: string) {
         }
       }
     } catch (err) {
-      clearInterval(intervalId)
       session.close()
       netBoost.setSceneDesc({
         scene: 'upload',
